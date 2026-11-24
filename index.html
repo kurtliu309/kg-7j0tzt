@@ -366,13 +366,13 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.2 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.3 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
   tagItem:'消耗品', tagRoot:'复活', pickTitle:'选一个技能', pickSub:'打空了庄家的筹码条，战利品三选一', pickTap:'点一张卡拿走', pickNone:'技能全学会了！送你 2000 叶。', active:'主动', passive:'被动',
   minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓', order:'挂单', bluff:'逼宫',
-  hourglass:'冻结', cloak:'斗篷', report:'举报', flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2',
+  hourglass:'冻结', cloak:'斗篷', report:'举报', flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
   weather:'天气：', news:'快讯', halt:'熔断中…', frozen:'时间冻结', paused:'暂停', yourSkills:'你的技能：', noSkills:'还没有。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
   rHarv:'被收割了！', rKill:'庄家崩盘！', rFail:'没打空筹码条…', rSurv:'撑过去了', rScript:'庄家剧本：', rMoney:'叶子：', rLine:'收割线：', rIntent:'意图真假：',
   mHarv:'叶子掉到了收割线以下。', mHarvSteal:'庄家抽走了 {n}，\n', mRoot:'\n还有一条根，可以重新发芽。', mNoRoot:'\n没有根了……', mFail:'时间到，庄家抽走了 {n}。\n他还站着，再打一次。',
@@ -441,13 +441,13 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.2 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.3 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
   tagItem:'Item', tagRoot:'Revive', pickTitle:'Pick a skill', pickSub:'You busted his chips. Choose your loot.', pickTap:'Tap a card', pickNone:'You know every skill! Have 2,000 wool.', active:'Active', passive:'Passive',
   minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close', order:'Order', bluff:'Bluff',
-  hourglass:'Freeze', cloak:'Cloak', report:'Report', flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2',
+  hourglass:'Freeze', cloak:'Cloak', report:'Report', flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
   weather:'Weather: ', news:'NEWS', halt:'Halted…', frozen:'Frozen', paused:'Paused', yourSkills:'Your skills:', noSkills:'None yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
   rHarv:'FLEECED!', rKill:'SHEARER BROKE!', rFail:'He survived…', rSurv:'Survived', rScript:'Script: ', rMoney:'Wool: ', rLine:'Line: ', rIntent:'Intents: ',
   mHarv:'Your wool fell below the shear line.', mHarvSteal:'He took {n} from you.\n', mRoot:'\nYour Golden Fleece saves you.', mNoRoot:'\nNo fleece left…', mFail:'Time\'s up. He took {n}.\nHe\'s still standing. Again.',
@@ -723,7 +723,10 @@ function SkillPickScene(next){
 // =====================================================================
 let B = null;
 const HIST = 10;
-const CX0=6, CX1=250, CY0=114, CY1=328, SW=5;
+const CX0=6, CX1=250, CY0=114, CY1=366, SW=5;
+// 战斗画面布局：K 线图上方一行放叶子（左）和庄家意图（右）
+const LEAF_X=6, LEAF_Y=88, LEAF_H=20, INTENT_Y=88, INTENT_H=20, INTENT_R=284;
+const CHAT_Y=372, HERO_Y=390, BTN_Y=438, ITEM_Y=476;
 function startBattle(def, isBoss){
   const eq = R.cap;
   B = { def, isBoss, phases: SCRIPTS[def.script](), sstep:0, len:def.len, ticks:10, tickMs: R.tutorial?220:170, acc:0, tick:0, step:0,
@@ -738,7 +741,7 @@ function startBattle(def, isBoss){
         bubble:pick(lines(def).idle), bubbleT:200, chat:'', chatBy:'',
         freeze:0, speed:1, paused:false, over:false, result:null, harvested:false, harvT:0, trades:0, hint:null, hintT:0,
         vhi:0, vlo:0, base:0, bossSwap:def.swap||null, bossSpr:def.spr, t:0, newsT:0, news:null };
-  parts=[]; floats=[]; toastT=0;
+  parts=[]; floats=[]; toastT=0; moneyReady = false; moneyBump = 0; moneyHurt = 0;
   let p = 10 + Math.random()*30;
   for (let i=0;i<HIST;i++){ const o=p, c=o*(1+(Math.random()-.5)*.02); B.bars.push({o,h:Math.max(o,c)*(1+Math.random()*.008),l:Math.min(o,c)*(1-Math.random()*.008),c,v:.8+Math.random()*.4}); p=c; }
   B.base = p; B.price = p; B.vhi = p*1.06; B.vlo = p*.94;
@@ -749,6 +752,17 @@ function phaseAt(s){ let acc=0; for (const ph of B.phases){ if (s<acc+ph.len) re
 const eqv = () => B.cash + B.sh*B.price;
 const dispP = () => (B.ov && B.ov.type==='fake') ? B.fp : B.price;
 const eqDisp = () => B.cash + B.sh*dispP();
+// 叶子数字的显示状态：滚动 + 涨闪金 / 跌闪红（只影响显示）
+let moneyShown = 0, moneySeen = 0, moneyBump = 0, moneyHurt = 0, moneyReady = false;
+function moneyFx(f, target){
+  if (!moneyReady){ moneyShown = target; moneySeen = target; moneyReady = true; }
+  const d = target - moneySeen; moneySeen = target;
+  const thr = Math.max(2, Math.abs(target)*.0015);
+  if (d > thr){ moneyBump = 1; moneyHurt = 0; }
+  else if (d < -thr){ moneyHurt = 1; moneyBump = 0; }
+  moneyShown += (target-moneyShown)*Math.min(1, f*.16);
+  moneyBump = Math.max(0, moneyBump - f/16); moneyHurt = Math.max(0, moneyHurt - f/16);
+}
 const levK = () => R.skills.lev ? 2 : 1;
 const critNow = () => B.collapse || !!B.ov || B.breach>0;
 const flipKind = k => { const d = dirOf(k); return d>0 ? 'dump' : d<0 ? 'pump' : pick(['pump','dump']); };
@@ -759,7 +773,7 @@ function newCandle(){
   if (B.intent && B.intent.pending && B.step >= B.intent.at){
     B.intent.pending = false; B.intentLog.push({i:B.bars.length, claim:B.intent.claim, truth:B.intent.truth});
     B.claimNow = {claim:B.intent.claim, truth:B.intent.truth};
-    if (!B.intent.truth){ B.bubble = lines(d).lie; B.bubbleT = 140; floatText(t('tLie'), 200, 92, DANGER); }
+    if (!B.intent.truth){ B.bubble = lines(d).lie; B.bubbleT = 140; floatText(t('tLie'), 180, 148, DANGER); }
   }
   // 被逼宫：按他说的方向强行画
   if (B.forced && B.step >= B.forced.at && !B.ov){ B.ov = {type:'forced', t:0, len:3, d:B.forced.dir*.035}; B.forced = null; }
@@ -781,6 +795,7 @@ function newCandle(){
   B.kindNow = kind;
   if (w && !['pie','flatspike','spin'].includes(B.mode)){ drift += (w.drift||0) + (w.rumorD||0); vol *= (w.volMul||1); }
   drift += B.pendingDrift; B.pendingDrift = 0;
+  if (B.collapse) drift *= 1.8;                                // 崩盘：方向性位移放大 1.8 倍（噪声不放大）
   B.vol = vol*d.volMul; B.target = o*(1 + drift + randn()*B.vol*.8);
   if (B.mode==='pie') B.target = o*(1+drift);
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
@@ -792,15 +807,23 @@ function newCandle(){
     B.bubble = t('waffle'); B.bubbleT = 110; sfx('tell');
   }
   // ---- 庄家放技能 / 公开意图（有真有假，提前量不固定，有时含糊，有时干脆不说）----
-  const busy = B.ov || B.windup || (B.intent && B.intent.pending) || B.collapse;
-  if (!busy){
+  const k0ahead = () => { for (let k=1;k<=3;k++){ if (phaseAt(B.sstep+k) !== phaseAt(B.sstep+k-1)) return k; } return 0; };
+  const busy = B.ov || B.windup || (B.intent && B.intent.pending);
+  if (!busy && B.collapse){
+    // 崩盘：筹码打空了，只能说真话，而且下一步必定提前公开（不放技能、不含糊、不撒谎）
+    const k0 = k0ahead();
+    if (k0 && B.step+k0 < B.len){
+      const actual = phaseAt(B.sstep+k0).kind;
+      B.intent = {at:B.step+k0, claim:actual, truth:true, actual, pending:true};
+    }
+  } else if (!busy){
     B.skillCD--;
     if (B.skillCD<=0 && !(w&&w.noSkill) && B.step>3 && B.step < B.len-6){
       const ty = pick(d.skills); B.windup = {type:ty}; B.skillCD = R1(8,11);
       const lie = Math.random() < d.fake;
       B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true};
     } else {
-      let k0 = 0; for (let k=1;k<=3;k++){ if (phaseAt(B.sstep+k) !== phaseAt(B.sstep+k-1)){ k0 = k; break; } }
+      const k0 = k0ahead();
       if (k0 && B.step+k0 < B.len && Math.random() < .55){
         const actual = phaseAt(B.sstep+k0).kind, r = Math.random(); let claim;
         if (r < .15 && BIG.includes(actual)) claim = 'vague';
@@ -826,9 +849,9 @@ function endOv(){
 }
 function startCollapse(){
   B.collapse = true; B.killed = true; B.collapseCash = eqv(); B.collapseT = 200;
-  B.windup = null; B.forced = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.heat = 0; B.intent = null;
+  B.windup = null; B.forced = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.heat = 0; B.intent = null; B.claimNow = null;
   if (B.ov && B.ov.type==='fake') endOv(); B.ov = null;
-  B.bubble = lines(B.def).panic; B.bubbleT = 300; B.bossSwap = ANGRY;
+  B.bubble = t('brokeTruth'); B.bubbleT = 300; B.bossSwap = ANGRY;
   sfx('win'); shake = 10; flashA = .5; flashC = GOLD; burst(240,70,50,['#ffcd75','#a7f070','#f4f4f4'],3.5);
 }
 function battleTick(){
@@ -905,9 +928,25 @@ function trade(dir){
   if (B.over || B.halt>0) return;
   if (dir<0 && !R.short){ toast(t('tShortLocked')); return; }
   if (B.sh!==0 && Math.sign(B.sh)!==dir) closePos(false);
-  if (B.stacks>=3){ floatText(t('tFull'), 100, 360, '#ef7d57'); return; }
+  if (B.stacks>=3){ floatText(t('tFull'), 144, 432, '#ef7d57'); return; }
   openStack(dir, B.price); B.heat += .06*levK(); sfx(dir>0?'buy':'short');
-  floatText(dir>0?t('tGoLong'):t('tGoShort'), 64, 356, dir>0?UP:DN);
+  floatText(dir>0?t('tGoLong'):t('tGoShort'), dir>0?52:144, 432, dir>0?UP:DN);
+}
+// 叶子那一行的布局：数字可用宽度 = 意图框左边界 - 数字起点（两端都紧贴 K 线图上沿）
+function leafNumX(){ return LEAF_X + TW(t('money')) + 4; }
+function leafMaxW(){
+  const L = intentLayout();
+  return Math.max(40, (L ? L.x0 : 284) - 8 - leafNumX());
+}
+// 平仓盈亏飘字：贴在叶子数字旁边
+function moneyFloat(s, col){
+  const str = fmt(Math.max(0, eqDisp()));
+  const nx = leafNumX();
+  let sc = 4; while (sc>1 && 4*sc*str.length-sc > leafMaxW()) sc--;
+  const nw = 4*sc*str.length - sc, tw = TW(s);
+  let x = nx + nw + 8 + tw/2, y = LEAF_Y + 2;
+  if (x + tw/2 > leafNumX() + leafMaxW() + 2){ x = nx + tw/2; y = LEAF_Y + 50; }   // 没地方：落到图内上方
+  floatText(s, clamp(x, tw/2+2, 286-tw/2), y, col);
 }
 function closePos(silent){
   if (B.sh===0) return 0;
@@ -925,12 +964,13 @@ function closePos(silent){
     if (total>0){
       const m = +mult.toFixed(2);
       if (m>1) floatText(`${fmt(pnl)} ×${m} = ${fmt(total)}`, 144, 300, GOLD);
-      floatText(`-${fmt(total)}`, 214, 92, m>1?GOLD:DANGER);
-    } else floatText(`+${fmt(-total)} ${t('heal')}`, 214, 92, '#3ec95b');
+      floatText(`-${fmt(total)}`, 214, 148, m>1?GOLD:DANGER);
+      moneyFloat('+'+fmt(total), GOLD);
+    } else { floatText(`+${fmt(-total)} ${t('heal')}`, 214, 148, '#3ec95b'); moneyFloat('-'+fmt(-total), DANGER); }
   }
   if (!silent){
     if (mult>1 && ratio>.005){ sfx('coin'); shake=Math.max(shake,5); burst(230,80,30,['#ffcd75','#f4f4f4',DANGER],3); toast(crit?t('tCritHit'):pick(C.take)); }
-    else if (ratio>.05){ sfx('coin'); burst(40,370,24,['#ffcd75','#f4f4f4','#ef7d57'],2.5); toast(pick(C.take)); }
+    else if (ratio>.05){ sfx('coin'); burst(40,436,24,['#ffcd75','#f4f4f4','#ef7d57'],2.5); toast(pick(C.take)); }
     else if (ratio<-.02){ sfx('hurt'); toast(pick(C.cutLoss)); }
     else sfx('close');
   }
@@ -945,11 +985,11 @@ function strike(){
   B.target = sp + (pre-sp)*.7;                                // 针扎下去后回撤 70%，留下长影线
   shake = 12; flashA = .45; flashC = DANGER; sfx('harvest');
   if (hit){
-    if (R.skills.counter){ floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,370,24,[DANGER,'#f4f4f4']); }
+    if (R.skills.counter){ floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,436,24,[DANGER,'#f4f4f4']); }
     else {
       const q = B.sh/B.stacks; B.cash += q*sp - Math.abs(q*sp)*.001; B.sh -= q; B.stacks--; if (B.stacks<=0){ B.sh=0; B.stacks=0; }
       B.marks.push({i:B.bars.length, side:'C', p:sp}); B.combo = 0;
-      floatText(t('tStrike'), 120, 330, DANGER); B.bubble = L_.hit; B.bubbleT = 140; burst(34,370,30,['#38b764','#a7f070']);
+      floatText(t('tStrike'), 120, 330, DANGER); B.bubble = L_.hit; B.bubbleT = 140; burst(34,436,30,['#38b764','#a7f070']);
     }
   } else {
     const missed = B.sh===0 && !B.dodged;                     // 空仓又没躲过：扑空
@@ -983,13 +1023,13 @@ function callBluff(){
   it.truth = true; B.windup = null;
   const dir = it.claim.startsWith('skill:') ? 0 : dirOf(it.claim);
   B.forced = {at:it.at, dir}; B.breach = 3;
-  B.bubble = lines(B.def).called; B.bubbleT = 150; floatText(t('tCalled'), 150, 92, '#a7f070'); sfx('magic'); shake=6; burst(240,70,30,['#a7f070','#f4f4f4']);
+  B.bubble = lines(B.def).called; B.bubbleT = 150; floatText(t('tCalled'), 150, 148, '#a7f070'); sfx('magic'); shake=6; burst(240,70,30,['#a7f070','#f4f4f4']);
 }
 function harvest(){
   if (R.skills.insure && !B.insured){ B.insured = true; closePos(true); B.cash = Math.max(B.cash, R.line*1.3); toast(t('tInsure')); sfx('dodge'); B.warn=0; return; }
   closePos(true); B.over=true; B.harvested=true; B.harvT=0; R.stats.harvested++;
   B.result = {pass:false, kill:false}; R.cap = Math.round(Math.max(0,B.cash));
-  sfx('harvest'); shake=14; flashA=.7; flashC='#f4f4f4'; burst(34,370,50,LANG==='en'?['#f4f4f4','#94b0c2']:['#38b764','#a7f070','#257179'],3,.12,70);
+  sfx('harvest'); shake=14; flashA=.7; flashC='#f4f4f4'; burst(34,436,50,LANG==='en'?['#f4f4f4','#94b0c2']:['#38b764','#a7f070','#257179'],3,.12,70);
   B.bubble = lines(B.def).hit; B.bubbleT = 300; music('sad');
 }
 function endBattle(kill){
@@ -1033,6 +1073,53 @@ function claimLabel(claim){
   if (claim==='vague') return {txt:'↕'+t('vague'), col:GOLD};
   const d = dirOf(claim); return {txt:(d>0?'↑':d<0?'↓':'—')+C.kind[claim], col:d>0?UP:d<0?DN:'#94b0c2'};
 }
+// 意图框布局（K 线图右上角正上方）：内容、字号、左右边界都在这里算，叶子让位给它的左边界
+function intentLayout(){
+  if (!B || B.over) return null;
+  const it = B.intent && B.intent.pending ? B.intent : null;
+  const said = it || B.claimNow;
+  const collapse = !!B.collapse;
+  if (collapse && !said){
+    let sz = 13, w = Math.max(76, TW(t('rKill'), sz) + 14);
+    return {kind:'broke', x0:INTENT_R-w, w, sz, collapse:true};
+  }
+  const head = it ? t('next') : t('now');
+  const lab = said ? claimLabel(said.claim) : {txt:'???', col:'#94b0c2'};
+  const tagTxt = said ? (collapse ? t('trueT') : (R.skills.lie ? (said.truth ? t('trueT') : t('lieT')) : null)) : null;
+  const cnt = it ? String(Math.max(0, it.at-B.step)) : '';
+  let sz = 13;
+  const calc = () => {
+    const inner = TW(head, sz) + 5 + TW(lab.txt, sz) + (it ? 7 + 4*cnt.length - 1 : 0);
+    return {mainW: Math.max(74, inner + 14), tagW: tagTxt ? TW(tagTxt, 10) + 10 : 0};
+  };
+  let m = calc();
+  while (sz > 10 && m.mainW + (tagTxt ? m.tagW + 3 : 0) > 172){ sz--; m = calc(); }
+  const gap = tagTxt ? m.tagW + 3 : 0;
+  return {kind:'intent', it, said, head, lab, sz, cnt, tagTxt, tagW:m.tagW, mainW:m.mainW,
+          x0:INTENT_R-(m.mainW+gap), mainX:INTENT_R-m.mainW, collapse};
+}
+function drawIntent(L){
+  if (!L) return;
+  const y = INTENT_Y;
+  if (L.kind==='broke'){
+    box(L.x0-1, y-1, L.w+2, INTENT_H+2, '#1a1c2c', GOLD);
+    box(L.x0, y, L.w, INTENT_H, '#1a1c2c', GOLD);
+    T(t('rKill'), L.x0+7, y+4, GOLD, 'left', L.sz);
+    return;
+  }
+  const bd = L.collapse ? GOLD : (L.it ? L.lab.col : '#333c57');
+  if (L.tagTxt){
+    const tagCol = L.collapse ? GOLD : (L.said.truth ? '#257179' : DANGER);
+    box(L.x0, y, L.tagW, INTENT_H, tagCol, INK);
+    T(L.tagTxt, L.x0+L.tagW/2, y+5, L.collapse ? INK : '#f4f4f4', 'center', 10);
+  }
+  // 双线边框，比原来醒目
+  box(L.mainX-1, y-1, L.mainW+2, INTENT_H+2, '#1a1c2c', bd);
+  box(L.mainX, y, L.mainW, INTENT_H, '#1a1c2c', bd);
+  T(L.head, L.mainX+7, y+4, L.collapse ? GOLD : '#94b0c2', 'left', L.sz);
+  T(L.lab.txt, L.mainX+7+TW(L.head, L.sz)+5, y+4, L.collapse ? GOLD : (L.it ? L.lab.col : shade(L.lab.col,-.3)), 'left', L.sz);
+  if (L.it) N(L.cnt, INTENT_R-6, y+7, L.collapse ? GOLD : '#f4f4f4', 1, 'right');
+}
 function drawHero(hx, hy, sc, variant){
   if (B && B.harvested){
     if (LANG==='en'){ spr('sheepS', hx, hy, sc, {swap:{w:'s',z:'s'}}); }
@@ -1057,52 +1144,38 @@ const BattleScene = { frame(f, dt){
 
   ctx.drawImage(bgFor(R.floor),0,0);
   const e = eqDisp();
-  // ===== 顶栏 =====
-  box(0,0,W,34,'#1a1c2c','#333c57');
-  T(B.isBoss?BT.name:BT.name+t('minion'), 6, 3, B.isBoss?DANGER:'#f4f4f4');
-  for (let i=0;i<R.roots;i++) spr('i_root', 214-10*(i+1), 3, 1);
+  // ===== 顶栏（一行半：庄家名 / 收割线 / 复活根 / 速度暂停 + 筹码条）=====
+  box(0,0,W,30,'#1a1c2c','#333c57');
   const danger = e < R.line*1.25, blinkD = danger && Math.floor(B.t/8)%2;
-  T(t('money'), 6, 19, '#94b0c2'); const mx = 8+TW(t('money')); N(fmt(e), mx, 20, blinkD?DANGER:'#a7f070', 2);
-  { const lx = mx+8*fmt(e).length+4; T(t('lineS'), lx, 19, danger?DANGER:'#566c86'); N(fmt(R.line), lx+TW(t('lineS'))+2, 23, danger?DANGER:'#566c86', 1); }
-  const dmg = Math.max(0, eqDisp()-B.startEq), hpLeft = B.collapse ? 0 : clamp(1 - dmg/B.hpMax, 0, 1);
-  box(190, 20, 94, 10, '#1a1c2c', '#333c57'); ctx.fillStyle=DANGER; ctx.fillRect(192,22,Math.round(90*hpLeft),6);
-  N(B.collapse?'0':fmt(Math.max(0,B.hpMax-dmg)), 237, 23, '#f4f4f4', 1, 'center');
-  ctx.fillStyle='#333c57'; ctx.fillRect(0,33,W,1); ctx.fillStyle=GOLD; ctx.fillRect(0,33,Math.round(W*Math.min(1,B.step/B.len)),1);
+  const lineTxt = fmt(R.line), lineLab = t('lineS');
+  const lineW = TW(lineLab)+3+(4*lineTxt.length-1);
+  const lineX = 218 - lineW;
+  const rootsR = lineX - 6;
+  for (let i=0;i<R.roots;i++) spr('i_root', rootsR-8-i*10, 4, 1);
+  const bossName = B.isBoss?BT.name:BT.name+t('minion');
+  const nameMax = (R.roots>0 ? rootsR-8-(R.roots-1)*10-8 : lineX-6) - 8;
+  let nameSz = 11; while (nameSz>8 && TW(bossName, nameSz) > nameMax) nameSz--;
+  T(bossName, 4, 2, B.isBoss?DANGER:'#f4f4f4', 'left', nameSz);
+  T(lineLab, lineX, 2, danger?DANGER:'#566c86');
+  N(lineTxt, lineX+TW(lineLab)+3, 5, danger?DANGER:'#94b0c2', 1);
   if (!B.over){
-    if (btn(220, 2, 30, 16, B.speed>1?'»»':'»', {col:B.speed>1?'#ef7d57':'#333c57', key:'f'})) B.speed = B.speed>1?1:2;
-    if (btn(254, 2, 30, 16, B.paused?'▶':'Ⅱ', {col:'#333c57', key:'escape'})) B.paused = !B.paused;
+    if (btn(222, 1, 30, 16, B.speed>1?'»»':'»', {col:B.speed>1?'#ef7d57':'#333c57', key:'f'})) B.speed = B.speed>1?1:2;
+    if (btn(254, 1, 30, 16, B.paused?'▶':'Ⅱ', {col:'#333c57', key:'escape'})) B.paused = !B.paused;
   }
+  // 庄家筹码条 + 已学技能 + 进度
+  const dmg = Math.max(0, e-B.startEq), hpLeft = B.collapse ? 0 : clamp(1 - dmg/B.hpMax, 0, 1);
+  box(4, 17, 150, 10, '#1a1c2c', '#333c57'); ctx.fillStyle=DANGER; ctx.fillRect(6,19,Math.round(146*hpLeft),6);
+  N(B.collapse?'0':fmt(Math.max(0,B.hpMax-dmg)), 79, 20, '#f4f4f4', 1, 'center');
+  let skx = 162; for (const k of Object.keys(R.skills)){ if (skx>246) break; spr(SKILLS[k].icon, skx, 18, 1); skx += 10; }
+  N(`${B.step}/${B.len}`, 284, 20, '#566c86', 1, 'right');
+  ctx.fillStyle='#333c57'; ctx.fillRect(0,29,W,1); ctx.fillStyle=GOLD; ctx.fillRect(0,29,Math.round(W*Math.min(1,B.step/B.len)),1);
 
   // ===== 庄家舞台 =====
-  const sc = 3, bh = sprH(B.bossSpr)*sc; let bx = 226, by = 108 - bh;
+  const sc = 3, bh = sprH(B.bossSpr)*sc; let bx = 226, by = 82 - bh;
   if (B.windup || B.collapse) bx += Math.round(Math.sin(B.t*.9)*1.5);
   spr(B.bossSpr, bx, by, sc, {swap:B.bossSwap});
   if (B.collapse && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(bx+40, by+10, 2, 3); }
-  // 公开意图（可能是假的）
-  if (!B.over){
-    if (B.collapse){ box(156, 38, 128, 16, '#1a1c2c', GOLD); T(t('rKill'), 220, 40, GOLD, 'center'); }
-    else {
-      // 只显示庄家自己说的话：下一步要干嘛 / 他声称现在在干嘛（都可能是假的）
-      const it = B.intent && B.intent.pending ? B.intent : null;
-      const said = it || B.claimNow;
-      const lab = said ? claimLabel(said.claim) : {txt:'???', col:'#94b0c2'};
-      const head = it ? t('next') : t('now');
-      const wTxt = TW(head)+TW(lab.txt)+(it?24:12);
-      const bx0 = 284 - Math.min(170, wTxt);
-      box(bx0, 38, 284-bx0, 16, '#1a1c2c', it?lab.col:'#333c57');
-      T(head, bx0+4, 40, '#94b0c2'); T(lab.txt, bx0+8+TW(head), 40, it?lab.col:shade(lab.col,-.3));
-      if (it) N(String(Math.max(0,it.at-B.step)), 280, 43, '#f4f4f4', 1, 'right');
-      if (said && R.skills.lie){ const tag = said.truth ? t('trueT') : t('lieT'); box(bx0-TW(tag)-10, 38, TW(tag)+8, 16, said.truth?'#257179':DANGER, INK); T(tag, bx0-TW(tag)-6, 40, '#f4f4f4'); }
-    }
-  }
-  if (B.bubbleT>0 && B.bubble){
-    const ls = wrap(B.bubble, 150); const bw = Math.min(166, Math.max(...ls.map(l=>TW(l)))+16), bhh = ls.length*14+10;
-    const bx0 = 208 - bw, by0 = 60;
-    box(bx0, by0, bw, bhh, '#f4f4f4', INK); ctx.fillStyle='#f4f4f4'; ctx.fillRect(bx0+bw-1, by0+8, 6, 4);
-    ls.forEach((l,k)=>T(l, bx0+8, by0+5+k*14, INK, 'left', 12, null));
-  }
   const crit = critNow() && !B.over;
-  if (crit && !B.collapse){ const lab = B.breach>0 ? t('crit')+' · '+B.breach : t('critOv'); box(6, 38, TW(lab)+12, 16, '#1a1c2c', GOLD); T(lab, 12, 40, GOLD); }
 
   // ===== K线图 =====
   box(CX0-4, CY0-4, CX1-CX0+38, CY1-CY0+8, '#10121c', crit?shade(GOLD,-.4):'#333c57');
@@ -1163,46 +1236,83 @@ const BattleScene = { frame(f, dt){
   }
   if (!B.over){ const pp=dispP(), yy=Y(pp), cc=(B.ov&&B.ov.type==='fake')?B.fcur:B.cur; box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); N(pp.toFixed(2), CX1+17, yy-2, '#f4f4f4', 1, 'center', false); }
   if (B.warn>0 && Math.floor(B.t/5)%2){ ctx.strokeStyle=DANGER; ctx.lineWidth=2; ctx.strokeRect(CX0-3,CY0-3,CX1-CX0+36,CY1-CY0+6); }
-  let ty = CY0+2;
-  if (B.weather && !B.over){ const lab = t('weather')+C.news[B.weather.id][1]; box(CX0, ty, TW(lab)+24, 16, '#1a1c2c', '#41a6f6'); T(lab, CX0+4, ty+2, '#73eff7'); N(String(B.weather.left), CX0+TW(lab)+18, ty+5, '#73eff7', 1, 'right'); ty += 18; }
-  if (B.newsT>0 && B.news && !B.over){ box(CX0, ty, 240, 18, '#1a1c2c', GOLD); box(CX0+2, ty+2, TW(t('news'))+8, 14, '#b13e53', '#b13e53'); T(t('news'), CX0+6, ty+3, '#f4f4f4'); T(C.news[B.news.id][0], CX0+TW(t('news'))+16, ty+3, '#f4f4f4'); }
+  // 庄家气泡（画在画笔之上，别被笔划压住）
+  if (B.bubbleT>0 && B.bubble){
+    const ls = wrap(B.bubble, 150); const bw = Math.min(166, Math.max(...ls.map(l=>TW(l)))+16), bhh = ls.length*14+10;
+    const bx0 = 208 - bw, by0 = 32;
+    box(bx0, by0, bw, bhh, '#f4f4f4', INK); ctx.fillStyle='#f4f4f4'; ctx.fillRect(bx0+bw-1, by0+8, 6, 4);
+    ls.forEach((l,k)=>T(l, bx0+8, by0+5+k*14, INK, 'left', 12, null));
+  }
+  const ty = CY0+2;
+  const critLab = (crit && !B.collapse) ? (B.breach>0 ? t('crit')+' · '+B.breach : t('critOv')) : null;
+  if (critLab){ box(CX0, ty, TW(critLab)+12, 16, '#1a1c2c', GOLD); T(critLab, CX0+6, ty+2, GOLD); }
+  const wy = critLab ? ty+20 : ty;
+  if (B.weather && !B.over){ const lab = t('weather')+C.news[B.weather.id][1]; box(CX0, wy, TW(lab)+24, 16, '#1a1c2c', '#41a6f6'); T(lab, CX0+4, wy+2, '#73eff7'); N(String(B.weather.left), CX0+TW(lab)+18, wy+5, '#73eff7', 1, 'right'); }
   if (B.collapseT>0){ const ls = wrap(t('collapse'), 220); box(CX0+6, CY0+70, 232, ls.length*16+12, '#1a1c2c', GOLD); ls.forEach((l,k)=>T(l, CX0+122, CY0+76+k*16, GOLD, 'center')); }
   if (B.halt>0){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
   if (B.hintT>0 && B.hint){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
   if (B.freeze>0) T(t('frozen')+' '+B.freeze.toFixed(1), CX0+122, CY0+80, '#73eff7', 'center');
 
-  // ===== 股吧 =====
-  box(0, 334, W, 18, '#141623', '#333c57');
-  if (B.chat){ const who = B.chatBy+': '; T(who, 6, 337, '#566c86'); T(B.chat, 6+TW(who), 337, '#94b0c2'); }
+  // ===== 叶子（K 线图左上角正上方）+ 庄家意图（右上角正上方）=====
+  moneyFx(f, e);
+  const mstr = fmt(Math.max(0, moneyShown));
+  const L = intentLayout();
+  const nx = leafNumX();
+  const maxW = Math.max(40, (L ? L.x0 : 284) - 8 - nx);
+  let msc = 4; while (msc>1 && 4*msc*mstr.length-msc > maxW) msc--;
+  const bumpY = moneyBump>.05 ? Math.round(moneyBump*4) : 0;
+  const jitX = moneyHurt>.05 ? Math.round(Math.sin(B.t*1.7)*2*moneyHurt) : 0;
+  const mcol = blinkD || moneyHurt>.05 ? DANGER : moneyBump>.05 ? GOLD : '#a7f070';
+  N(mstr, nx+jitX, LEAF_Y + Math.round((LEAF_H-5*msc)/2) - bumpY, mcol, msc);
+  T(t('money'), LEAF_X, LEAF_Y+3, '#94b0c2');
+  drawIntent(L);
+
+  // ===== 股吧（快讯出现时暂时顶替聊天，不压 K 线）=====
+  box(0, CHAT_Y, W, 18, '#141623', '#333c57');
+  if (B.newsT>0 && B.news && !B.over){
+    const tag = t('news'), pad = TW(tag)+16, maxW2 = W-pad-4;
+    let head = C.news[B.news.id][0];
+    box(0, CHAT_Y, W, 18, '#1a1c2c', GOLD);
+    box(2, CHAT_Y+2, TW(tag)+8, 14, '#b13e53', '#b13e53'); T(tag, 6, CHAT_Y+3, '#f4f4f4');
+    if (TW(head) > maxW2){ let s = head; while (s.length>1 && TW(s+'…')>maxW2) s = s.slice(0,-1); head = s+'…'; }
+    T(head, pad, CHAT_Y+3, '#f4f4f4');
+  } else if (B.chat){ const who = B.chatBy+': '; T(who, 6, CHAT_Y+3, '#566c86'); T(B.chat, 6+TW(who), CHAT_Y+3, '#94b0c2'); }
 
   // ===== 主角 =====
   const ur = B.sh!==0 ? (dispP()-B.entry)*Math.sign(B.sh)/B.entry : 0;
   let hv = ''; if (ur>.02) hv='H'; else if (ur<-.02 || B.warn>0) hv='S';
-  const hx = 10, hy = 352;
+  const hx = 10, hy = HERO_Y;
   drawHero(hx, hy + (B.sh!==0 && !B.harvested ? Math.round(Math.abs(Math.sin(B.t*.15))*-2) : 0), 3, hv);
   if (hv==='S' && !B.harvested && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(hx+38, hy+18, 2, 3); }
-  if (B.warn>0){ const cx=hx+24, cy=hy+26, rr2 = 22 + Math.round(B.warn*4); ctx.fillStyle=DANGER;
+  if (B.warn>0){ const cx=hx+24, cy=hy+22, rr2 = 18 + Math.round(B.warn*3); ctx.fillStyle=DANGER;
     for (const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ ctx.fillRect(cx+sx*rr2-(sx>0?6:0), cy+sy*rr2-(sy>0?2:0), 6, 2); ctx.fillRect(cx+sx*rr2-(sx>0?2:0), cy+sy*rr2-(sy>0?6:0), 2, 6); }
     N(String(Math.ceil(B.warn/0.8)), cx, hy-14, DANGER, 3, 'center'); }
   const px = 66;
-  if (B.sh===0) T(t('flat'), px, 358, '#94b0c2');
-  else { const long = B.sh>0; T(long?t('long'):t('short'), px, 358, long?UP:DN); const sx0 = px+TW(long?t('long'):t('short'))+6;
-    for (let k=0;k<3;k++){ ctx.fillStyle = k<B.stacks ? (B.posCrit?GOLD:(long?UP:DN)) : '#333c57'; ctx.fillRect(sx0+k*8, 361, 6, 8); }
-    if (R.skills.lev) T('×2', sx0+26, 358, GOLD); N(pct(ur*levK()), 278, 361, ur>=0?UP:DN, 2, 'right'); }
-  if (B.combo>1) T('×'+(1+.25*(B.combo-1)).toFixed(2), 240, 378, GOLD);
-  T(t('heat'), px, 378, '#94b0c2');
-  const hb = 100, hbx = px+TW(t('heat'))+6; box(hbx, 380, hb+4, 10, '#1a1c2c', '#333c57');
-  ctx.fillStyle = B.warn>0 ? DANGER : B.heat<.5?GOLD:B.heat<.8?'#ef7d57':DANGER; ctx.fillRect(hbx+2, 382, B.warn>0?hb:Math.round(hb*Math.min(1,B.heat)), 6);
+  if (B.sh===0) T(t('flat'), px, hy+6, '#94b0c2');
+  else { const long = B.sh>0; T(long?t('long'):t('short'), px, hy+6, long?UP:DN); const sx0 = px+TW(long?t('long'):t('short'))+6;
+    for (let k=0;k<3;k++){ ctx.fillStyle = k<B.stacks ? (B.posCrit?GOLD:(long?UP:DN)) : '#333c57'; ctx.fillRect(sx0+k*8, hy+9, 6, 8); }
+    if (R.skills.lev) T('×2', sx0+26, hy+6, GOLD);
+    // 持仓浮盈浮亏：大号金额 + 百分比，暴击仓加 ×2
+    const pnlNow = (dispP()-B.entry)*B.sh, pcol = pnlNow>=0?UP:DN;
+    const amt = (pnlNow>=0?'+':'')+fmt(pnlNow);
+    let asc = 2; while (asc>1 && 4*asc*amt.length-asc > 100) asc--;
+    N(amt, 282, hy, pcol, asc, 'right');
+    N(pct(ur*levK()), 282, hy+5*asc+3, pcol, 1, 'right');
+    if (B.posCrit) T('×2', 282, hy+19, GOLD, 'right'); }
+  if (B.combo>1) T('×'+(1+.25*(B.combo-1)).toFixed(2), 282, hy+34, GOLD, 'right');
+  T(t('heat'), px, hy+26, '#94b0c2');
+  const hb = 100, hbx = px+TW(t('heat'))+6; box(hbx, hy+28, hb+4, 10, '#1a1c2c', '#333c57');
+  ctx.fillStyle = B.warn>0 ? DANGER : B.heat<.5?GOLD:B.heat<.8?'#ef7d57':DANGER; ctx.fillRect(hbx+2, hy+30, B.warn>0?hb:Math.round(hb*Math.min(1,B.heat)), 6);
 
   // ===== 按钮 =====
   const live = !B.over && !B.paused && B.halt<=0;
   const critTag = crit ? ' ×2' : '';
   const longCol = shade(UP,-.35), shortCol = shade(DN,-.35);
-  if (crit && live){ ctx.fillStyle = Math.floor(B.t/6)%2 ? GOLD : shade(GOLD,-.3); ctx.fillRect(6, 402, 184, 42); }
-  if (btn(8, 404, 88, 38, t('long')+critTag, {col:longCol, key:'q', disabled:!live, tc:crit?GOLD:'#f4f4f4'})) trade(1);
-  if (btn(100, 404, 88, 38, R.short?t('short')+critTag:t('shortLock'), {col:R.short?shortCol:'#333c57', key:'w', disabled:!live, tc:crit&&R.short?GOLD:'#f4f4f4'})) trade(-1);
-  if (btn(192, 404, 88, 38, t('close'), {col:'#ef7d57', key:'e', disabled:!live || B.sh===0})) closePos(false);
-  // 第二排：技能 + 道具（只显示图标，名字写在下面）
+  if (crit && live){ ctx.fillStyle = Math.floor(B.t/6)%2 ? GOLD : shade(GOLD,-.3); ctx.fillRect(6, BTN_Y-2, 184, 38); }
+  if (btn(8, BTN_Y, 88, 34, t('long')+critTag, {col:longCol, key:'q', disabled:!live, tc:crit?GOLD:'#f4f4f4'})) trade(1);
+  if (btn(100, BTN_Y, 88, 34, R.short?t('short')+critTag:t('shortLock'), {col:R.short?shortCol:'#333c57', key:'w', disabled:!live, tc:crit&&R.short?GOLD:'#f4f4f4'})) trade(-1);
+  if (btn(192, BTN_Y, 88, 34, t('close'), {col:'#ef7d57', key:'e', disabled:!live || B.sh===0})) closePos(false);
+  // 第二排：技能 + 道具（图标 + 名字都压在同一个按钮里，省一行）
   const row = [
     {lab:t('order'), icon:'i_net', sub:R.skills.order?(B.orderCD>0?String(B.orderCD):''):'', dis:!live||!R.skills.order||B.orderCD>0, fn:placeOrder, key:'1', col:'#5a4a1a'},
     {lab:t('bluff'), icon:'i_phone', sub:R.skills.bluff?(B.bluffCD>0?String(B.bluffCD):''):'', dis:!live||!R.skills.bluff||B.bluffCD>0, fn:callBluff, key:'2', col:'#2a4a1a'},
@@ -1210,10 +1320,8 @@ const BattleScene = { frame(f, dt){
     {lab:t('cloak'), icon:'i_cloak', sub:'x'+R.items.cloak, dis:B.over||B.paused||R.items.cloak<=0, fn:()=>useItem('cloak'), key:'4', col:'#333c57'},
     {lab:t('report'), icon:'i_report', sub:'x'+R.items.report, dis:B.over||B.paused||R.items.report<=0, fn:()=>useItem('report'), key:'5', col:'#333c57'},
   ];
-  row.forEach((b,j)=>{ const x = 8+j*55; if (btn(x, 448, 52, 26, '', {col:b.col, key:b.key, disabled:b.dis, sub:b.sub})) b.fn();
-    spr(b.icon, x+18, 455, 2, {alpha:b.dis?.45:1}); T(b.lab, x+26, 477, b.dis?'#566c86':'#94b0c2', 'center'); });
-  let ix = 8; for (const k of Object.keys(R.skills)){ spr(SKILLS[k].icon, ix, 496, 1); ix += 11; }
-  N(`${B.step}/${B.len}`, 280, 498, '#566c86', 1, 'right');
+  row.forEach((b,j)=>{ const x = 8+j*55; if (btn(x, ITEM_Y, 52, 32, '', {col:b.col, key:b.key, disabled:b.dis, sub:b.sub})) b.fn();
+    spr(b.icon, x+18, ITEM_Y+1, 2, {alpha:b.dis?.45:1}); T(b.lab, x+26, ITEM_Y+18, b.dis?'#566c86':'#94b0c2', 'center', 10); });
 
   // ===== 暂停 =====
   if (B.paused && !B.over){
@@ -1227,22 +1335,22 @@ const BattleScene = { frame(f, dt){
   }
   // ===== 结算（图表上保留回放） =====
   if (B.over && B.harvT > (B.harvested?70:30)){
-    const res = B.result, py = 334;
+    const res = B.result, py = 354;
     ctx.fillStyle='#000c'; ctx.fillRect(0,py-2,W,H-py+2);
-    box(6, py, 276, 172, '#1a1c2c', res.pass?'#a7f070':DANGER, '#333c57');
+    box(6, py, 276, 154, '#1a1c2c', res.pass?'#a7f070':DANGER, '#333c57');
     const title = B.harvested ? t('rHarv') : res.kill ? t('rKill') : B.isBoss ? t('rFail') : t('rSurv');
-    bigText(title, W/2, py+6, 2, B.harvested||!res.pass?DANGER:res.kill?GOLD:'#f4f4f4');
-    T(t('rScript')+C.script[B.def.script], 16, py+40, GOLD);
-    const tr = B.intentLog.filter(x=>x.truth).length; T(t('rIntent'), 16, py+56, '#94b0c2'); T(`✓${tr}  ✗${B.intentLog.length-tr}`, 16+TW(t('rIntent')), py+56, '#f4f4f4');
-    T(t('rMoney'), 150, py+40, '#94b0c2'); N(fmt(R.cap), 278, py+43, R.cap>=B.startEq?'#a7f070':DANGER, 1, 'right');
-    T(t('rLine'), 150, py+56, '#94b0c2'); N(fmt(R.line), 278, py+59, DANGER, 1, 'right');
+    bigText(title, W/2, py+3, 2, B.harvested||!res.pass?DANGER:res.kill?GOLD:'#f4f4f4');
+    T(t('rScript')+C.script[B.def.script], 16, py+38, GOLD);
+    const tr = B.intentLog.filter(x=>x.truth).length; T(t('rIntent'), 16, py+52, '#94b0c2'); T(`✓${tr}  ✗${B.intentLog.length-tr}`, 16+TW(t('rIntent')), py+52, '#f4f4f4');
+    T(t('rMoney'), 150, py+38, '#94b0c2'); N(fmt(R.cap), 278, py+41, R.cap>=B.startEq?'#a7f070':DANGER, 1, 'right');
+    T(t('rLine'), 150, py+52, '#94b0c2'); N(fmt(R.line), 278, py+55, DANGER, 1, 'right');
     let msg;
     if (B.harvested) msg = (res.steal?fmtS(t('mHarvSteal'),{n:fmt(res.steal)}):'') + t('mHarv') + (R.roots>0?t('mRoot'):t('mNoRoot'));
     else if (!res.pass) msg = fmtS(t('mFail'),{n:fmt(res.steal)});
     else if (res.kill) msg = fmtS(t('mKill'),{n:fmt(res.loot)}) + (res.book?t('mBook'):'');
     else msg = res.steal ? fmtS(t('mSteal'),{n:fmt(res.steal)}) : t('mSurv');
-    wrap(msg, 256).slice(0,4).forEach((l,k)=>T(l, 16, py+76+k*16, res.pass?'#f4f4f4':'#ef7d57'));
-    if (btn(84, py+136, 120, 30, t('cont'), {col:'#b13e53', key:'enter'})) afterBattle();
+    wrap(msg, 256).slice(0,4).forEach((l,k)=>T(l, 16, py+68+k*15, res.pass?'#f4f4f4':'#ef7d57'));
+    if (btn(84, py+128, 120, 24, t('cont'), {col:'#b13e53', key:'enter'})) afterBattle();
   }
 }};
 
