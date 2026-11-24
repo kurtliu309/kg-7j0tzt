@@ -303,22 +303,50 @@ const fmtS = (s,o={}) => String(s).replace(/\{(\w+)\}/g,(m,k)=> o[k]!=null ? o[k
 //  机制（与语言无关）
 // =====================================================================
 function ph(kind,len,drift,vol,extra={}){ return Object.assign({kind,len,drift,vol},extra); }
-const SCRIPTS = {
-  pumpdump:()=>[ph('flat',R1(4,6),0,.012),ph('pump',R1(8,11),.022,.014),ph('top',R1(3,5),0,.02),ph('dump',R1(6,8),-.034,.018),ph('bleed',99,-.008,.012)],
-  shake:()=>[ph('flat',R1(4,6),0,.012),ph('shake',R1(5,7),-.028,.02),ph('bottom',R1(3,5),0,.01),ph('pump',R1(8,10),.024,.016),ph('top',3,0,.018),ph('dump',99,-.02,.016)],
-  fakebreak:()=>[ph('range',R1(10,13),0,.016,{revert:true}),ph('breakout',R1(3,4),.03,.012),ph('dump',99,-.026,.018)],
-  boil:()=>[ph('pump',R1(12,15),.009,.008),ph('top',R1(3,5),0,.009),ph('bleed',99,-.012,.009)],
-  dragon:()=>[ph('flat',R1(3,5),.006,.012),ph('pump',R1(6,8),.02,.014),ph('shake',3,-.028,.02),ph('pump',R1(7,9),.022,.015),ph('shake',3,-.025,.02),ph('pump',99,.018,.015)],
+// 走势不是写死的：按庄家性格，从一堆"行情段"里随机抽出来拼成一局。
+// 大部分是震荡、横盘、小涨小跌；大拉大砸（big）概率低，而且不会连着来。
+const REG = {
+  flat:  {kind:'flat',     d:[0,0],          v:[.006,.010], l:[3,6]},
+  chop:  {kind:'range',    d:[0,0],          v:[.013,.019], l:[3,7], revert:true},
+  up:    {kind:'pump',     d:[.004,.011],    v:[.010,.015], l:[3,6]},
+  down:  {kind:'bleed',    d:[-.011,-.004],  v:[.010,.015], l:[3,6]},
+  top:   {kind:'top',      d:[-.002,.002],   v:[.016,.020], l:[2,4]},
+  pump:  {kind:'pump',     d:[.016,.026],    v:[.013,.017], l:[3,5], big:1},
+  dump:  {kind:'dump',     d:[-.032,-.018],  v:[.015,.020], l:[2,4], big:1},
+  shake: {kind:'shake',    d:[-.030,-.020],  v:[.018,.022], l:[2,3], big:1},
+  brk:   {kind:'breakout', d:[.022,.032],    v:[.011,.014], l:[2,3], big:1},
 };
+const STYLE = {   // 每种庄家风格抽各类行情的权重
+  pumpdump: {flat:2,chop:3,up:3,down:2,top:1.5,pump:1,dump:1},
+  shake:    {flat:2,chop:3,up:2,down:2,shake:1.4,pump:.8,dump:.5},
+  fakebreak:{flat:2,chop:5,up:1.5,down:1.5,brk:1,dump:.8},
+  boil:     {flat:2,chop:2,up:3,down:3,top:1,pump:.4,dump:.4},
+  dragon:   {flat:1,chop:2,up:4,down:1,pump:1.2,shake:.8},
+};
+function genPhases(style, total){
+  const w = STYLE[style], keys = Object.keys(w), sumW = keys.reduce((a,x)=>a+w[x],0);
+  const out=[]; let sum=0, prev=null, bigCD=0;
+  while (sum < total+20){
+    let k, guard=0;
+    do { let r = Math.random()*sumW; for (k of keys){ r -= w[k]; if (r<=0) break; } } while ((k===prev || (REG[k].big && bigCD>0)) && guard++<20);
+    const g = REG[k], len = R1(g.l[0], g.l[1]);
+    out.push(ph(g.kind, len, lerp(g.d[0],g.d[1],Math.random()), lerp(g.v[0],g.v[1],Math.random()), g.revert?{revert:true}:{}));
+    sum += len; prev = k; bigCD = g.big ? 2 : bigCD-1;
+  }
+  out[out.length-1].len = 99; return out;
+}
+const SCRIPTS = Object.fromEntries(Object.keys(STYLE).map(s=>[s, ()=>genPhases(s, 45)]));
 const dirOf = k => ['pump','breakout'].includes(k) ? 1 : ['dump','shake','bleed'].includes(k) ? -1 : 0;
+const BIG = ['pump','dump','shake','breakout'];
 const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, fake:{len:5} };
+// fake = 撒谎概率，waffle = 每根线改主意的概率
 const BOSSES = [
-  {key:'qian',spr:'qian',script:'pumpdump',hp:8000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.18,react:{good:'dump'}},
-  {key:'granny',spr:'granny',script:'shake',hp:30000,len:40,volMul:1.05,heatMul:1,skills:['spin','fake'],fake:.32,react:{bad:'shake'}},
+  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.2,waffle:.2,react:{good:'dump'}},
+  {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,skills:['spin','fake'],fake:.3,waffle:.25,react:{bad:'shake'}},
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
 function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
-  hp:[2500,10000,30000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:.12,react:{}}; }
+  hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:.2,waffle:.15,react:{}}; }
 const NEWS = [
   {id:'cut',len:5,drift:.012,mood:'good'},{id:'reg',len:6,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:2.2},{id:'swan',len:1,gap:.13},
   {id:'earn',len:3,volMul:3},{id:'halt',len:1,halt:3},{id:'broke',len:4,bossHit:.3,drift:-.004},{id:'rumUp',len:3,rumor:1},{id:'rumDn',len:3,rumor:-1},
@@ -338,7 +366,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.1 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -391,8 +419,8 @@ const ZH = {
  intro:[['narr','在韭菜村，韭菜们一茬一茬地长，\n一茬一茬地被割。'],['narr','割韭菜的人住在村口的「交易塔」里。\n他们每人手里都有一支画笔。'],['narr','画出来的线，叫做K线。\n线往哪走，韭菜的命就往哪走。'],
    ['grandpa','小韭啊，爷爷要去塔里「抄底」了。\n这次一定能翻身，给你买新花盆。'],['narr','爷爷再也没有回来。\n只剩下一截被割平的根。'],['hero','……我要上塔。\n我要看看，那支笔到底是怎么画的。'],
    ['narr','叶子就是你的钱，也是你的命。\n掉到收割线以下，就会被割。']],
- bossPre:[[['qian','哟，新韭菜！来来来，\n看我这根大阳线，漂不漂亮？'],['qian','上车吧。我画的饼，从来不缺人吃。'],['hero','（他头上写着他要干嘛……\n可他会不会在骗我？）'],['narr','打空他的 8,000 筹码就赢。\n赚的叶子打他，亏的叶子给他回血。'],['narr','时间到了没打空，他会把剩下的筹码\n从你口袋里抽走。']],
-   [['granny','孩子，衣服脏了要洗，筹码脏了也要洗。'],['granny','婆婆一甩，你就会怕。你一怕，就会卖。'],['hero','（听说她比老钱更爱撒谎……）'],['narr','打空她的 30,000 筹码就赢。\n叶子掉到收割线以下，就会被割。']]],
+ bossPre:[[['qian','哟，新韭菜！来来来，\n看我这根大阳线，漂不漂亮？'],['qian','上车吧。我画的饼，从来不缺人吃。'],['hero','（他头上写着他要干嘛……\n可他会不会在骗我？）'],['narr','打空他的 12,000 筹码就赢。\n赚的叶子打他，亏的叶子给他回血。'],['narr','时间到了没打空，他会把剩下的筹码\n从你口袋里抽走。']],
+   [['granny','孩子，衣服脏了要洗，筹码脏了也要洗。'],['granny','婆婆一甩，你就会怕。你一怕，就会卖。'],['hero','（听说她比老钱更爱撒谎……）'],['narr','打空她的 24,000 筹码就赢。\n叶子掉到收割线以下，就会被割。']]],
  bossPost:[[['qian','你……居然没被我的饼噎着？'],['qian','行吧，这把「空头镰刀」给你。\n用它可以在下跌的时候赚钱。'],['qian','……反正我也是这么赚的。'],['narr','解锁【做空】！\n觉得要跌的时候，按做空。']],
    [['granny','好孩子，拿得住。\n这年头拿得住的韭菜不多了。'],['granny','楼上还有三个人……\n比我狠多了。']]],
  retry:['就这？再来。','筹码我收下了~','欢迎再来送叶子~'], retryHero:'（还没被割……再来！）',
@@ -413,7 +441,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.1 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -466,8 +494,8 @@ const EN = {
  intro:[['narr','In Woolly Meadow, lambs grow their wool…\nand every season, it gets sheared.'],['narr','The shearers live in the Exchange Tower.\nEach one holds a brush.'],['narr','The lines they paint are called candles.\nWhere the line goes, the flock follows.'],
    ['grandpa','Lamby, Grandpa\'s going up the Tower\nto buy the dip. This time we\'ll be rich!'],['narr','Grandpa never came back.\nAll that was left was a pile of wool.'],['hero','…I\'m going up the Tower.\nI want to see how that brush really works.'],
    ['narr','Your wool is your money. And your life.\nDrop below the shear line and you\'re fleeced.']],
- bossPre:[[['qian','Well, well, fresh wool!\nLook at this gorgeous candle.'],['qian','Hop on. My pies never run out of buyers.'],['hero','(He says what he\'ll do next…\nbut is he lying?)'],['narr','Bust his 8,000 chips to win.\nWool you make hits him. Wool you lose heals him.'],['narr','If time runs out, he takes what\'s left\nof his chips out of YOUR wool.']],
-   [['granny','Dirty laundry needs a wash, dearie.\nSo do dirty bags.'],['granny','Granny spins, you panic.\nYou panic, you sell.'],['hero','(They say she lies even more than Pete…)'],['narr','Bust her 30,000 chips.\nDrop below the shear line and you\'re fleeced.']]],
+ bossPre:[[['qian','Well, well, fresh wool!\nLook at this gorgeous candle.'],['qian','Hop on. My pies never run out of buyers.'],['hero','(He says what he\'ll do next…\nbut is he lying?)'],['narr','Bust his 12,000 chips to win.\nWool you make hits him. Wool you lose heals him.'],['narr','If time runs out, he takes what\'s left\nof his chips out of YOUR wool.']],
+   [['granny','Dirty laundry needs a wash, dearie.\nSo do dirty bags.'],['granny','Granny spins, you panic.\nYou panic, you sell.'],['hero','(They say she lies even more than Pete…)'],['narr','Bust her 24,000 chips.\nDrop below the shear line and you\'re fleeced.']]],
  bossPost:[[['qian','You… didn\'t choke on my pie?'],['qian','Fine. Take my Bear Shears.\nNow you can profit when it drops.'],['qian','…That\'s how I make my money anyway.'],['narr','SHORT unlocked!\nThink it\'ll drop? Hit Short.']],
    [['granny','Good lamb. Diamond hooves.\nRare these days.'],['granny','Three more upstairs…\nmuch meaner than me.']]],
  retry:['That\'s it? Again.','Thanks for the wool~','Come back anytime, sucker~'], retryHero:'(Not fleeced yet… again!)',
@@ -747,8 +775,8 @@ function newCandle(){
     else { drift = ov.d; vol = ov.d===0 ? .006 : .018; }
     B.mode = ov.type;
   } else {
-    const ph = phaseAt(B.sstep); B.ph = ph; kind = ph.kind; drift = ph.drift; vol = ph.vol;
-    if (ph.revert) drift += (B.base-o)/B.base*.3; B.mode = 'script';
+    const ph = phaseAt(B.sstep); if (ph !== B.ph) B.phBase = o; B.ph = ph; kind = ph.kind; drift = ph.drift; vol = ph.vol;
+    if (ph.revert) drift += (B.phBase-o)/B.phBase*.3; B.mode = 'script';
   }
   B.kindNow = kind;
   if (w && !['pie','flatspike','spin'].includes(B.mode)){ drift += (w.drift||0) + (w.rumorD||0); vol *= (w.volMul||1); }
@@ -757,19 +785,28 @@ function newCandle(){
   if (B.mode==='pie') B.target = o*(1+drift);
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
 
-  // ---- 庄家放技能 / 公开意图（有真有假）----
+  // ---- 庄家改主意：已经说出口的意图，还会变来变去 ----
+  if (B.intent && B.intent.pending && !B.collapse && !B.intent.claim.startsWith('skill:') && B.intent.at - B.step >= 1 && Math.random() < (d.waffle||0)){
+    const it = B.intent; it.claim = it.claim==='vague' ? flipKind(it.actual) : flipKind(it.claim);
+    it.truth = dirOf(it.claim) === dirOf(it.actual);
+    B.bubble = t('waffle'); B.bubbleT = 110; sfx('tell');
+  }
+  // ---- 庄家放技能 / 公开意图（有真有假，提前量不固定，有时含糊，有时干脆不说）----
   const busy = B.ov || B.windup || (B.intent && B.intent.pending) || B.collapse;
   if (!busy){
     B.skillCD--;
     if (B.skillCD<=0 && !(w&&w.noSkill) && B.step>3 && B.step < B.len-6){
       const ty = pick(d.skills); B.windup = {type:ty}; B.skillCD = R1(8,11);
       const lie = Math.random() < d.fake;
-      B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, pending:true};
+      B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true};
     } else {
-      const a = phaseAt(B.sstep+1), b = phaseAt(B.sstep+2);
-      if (b!==a && B.step+2 < B.len){
-        const lie = Math.random() < d.fake;
-        B.intent = {at:B.step+2, claim: lie ? flipKind(b.kind) : b.kind, truth:!lie, pending:true};
+      let k0 = 0; for (let k=1;k<=3;k++){ if (phaseAt(B.sstep+k) !== phaseAt(B.sstep+k-1)){ k0 = k; break; } }
+      if (k0 && B.step+k0 < B.len && Math.random() < .55){
+        const actual = phaseAt(B.sstep+k0).kind, r = Math.random(); let claim;
+        if (r < .15 && BIG.includes(actual)) claim = 'vague';
+        else if (r < .15 + d.fake) claim = flipKind(actual);
+        else claim = actual;
+        B.intent = {at:B.step+k0, claim, truth: claim==='vague' || dirOf(claim)===dirOf(actual), actual, pending:true};
       }
     }
   }
@@ -982,6 +1019,7 @@ function afterBattle(){
 }
 function claimLabel(claim){
   if (claim.startsWith('skill:')) return {txt:'⚡'+C.bskill[claim.slice(6)].name, col:DANGER};
+  if (claim==='vague') return {txt:'↕'+t('vague'), col:GOLD};
   const d = dirOf(claim); return {txt:(d>0?'↑':d<0?'↓':'—')+C.kind[claim], col:d>0?UP:d<0?DN:'#94b0c2'};
 }
 function drawHero(hx, hy, sc, variant){
@@ -1043,7 +1081,7 @@ const BattleScene = { frame(f, dt){
       box(bx0, 38, 284-bx0, 16, '#1a1c2c', it?lab.col:'#333c57');
       T(head, bx0+4, 40, '#94b0c2'); T(lab.txt, bx0+8+TW(head), 40, it?lab.col:shade(lab.col,-.3));
       if (it) N(String(Math.max(0,it.at-B.step)), 280, 43, '#f4f4f4', 1, 'right');
-      if (said && R.skills.lie){ const tag = said.truth ? t('trueT') : t('lieT'); box(bx0-TW(tag)-10, 38, TW(tag)+8, 16, it.truth?'#257179':DANGER, INK); T(tag, bx0-TW(tag)-6, 40, '#f4f4f4'); }
+      if (said && R.skills.lie){ const tag = said.truth ? t('trueT') : t('lieT'); box(bx0-TW(tag)-10, 38, TW(tag)+8, 16, said.truth?'#257179':DANGER, INK); T(tag, bx0-TW(tag)-6, 40, '#f4f4f4'); }
     }
   }
   if (B.bubbleT>0 && B.bubble){
