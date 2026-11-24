@@ -341,12 +341,12 @@ const BIG = ['pump','dump','shake','breakout'];
 const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, fake:{len:5} };
 // fake = 撒谎概率，waffle = 每根线改主意的概率
 const BOSSES = [
-  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.2,waffle:.2,react:{good:'dump'}},
+  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.1,waffle:.2,react:{good:'dump'}},
   {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,skills:['spin','fake'],fake:.3,waffle:.25,react:{bad:'shake'}},
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
 function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
-  hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:.2,waffle:.15,react:{}}; }
+  hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:R.floor===0?.1:.2,waffle:.15,react:{}}; }
 const NEWS = [
   {id:'cut',len:5,drift:.012,mood:'good'},{id:'reg',len:6,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:2.2},{id:'swan',len:1,gap:.13},
   {id:'earn',len:3,volMul:3},{id:'halt',len:1,halt:3},{id:'broke',len:4,bossHit:.3,drift:-.004},{id:'rumUp',len:3,rumor:1},{id:'rumDn',len:3,rumor:-1},
@@ -366,7 +366,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.1 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.2 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -414,8 +414,8 @@ const ZH = {
   book:['复利存折','每赢一场，叶子 +5%。'],lie:['测谎仪','看出庄家公开的意图是真话还是谎话。'],bluff:['逼宫','主动：逼庄家兑现他公开的意图。如果他在撒谎，直接打开暴击窗口！冷却 8 根。']},
  item:{hourglass:['冻结沙漏','时间暂停 3 秒，慢慢想'],cloak:['隐身斗篷','清空关注度，取消庄家的狙击'],report:['举报信','打断庄家正在放的离谱技能']},
  rootName:['韭菜根','被割时自动用掉，重新发芽'],
- help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','','【关注与暴击】','仓位越重，庄家越注意你。满了会狙击你，','倒数结束前平仓就能躲开。','躲开或让他扑空 = 暴击窗口：','这时开的仓，赚的钱 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。'],
- hints:{0:'庄家正在画这根K线，看它乱跳！',2:'觉得要涨？点【做多】上车，多点几次加仓。',6:'赚到了点【平仓】，叶子才算到手。',10:'庄家头上是他的意图——可能是假的。',14:'关注度满了会被狙击：倒数结束前平仓就能躲开。'},
+ help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','','【关注与暴击】','仓位越重，庄家越注意你。满了会锁定你，','倒数结束一定会扎一根大针；','结束前平仓就不挨打，插针后还会回弹。','反手接针、针尖开仓 = 暴击窗口，赚 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。'],
+ hints:{0:'庄家正在画这根K线，看它乱跳！',2:'觉得要涨？点【做多】上车，多点几次加仓。',6:'赚到了点【平仓】，叶子才算到手。',10:'庄家头上是他的意图——可能是假的。',14:'关注度满了会被锁定：数完一定扎大针；结束前平仓就不挨打，针尖反手开仓赚 ×2。'},
  intro:[['narr','在韭菜村，韭菜们一茬一茬地长，\n一茬一茬地被割。'],['narr','割韭菜的人住在村口的「交易塔」里。\n他们每人手里都有一支画笔。'],['narr','画出来的线，叫做K线。\n线往哪走，韭菜的命就往哪走。'],
    ['grandpa','小韭啊，爷爷要去塔里「抄底」了。\n这次一定能翻身，给你买新花盆。'],['narr','爷爷再也没有回来。\n只剩下一截被割平的根。'],['hero','……我要上塔。\n我要看看，那支笔到底是怎么画的。'],
    ['narr','叶子就是你的钱，也是你的命。\n掉到收割线以下，就会被割。']],
@@ -441,7 +441,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.1 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.2 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -489,8 +489,8 @@ const EN = {
   book:['Compound Book','Every win: wool +5%.'],lie:['Lie Detector','See whether the shearer\'s intent is the truth or a lie.'],bluff:['Call the Bluff','Active: force the shearer to follow through on his intent. If he was lying: instant CRIT window! Cooldown 8.']},
  item:{hourglass:['Freeze Hourglass','Pause time for 3 seconds'],cloak:['Invisibility Cloak','Clear heat and cancel the snipe'],report:['Report Letter','Interrupt the shearer\'s crazy skill']},
  rootName:['Golden Fleece','Auto-used when fleeced. Regrow and keep going.'],
- help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','','[Heat & Crit]','Big positions draw his attention.','Full heat = snipe. Close before 0 to dodge.','Dodge, or make him miss = CRIT window:','positions opened then earn ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.'],
- hints:{0:'The shearer is painting this candle. Watch it jump!',2:'Think it goes up? Tap LONG. Tap again to add.',6:'Tap CLOSE to bank your profit.',10:'Above his head: his intent. It might be a lie.',14:'Full heat = snipe. Close before the countdown ends.'},
+ help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','','[Heat & Crit]','Big positions draw his attention.','Full heat: he locks on. The countdown ends','in one huge wick. Close first to dodge;','counter the wick = CRIT window: wool ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.'],
+ hints:{0:'The shearer is painting this candle. Watch it jump!',2:'Think it goes up? Tap LONG. Tap again to add.',6:'Tap CLOSE to bank your profit.',10:'Above his head: his intent. It might be a lie.',14:'Full heat: he locks on. The countdown ends in a big wick; close first to dodge, reverse at the wick for ×2.'},
  intro:[['narr','In Woolly Meadow, lambs grow their wool…\nand every season, it gets sheared.'],['narr','The shearers live in the Exchange Tower.\nEach one holds a brush.'],['narr','The lines they paint are called candles.\nWhere the line goes, the flock follows.'],
    ['grandpa','Lamby, Grandpa\'s going up the Tower\nto buy the dip. This time we\'ll be rich!'],['narr','Grandpa never came back.\nAll that was left was a pile of wool.'],['hero','…I\'m going up the Tower.\nI want to see how that brush really works.'],
    ['narr','Your wool is your money. And your life.\nDrop below the shear line and you\'re fleeced.']],
@@ -729,7 +729,7 @@ function startBattle(def, isBoss){
   B = { def, isBoss, phases: SCRIPTS[def.script](), sstep:0, len:def.len, ticks:10, tickMs: R.tutorial?220:170, acc:0, tick:0, step:0,
         bars:[], cur:null, target:0, vol:.012, ph:null, mode:'script', kindNow:'flat', log:[],
         cash:eq, sh:0, entry:0, startEq:eq, stacks:0, marks:[], hpMax:def.hp, breach:0, posCrit:false,
-        heat:0, warn:0, heatMul:def.heatMul,
+        heat:0, warn:0, warnDir:0, dodged:false, heatMul:def.heatMul,
         ov:null, windup:null, skillCD:R1(6,9), pendingDrift:0, gapNext:0,
         intent:null, intentLog:[], claimNow:null, forced:null, bluffCD:0,
         collapse:false, killed:false, collapseCash:0, collapseT:0,
@@ -826,7 +826,7 @@ function endOv(){
 }
 function startCollapse(){
   B.collapse = true; B.killed = true; B.collapseCash = eqv(); B.collapseT = 200;
-  B.windup = null; B.forced = null; B.warn = 0; B.heat = 0; B.intent = null;
+  B.windup = null; B.forced = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.heat = 0; B.intent = null;
   if (B.ov && B.ov.type==='fake') endOv(); B.ov = null;
   B.bubble = lines(B.def).panic; B.bubbleT = 300; B.bossSwap = ANGRY;
   sfx('win'); shake = 10; flashA = .5; flashC = GOLD; burst(240,70,50,['#ffcd75','#a7f070','#f4f4f4'],3.5);
@@ -856,7 +856,7 @@ function battleTick(){
   const e = eqv(), expo = Math.abs(B.sh*p)/Math.max(1,e);
   const frozen = (B.weather && B.weather.heatFreeze) || B.collapse;
   if (B.sh!==0 && !frozen) B.heat += expo*.0085*B.heatMul*(R.skills.glove?.5:1)*(R.skills.bait?2:1); else B.heat = Math.max(0, B.heat-.01);
-  if (B.heat>=1 && B.warn<=0){ B.warn = 2.4; B.heat = .25; B.bubble = lines(B.def).lock; B.bubbleT = 160; sfx('lock'); flashA=.3; flashC=DANGER; }
+  if (B.heat>=1 && B.warn<=0){ B.warn = 2.4; B.warnDir = Math.sign(B.sh); B.dodged = false; B.heat = .25; B.bubble = lines(B.def).lock; B.bubbleT = 160; sfx('lock'); flashA=.3; flashC=DANGER; }
   if (!B.collapse && eqv() - B.startEq >= B.hpMax) startCollapse();
   if (eqv() < R.line){ harvest(); if (B.over) return; }
   if (B.tick>=N) endCandle();
@@ -914,7 +914,7 @@ function closePos(silent){
   const pnl = (B.price-B.entry)*B.sh, fee = Math.abs(B.sh*B.price)*.001, ratio = pnl/(Math.abs(B.sh)*B.entry);
   const crit = B.posCrit || critNow();
   B.cash += B.sh*B.price - fee; B.sh=0; B.stacks=0; B.tpOrder=null; B.posCrit=false; B.marks.push({i:B.bars.length, side:'C', p:B.price});
-  if (B.warn>0){ B.warn=0; B.breach=3; B.bubble=lines(B.def).dodge; B.bubbleT=140; floatText(t('tDodge'), 80, 340, '#73eff7'); sfx('dodge'); if (R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 324, DANGER); } }
+  if (B.warn>0 && !B.dodged){ B.dodged=true; B.bubble=lines(B.def).dodge; B.bubbleT=140; floatText(t('tDodge'), 80, 340, '#73eff7'); sfx('dodge'); if (R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 324, DANGER); } }
   let total = pnl, mult = 1;
   if (pnl>0){
     if (crit) mult += 1;
@@ -937,17 +937,28 @@ function closePos(silent){
   return pnl;
 }
 function strike(){
-  const L_ = lines(B.def);
-  if (B.sh===0){ B.breach = 3; B.bubble = L_.miss; B.bubbleT=140; floatText(t('tMiss'), 70, 330, '#73eff7'); sfx('dodge'); if (R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 314, DANGER); } return; }
-  const dir = Math.sign(B.sh), sp = B.price*(1 - dir*.1);
+  const L_ = lines(B.def); B.warn = 0;
+  const dir = B.warnDir || Math.sign(B.sh) || 1;              // 锁定那一刻记下的方向
+  const hit = B.sh!==0 && Math.sign(B.sh)===dir;              // 还拿着同一方向的仓才会挨扎
+  const pre = B.price, sp = pre*(1 - dir*.1);                 // 针一定扎：往 -warnDir 方向扎 10%
   B.price = sp; B.cur.c = sp; B.cur.h = Math.max(B.cur.h,sp); B.cur.l = Math.min(B.cur.l,sp); B.cur.v += 3;
+  B.target = sp + (pre-sp)*.7;                                // 针扎下去后回撤 70%，留下长影线
   shake = 12; flashA = .45; flashC = DANGER; sfx('harvest');
-  if (R.skills.counter){ floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,370,24,[DANGER,'#f4f4f4']); }
-  else {
-    const q = B.sh/B.stacks; B.cash += q*sp - Math.abs(q*sp)*.001; B.sh -= q; B.stacks--; if (B.stacks<=0){ B.sh=0; B.stacks=0; }
-    B.marks.push({i:B.bars.length, side:'C', p:sp}); B.combo = 0;
-    floatText(t('tStrike'), 120, 330, DANGER); B.bubble = L_.hit; B.bubbleT = 140; burst(34,370,30,['#38b764','#a7f070']);
+  if (hit){
+    if (R.skills.counter){ floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,370,24,[DANGER,'#f4f4f4']); }
+    else {
+      const q = B.sh/B.stacks; B.cash += q*sp - Math.abs(q*sp)*.001; B.sh -= q; B.stacks--; if (B.stacks<=0){ B.sh=0; B.stacks=0; }
+      B.marks.push({i:B.bars.length, side:'C', p:sp}); B.combo = 0;
+      floatText(t('tStrike'), 120, 330, DANGER); B.bubble = L_.hit; B.bubbleT = 140; burst(34,370,30,['#38b764','#a7f070']);
+    }
+  } else {
+    const missed = B.sh===0 && !B.dodged;                     // 空仓又没躲过：扑空
+    B.breach = 3;
+    B.bubble = missed ? L_.miss : L_.dodge; B.bubbleT = 140;
+    floatText(t(missed?'tMiss':'tDodge'), 70, 330, '#73eff7'); sfx('dodge');
+    if (!B.dodged && R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 314, DANGER); }
   }
+  B.dodged = false; B.warnDir = 0;
   if (eqv() < R.line) harvest();
 }
 function useItem(k){
