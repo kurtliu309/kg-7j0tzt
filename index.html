@@ -33,6 +33,8 @@ function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul
 function shade(h,k){ const n=parseInt(h.slice(1),16); const f=v=>Math.max(0,Math.min(255,Math.round(k<0?v*(1+k):v+(255-v)*k))); return '#'+((1<<24)|(f(n>>16)<<16)|(f(n>>8&255)<<8)|f(n&255)).toString(16).slice(1); }
 const fmt = n => Math.round(n).toLocaleString('en-US');
 const pct = r => (r>=0?'+':'') + (r*100).toFixed(1) + '%';
+// 紧凑百分比：10% 以内留一位小数，以上取整（刻度、K 线标签用）
+const pctS = r => { const v = r*100, a = Math.abs(v); return (v>=0?'+':'-') + (a<10 ? a.toFixed(1) : Math.round(a)) + '%'; };
 
 // ---------- 调色板（Sweetie 16 + 少量补色） ----------
 const P = { k:'#1a1c2c', p:'#5d275d', r:'#b13e53', o:'#ef7d57', y:'#ffcd75', l:'#a7f070', g:'#38b764', G:'#257179',
@@ -366,7 +368,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.3 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -441,7 +443,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.3 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -740,8 +742,8 @@ function startBattle(def, isBoss){
         orders:null, orderCD:0, tpOrder:null, combo:0, insured:false,
         bubble:pick(lines(def).idle), bubbleT:200, chat:'', chatBy:'',
         freeze:0, speed:1, paused:false, over:false, result:null, harvested:false, harvT:0, trades:0, hint:null, hintT:0,
-        vhi:0, vlo:0, base:0, bossSwap:def.swap||null, bossSpr:def.spr, t:0, newsT:0, news:null };
-  parts=[]; floats=[]; toastT=0; moneyReady = false; moneyBump = 0; moneyHurt = 0;
+        vhi:0, vlo:0, lvhi:null, lvlo:null, base:0, bossSwap:def.swap||null, bossSpr:def.spr, t:0, newsT:0, news:null };
+  parts=[]; floats=[]; toastT=0; moneyReady = false; moneyBump = 0; moneyHurt = 0; coins = []; stamp = null;
   let p = 10 + Math.random()*30;
   for (let i=0;i<HIST;i++){ const o=p, c=o*(1+(Math.random()-.5)*.02); B.bars.push({o,h:Math.max(o,c)*(1+Math.random()*.008),l:Math.min(o,c)*(1-Math.random()*.008),c,v:.8+Math.random()*.4}); p=c; }
   B.base = p; B.price = p; B.vhi = p*1.06; B.vlo = p*.94;
@@ -760,8 +762,43 @@ function moneyFx(f, target){
   const thr = Math.max(2, Math.abs(target)*.0015);
   if (d > thr){ moneyBump = 1; moneyHurt = 0; }
   else if (d < -thr){ moneyHurt = 1; moneyBump = 0; }
-  moneyShown += (target-moneyShown)*Math.min(1, f*.16);
+  // 涨的时候滚慢一点（约 0.8 秒），让人看着数字往上数；跌的时候快
+  const up = target > moneyShown;
+  const before = moneyShown;
+  moneyShown += (target-moneyShown)*Math.min(1, f*(up ? .06 : .16));
+  if (up && Math.abs(target-moneyShown) > thr){ moneyTick += f; if (moneyTick > 3){ moneyTick = 0; try{ tone(1500+Math.random()*300,.02,'square',.012); }catch(e){} } }
+  if (up && moneyShown - before > 0) moneyBump = Math.max(moneyBump, .6);
   moneyBump = Math.max(0, moneyBump - f/16); moneyHurt = Math.max(0, moneyHurt - f/16);
+}
+// 叶子显示的是"落袋"的钱：现金 + 持仓按成本价算。浮盈浮亏单独显示在主角旁边，平仓时飞进来。
+const banked = () => B.cash + B.sh*B.entry;
+let moneyTick = 0, coins = [], stamp = null, moneyAt = {x:60, y:98};
+function spawnCoins(total, eq0){
+  const n = Math.round(clamp(total/Math.max(1,eq0)*240, 6, 36));
+  for (let i=0;i<n;i++) coins.push({x0:244+Math.random()*30, y0:HERO_Y+4+Math.random()*8, t:-i*1.6, arc:20+Math.random()*30});
+}
+function drawCoins(f){
+  for (const c of coins){ c.t += f;
+    if (c.t < 0) continue;
+    const k = Math.min(1, c.t/28), e = k*k*(3-2*k);
+    const x = lerp(c.x0, moneyAt.x, e), y = lerp(c.y0, moneyAt.y, e) - Math.sin(k*Math.PI)*c.arc;
+    ctx.fillStyle = INK; ctx.fillRect(Math.round(x)-1, Math.round(y)-1, 4, 4);
+    ctx.fillStyle = GOLD; ctx.fillRect(Math.round(x)-1, Math.round(y)-1, 3, 3); ctx.fillStyle='#f4f4f4'; ctx.fillRect(Math.round(x)-1, Math.round(y)-1, 1, 1);
+    if (k>=1 && !c.done){ c.done = true; moneyBump = 1; burst(moneyAt.x+(Math.random()-.5)*20, moneyAt.y, 2, [GOLD,'#f4f4f4'], 1.5, .05, 20); try{ tone(1800+Math.random()*400,.03,'square',.02); }catch(e){} }
+  }
+  coins = coins.filter(c=>!c.done);
+}
+// 大赚 / 大亏印章：K 线图正中弹一下
+function drawStamp(f){
+  if (!stamp) return; stamp.t += f; if (stamp.t > 80){ stamp = null; return; }
+  const a = stamp.t < 60 ? 1 : 1-(stamp.t-60)/20, cx = CX0+122, cy = CY0+64;
+  const sc = stamp.t < 4 ? stamp.sc+2 : stamp.t < 8 ? stamp.sc+1 : stamp.sc;
+  ctx.globalAlpha = a;
+  const w1 = 4*sc*stamp.big.length, h = 5*sc + 26;
+  box(cx-w1/2-10, cy-6, w1+20, h+4, '#1a1c2c', stamp.col);
+  N(stamp.big, cx, cy, stamp.col, sc, 'center');
+  T(stamp.sub, cx, cy+5*sc+5, stamp.col, 'center');
+  ctx.globalAlpha = 1;
 }
 const levK = () => R.skills.lev ? 2 : 1;
 const critNow = () => B.collapse || !!B.ov || B.breach>0;
@@ -940,7 +977,7 @@ function leafMaxW(){
 }
 // 平仓盈亏飘字：贴在叶子数字旁边
 function moneyFloat(s, col){
-  const str = fmt(Math.max(0, eqDisp()));
+  const str = fmt(Math.max(0, moneyShown));
   const nx = leafNumX();
   let sc = 4; while (sc>1 && 4*sc*str.length-sc > leafMaxW()) sc--;
   const nw = 4*sc*str.length - sc, tw = TW(s);
@@ -951,7 +988,7 @@ function moneyFloat(s, col){
 function closePos(silent){
   if (B.sh===0) return 0;
   const pnl = (B.price-B.entry)*B.sh, fee = Math.abs(B.sh*B.price)*.001, ratio = pnl/(Math.abs(B.sh)*B.entry);
-  const crit = B.posCrit || critNow();
+  const crit = B.posCrit || critNow(), eq0 = Math.max(1, eqv() - pnl);
   B.cash += B.sh*B.price - fee; B.sh=0; B.stacks=0; B.tpOrder=null; B.posCrit=false; B.marks.push({i:B.bars.length, side:'C', p:B.price});
   if (B.warn>0 && !B.dodged){ B.dodged=true; B.bubble=lines(B.def).dodge; B.bubbleT=140; floatText(t('tDodge'), 80, 340, '#73eff7'); sfx('dodge'); if (R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 324, DANGER); } }
   let total = pnl, mult = 1;
@@ -963,10 +1000,17 @@ function closePos(silent){
   if (Math.abs(total) >= 1){
     if (total>0){
       const m = +mult.toFixed(2);
-      if (m>1) floatText(`${fmt(pnl)} ×${m} = ${fmt(total)}`, 144, 300, GOLD);
+      if (m>1 && total/eq0 < .03) floatText(`${fmt(pnl)} ×${m} = ${fmt(total)}`, 144, 300, GOLD);   // 大单有印章，不再重复飘算式
       floatText(`-${fmt(total)}`, 214, 148, m>1?GOLD:DANGER);
       moneyFloat('+'+fmt(total), GOLD);
+      spawnCoins(total, eq0);
     } else { floatText(`+${fmt(-total)} ${t('heal')}`, 214, 148, '#3ec95b'); moneyFloat('-'+fmt(-total), DANGER); }
+    // 印章：这一笔占本金 ≥3% 就在图中间盖一个大数字；越大越震
+    const r = total/eq0, m = +mult.toFixed(2);
+    if (r >= .03){
+      stamp = {t:0, big:'+'+fmt(total), sub:pct(r)+(m>1?'  ×'+m:''), col:GOLD, sc: r>=.15?5:4};
+      if (r >= .10){ shake = Math.max(shake, 9); flashA = Math.max(flashA,.35); flashC = GOLD; burst(CX0+122, CY0+80, 40, [GOLD,'#f4f4f4','#ef7d57'], 3.5); }
+    } else if (r <= -.05) stamp = {t:0, big:'-'+fmt(-total), sub:pct(r), col:DANGER, sc:3};
   }
   if (!silent){
     if (mult>1 && ratio>.005){ sfx('coin'); shake=Math.max(shake,5); burst(230,80,30,['#ffcd75','#f4f4f4',DANGER],3); toast(crit?t('tCritHit'):pick(C.take)); }
@@ -1185,15 +1229,23 @@ const BattleScene = { frame(f, dt){
   if (showCur) all.push(B.ov && B.ov.type==='fake' ? B.fcur : B.cur);
   const maxSlots = Math.floor((CX1-CX0-6)/SW); const start = Math.max(0, all.length - maxSlots);
   const vis = all.slice(start);
-  let hi = Math.max(...vis.map(b=>b.h)), lo = Math.min(...vis.map(b=>b.l));
-  const mg = (hi-lo)*.12 + hi*.004;
-  B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
+  // 缩放：对数坐标（同样的涨跌幅 = 同样的高度）；只按最近 FOCUS 根定范围，
+  // 画大饼这种超长 K 线滚出这段后，窗口会慢慢缩回来，小涨跌重新看得清；更早的超长线裁到边上画小箭头
+  const FOCUS = 10, foc = vis.slice(-FOCUS);
+  let lhi = Math.log(Math.max(...foc.map(b=>b.h))), llo = Math.log(Math.min(...foc.map(b=>b.l)));
+  const minSpan = Math.log(1.06); if (lhi-llo < minSpan){ const mid=(lhi+llo)/2; lhi=mid+minSpan/2; llo=mid-minSpan/2; }
+  const mg = (lhi-llo)*.12, thi = lhi+mg, tlo = llo-mg;
+  if (B.lvhi==null){ B.lvhi = thi; B.lvlo = tlo; }
+  const zk = Math.min(1, .06*f);
+  B.lvhi = thi > B.lvhi ? thi : lerp(B.lvhi, thi, zk); B.lvlo = tlo < B.lvlo ? tlo : lerp(B.lvlo, tlo, zk);
   const volTop = CY1-34, chH = volTop-CY0-10;
-  const Y = p => Math.round(CY0+4 + (B.vhi-p)/(B.vhi-B.vlo)*chH);
+  const Yr = p => CY0+4 + (B.lvhi-Math.log(p))/(B.lvhi-B.lvlo)*chH;
+  const Y = p => Math.round(clamp(Yr(p), CY0-2, volTop+6));
   const X = i => CX0+2 + (i-start)*SW;
   X_cur = () => X(all.length-1)+2;
   ctx.save(); ctx.beginPath(); ctx.rect(CX0-3, CY0-3, CX1-CX0+36, CY1-CY0+6); ctx.clip();
-  for (let k=0;k<=4;k++){ const p = B.vlo+(B.vhi-B.vlo)*k/4, yy=Y(p); ctx.fillStyle='#1d2234'; for (let x=CX0;x<CX1;x+=4) ctx.fillRect(x,yy,2,1); N(p.toFixed(2), CX1+31, yy-2, '#566c86', 1, 'right', false); }
+  // 刻度：相对开局价格的涨跌幅（%），赚多少一眼能对上
+  for (let k=0;k<=4;k++){ const p = Math.exp(B.lvlo+(B.lvhi-B.lvlo)*k/4), yy=Y(p); ctx.fillStyle='#1d2234'; for (let x=CX0;x<CX1;x+=4) ctx.fillRect(x,yy,2,1); T(pctS(p/B.base-1), CX1+32, yy-5, '#566c86', 'right', 10, null); }
   if (HIST>=start){ ctx.fillStyle='#333c57'; const xx=X(HIST)-1; for (let y=CY0;y<CY1-14;y+=4) ctx.fillRect(xx,y,1,2); }
   if (B.over){
     const log = B.log; let s=0;
@@ -1210,7 +1262,16 @@ const BattleScene = { frame(f, dt){
     ctx.fillStyle = col; ctx.fillRect(x+1, Y(b.h), 1, Math.max(1,Y(b.l)-Y(b.h)+1));
     const top = Y(Math.max(b.o,b.c)), bot = Y(Math.min(b.o,b.c)); ctx.fillRect(x, top, SW-1, Math.max(1, bot-top+1));
     if (isCur && blink){ ctx.fillStyle='#f4f4f4'; ctx.fillRect(x, top, SW-1, 1); }
-    const vh = Math.round(clamp((b.v||0)/vmax,0,1)*20); ctx.fillStyle = col; ctx.globalAlpha=.45; ctx.fillRect(x, CY1-14-vh, SW-1, vh); ctx.globalAlpha=1; });
+    const vh = Math.round(clamp((b.v||0)/vmax,0,1)*20); ctx.fillStyle = col; ctx.globalAlpha=.45; ctx.fillRect(x, CY1-14-vh, SW-1, vh); ctx.globalAlpha=1;
+    // 超出窗口的超长 K 线：边上画小箭头
+    ctx.fillStyle = col;
+    if (Yr(b.h) < CY0-2){ ctx.fillRect(x+1, CY0-2, 1, 1); ctx.fillRect(x, CY0-1, 3, 1); }
+    if (Yr(b.l) > volTop+6){ ctx.fillRect(x, volTop+5, 3, 1); ctx.fillRect(x+1, volTop+6, 1, 1); } });
+  // 大 K 线标涨跌幅：单根 ≥5% 就在影线外写上 +32%，画大饼到底涨了多少一眼看见
+  vis.forEach((b,j)=>{ const ch = b.c/b.o-1; if (Math.abs(ch) < .05) return;
+    const x = X(start+j)+2, s = pctS(ch), w = TW(s,10), col = ch>0?UP:DN;
+    let yy = ch>0 ? Y(b.h)-12 : Y(b.l)+2; yy = clamp(yy, CY0+1, volTop-8);
+    T(s, clamp(x, CX0+w/2+1, CX1+30-w/2), yy, col, 'center', 10); });
   for (const m of B.marks){ if (m.i<start) continue; const x=X(m.i)+2, y=Y(m.p);
     if (m.side==='B'){ ctx.fillStyle=GOLD; ctx.fillRect(x,y+3,1,1); ctx.fillRect(x-1,y+4,3,1); ctx.fillRect(x-2,y+5,5,1); }
     else if (m.side==='S'){ ctx.fillStyle='#73eff7'; ctx.fillRect(x,y-4,1,1); ctx.fillRect(x-1,y-5,3,1); ctx.fillRect(x-2,y-6,5,1); }
@@ -1234,7 +1295,7 @@ const BattleScene = { frame(f, dt){
     ctx.fillStyle=INK; ctx.fillRect(tipX-3,tipY-10,6,7); ctx.fillStyle='#f4f4f4'; ctx.fillRect(tipX-2,tipY-9,4,2); ctx.fillStyle=inkCol; ctx.fillRect(tipX-2,tipY-7,4,3); ctx.fillRect(tipX-1,tipY-4,2,2);
     if (!B.over && Math.random()<.08) parts.push({x:tipX,y:tipY,vx:0,vy:.2,life:30,col:inkCol,g:.05,sz:1});
   }
-  if (!B.over){ const pp=dispP(), yy=Y(pp), cc=(B.ov&&B.ov.type==='fake')?B.fcur:B.cur; box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); N(pp.toFixed(2), CX1+17, yy-2, '#f4f4f4', 1, 'center', false); }
+  if (!B.over){ const pp=dispP(), yy=Y(pp), cc=(B.ov&&B.ov.type==='fake')?B.fcur:B.cur; box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); T(pctS(pp/B.base-1), CX1+17, yy-5, '#f4f4f4', 'center', 10, null); }
   if (B.warn>0 && Math.floor(B.t/5)%2){ ctx.strokeStyle=DANGER; ctx.lineWidth=2; ctx.strokeRect(CX0-3,CY0-3,CX1-CX0+36,CY1-CY0+6); }
   // 庄家气泡（画在画笔之上，别被笔划压住）
   if (B.bubbleT>0 && B.bubble){
@@ -1254,7 +1315,7 @@ const BattleScene = { frame(f, dt){
   if (B.freeze>0) T(t('frozen')+' '+B.freeze.toFixed(1), CX0+122, CY0+80, '#73eff7', 'center');
 
   // ===== 叶子（K 线图左上角正上方）+ 庄家意图（右上角正上方）=====
-  moneyFx(f, e);
+  moneyFx(f, banked());
   const mstr = fmt(Math.max(0, moneyShown));
   const L = intentLayout();
   const nx = leafNumX();
@@ -1263,9 +1324,14 @@ const BattleScene = { frame(f, dt){
   const bumpY = moneyBump>.05 ? Math.round(moneyBump*4) : 0;
   const jitX = moneyHurt>.05 ? Math.round(Math.sin(B.t*1.7)*2*moneyHurt) : 0;
   const mcol = blinkD || moneyHurt>.05 ? DANGER : moneyBump>.05 ? GOLD : '#a7f070';
-  N(mstr, nx+jitX, LEAF_Y + Math.round((LEAF_H-5*msc)/2) - bumpY, mcol, msc);
+  const mw = 4*msc*mstr.length - msc, my = LEAF_Y + Math.round((LEAF_H-5*msc)/2) - bumpY;
+  moneyAt = {x: nx + mw/2, y: LEAF_Y + LEAF_H/2};
+  if (moneyBump > .5){ ctx.globalAlpha = (moneyBump-.5)*.8; box(nx-3, LEAF_Y-2, mw+6, LEAF_H+4, GOLD, GOLD); ctx.globalAlpha = 1; }   // 进账时数字后面闪一下金光
+  N(mstr, nx+jitX, my, mcol, msc);
   T(t('money'), LEAF_X, LEAF_Y+3, '#94b0c2');
   drawIntent(L);
+  drawStamp(f);
+  drawCoins(f);
 
   // ===== 股吧（快讯出现时暂时顶替聊天，不压 K 线）=====
   box(0, CHAT_Y, W, 18, '#141623', '#333c57');
