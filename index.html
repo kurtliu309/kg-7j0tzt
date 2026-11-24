@@ -378,7 +378,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.7 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.9 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -459,7 +459,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.7 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.9 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1317,20 +1317,14 @@ const BattleScene = { frame(f, dt){
   if (showCur) all.push(fakeChart ? B.fcur : B.cur);
   const maxSlots = Math.floor((CX1-CX0-6)/SW); const start = Math.max(0, all.length - maxSlots);
   const vis = all.slice(start);
-  // 缩放（和 v4.3 一样：线性、看整屏可见的 K 线）。唯一例外：画大饼的 K 线不算进范围，
-  // 让它直接冲出屏幕（边上画小箭头），其他 K 线不会被它压扁。
-  // 长 K 线（比一般 K 线长好几倍）出现时先完整显示；过了 LONG_HOLD 根就不再算进缩放，窗口慢慢缩回聚焦小 K 线，长线冲出屏幕
-  const LONG_HOLD = 3, spans = vis.map(b=>b.h/b.l-1), med = spans.slice().sort((a,b)=>a-b)[Math.floor(spans.length/2)] || .01;
-  const longCut = Math.max(.05, med*3.5);
-  let cutJ = -1; spans.forEach((sp,j)=>{ if (sp > longCut && (vis.length-1-j) > LONG_HOLD) cutJ = j; });   // 最近一根"已看过"的长 K 线
-  const rng = vis.filter((b,j)=> j > cutJ);   // 只聚焦它之后的 K 线；它和更早的都可以冲出屏幕
-  const rv = rng.length >= 2 ? rng : vis.slice(-Math.min(vis.length, LONG_HOLD+1));
+  // 缩放：最早的方式——线性，看整屏所有可见的 K 线（Kurt 定：不做自适应聚焦、不让 K 线冲出屏幕）
+  const rv = vis;
   let hi = Math.max(...rv.map(b=>b.h)), lo = Math.min(...rv.map(b=>b.l));
   const mg = (hi-lo)*.12 + hi*.004;
   B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
   const volTop = CY1-34, chH = volTop-CY0-10;
   const Yr = p => CY0+4 + (B.vhi-p)/(B.vhi-B.vlo)*chH;
-  const Y = p => Math.round(clamp(Yr(p), CY0-40, volTop+40));
+  const Y = p => Math.round(Yr(p));
   const X = i => CX0+2 + (i-start)*SW;
   X_cur = () => X(all.length-1)+2;
   ctx.save(); ctx.beginPath(); ctx.rect(CX0-3, CY0-3, CX1-CX0+36, CY1-CY0+6); ctx.clip();
