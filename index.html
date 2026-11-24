@@ -340,19 +340,20 @@ function genPhases(style, total){
 const SCRIPTS = Object.fromEntries(Object.keys(STYLE).map(s=>[s, ()=>genPhases(s, 45)]));
 const dirOf = k => ['pump','breakout'].includes(k) ? 1 : ['dump','shake','bleed'].includes(k) ? -1 : 0;
 const BIG = ['pump','dump','shake','breakout'];
-const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, fake:{len:5} };
-// fake = 撒谎概率，waffle = 每根线改主意的概率
+const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:4}, fake:{len:5} };
+// fake = 撒谎概率，quiet = 不说话的概率，waffle = 每根线改主意的概率
 const BOSSES = [
-  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.1,waffle:.2,react:{good:'dump'}},
-  {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,skills:['spin','fake'],fake:.3,waffle:.25,react:{bad:'shake'}},
+  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie'],fake:.1,quiet:.45,waffle:.2,react:{good:'dump'}},
+  {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,skills:['spin','fake'],fake:.3,quiet:.45,waffle:.25,react:{bad:'shake'}},
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
 function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
-  hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:R.floor===0?.1:.2,waffle:.15,react:{}}; }
+  hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,skills:[pick(['flatspike','pie','spin','fake'])],fake:R.floor===0?.1:.2,quiet:.45,waffle:.15,react:{}}; }
+// 新闻 = 波动系统：drift 每根的方向漂移，volMul 波动倍数（>1 变猛，<1 变平静）
 const NEWS = [
-  {id:'cut',len:5,drift:.012,mood:'good'},{id:'reg',len:6,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:2.2},{id:'swan',len:1,gap:.13},
-  {id:'earn',len:3,volMul:3},{id:'halt',len:1,halt:3},{id:'broke',len:4,bossHit:.3,drift:-.004},{id:'rumUp',len:3,rumor:1},{id:'rumDn',len:3,rumor:-1},
-  {id:'bad',len:4,drift:-.012,mood:'bad'},{id:'good',len:4,drift:.014,mood:'good'},
+  {id:'cut',len:5,drift:.025,volMul:1.3,mood:'good'},{id:'reg',len:6,volMul:.35,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:3},{id:'swan',len:1,gap:.13},
+  {id:'earn',len:3,volMul:3.5},{id:'halt',len:1,halt:3},{id:'broke',len:4,bossHit:.3,drift:-.004},{id:'rumUp',len:3,rumor:1},{id:'rumDn',len:3,rumor:-1},
+  {id:'bad',len:4,drift:-.03,volMul:1.4,mood:'bad'},{id:'good',len:4,drift:.03,volMul:1.4,mood:'good'},{id:'lunch',len:4,volMul:.3},
 ];
 const SKILLS = {
   order:{school:'ambush',active:true,icon:'i_net'}, tp:{school:'ambush',icon:'i_flag'}, grid:{school:'ambush',icon:'i_bot'}, combo:{school:'ambush',icon:'i_chain'},
@@ -368,14 +369,14 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.5 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.6 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
   tagItem:'消耗品', tagRoot:'复活', pickTitle:'选一个技能', pickSub:'打空了庄家的筹码条，战利品三选一', pickTap:'点一张卡拿走', pickNone:'技能全学会了！送你 2000 叶。', active:'主动', passive:'被动',
   minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓', order:'挂单', bluff:'逼宫',
   hourglass:'冻结', cloak:'斗篷', report:'举报', flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
-  weather:'天气：', news:'快讯', halt:'熔断中…', frozen:'时间冻结', paused:'暂停', yourSkills:'你的技能：', noSkills:'还没有。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
+  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', halt:'熔断中…', frozen:'时间冻结', paused:'暂停', yourSkills:'你的技能：', noSkills:'还没有。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
   rHarv:'被收割了！', rKill:'庄家崩盘！', rFail:'没打空筹码条…', rSurv:'撑过去了', rScript:'庄家剧本：', rMoney:'叶子：', rLine:'收割线：', rIntent:'意图真假：',
   mHarv:'叶子掉到了收割线以下。', mHarvSteal:'庄家抽走了 {n}，\n', mRoot:'\n还有一条根，可以重新发芽。', mNoRoot:'\n没有根了……', mFail:'时间到，庄家抽走了 {n}。\n他还站着，再打一次。',
   mKill:'清算时间捞到 {n}！\n去挑一个技能吧。', mBook:'\n复利存折 +5%', mSteal:'时间到，小庄抽走了 {n}。\n没打空，没有技能奖励。', mSurv:'撑过去了。',
@@ -397,7 +398,7 @@ const ZH = {
  kind:{flat:'横盘',pump:'拉升',top:'派发',dump:'砸盘',bleed:'阴跌',shake:'洗盘',bottom:'吸筹',range:'震荡',breakout:'突破',flatspike:'一字插针',pie:'画大饼',spin:'甩干',fake:'假K线',react:'借消息',forced:'被逼宫'},
  script:{pumpdump:'诱多出货',shake:'洗盘拉升',fakebreak:'假突破',boil:'温水煮青蛙',dragon:'真龙出海'},
  news:{cut:['央行宣布降息','降息'],reg:['监管：严查操纵市场','监管进场'],kol:['某大V直播喊单','散户涌入'],swan:['突发黑天鹅事件','黑天鹅'],earn:['今晚公布财报','财报日'],halt:['交易所临时熔断','熔断'],
-   broke:['传闻庄家资金链断裂','资金链断裂'],rumUp:['小道消息：要拉了','小道消息'],rumDn:['小道消息：要砸了','小道消息'],bad:['利空：大股东减持','利空'],good:['利好：拿下神秘大单','利好']},
+   broke:['传闻庄家资金链断裂','资金链断裂'],rumUp:['小道消息：要拉了','小道消息'],rumDn:['小道消息：要砸了','小道消息'],bad:['利空：大股东减持','利空'],good:['利好：拿下神秘大单','利好'],lunch:['午间休市前，没人交易','清淡']},
  reactLine:{dump:'利好出尽，嘿嘿~',shake:'坏消息？正好洗一洗~'},
  posts:{flat:['这票死了吗，一动不动','横盘就是蓄力，懂的都懂','有没有内幕，在线等'],pump:['主力进场了！冲！','今天不上车明天高攀不起','我三叔说要重组','刚满仓，晚上吃顿好的'],
   top:['高位放量，要么起飞要么跳水','回调就是上车机会','我已经开始规划买车了'],dump:['黄金坑！抄底！','跌这么多该反弹了吧','补仓摊低成本','谁在砸盘！举报！'],
@@ -416,7 +417,7 @@ const ZH = {
   book:['复利存折','每赢一场，叶子 +5%。'],lie:['测谎仪','看出庄家公开的意图是真话还是谎话。'],bluff:['逼宫','主动：逼庄家兑现他公开的意图。如果他在撒谎，直接打开暴击窗口！冷却 8 根。']},
  item:{hourglass:['冻结沙漏','时间暂停 3 秒，慢慢想'],cloak:['隐身斗篷','清空关注度，取消庄家的狙击'],report:['举报信','打断庄家正在放的离谱技能']},
  rootName:['韭菜根','被割时自动用掉，重新发芽'],
- help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','','【关注与暴击】','仓位越重，庄家越注意你。满了会锁定你，','倒数结束一定会扎一根大针；','结束前平仓就不挨打，插针后还会回弹。','反手接针、针尖开仓 = 暴击窗口，赚 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。'],
+ help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','庄家的撒谎率和不说话率写在名字旁边。','','【关注与暴击】','仓位越重，庄家越注意你。满了会锁定你，','倒数结束一定会扎一根大针；','结束前平仓就不挨打，插针后还会回弹。','反手接针、针尖开仓 = 暴击窗口，赚 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。'],
  hints:{0:'庄家正在画这根K线，看它乱跳！',2:'觉得要涨？点【做多】上车，多点几次加仓。',6:'赚到了点【平仓】，叶子才算到手。',10:'庄家头上是他的意图——可能是假的。',14:'关注度满了会被锁定：数完一定扎大针；结束前平仓就不挨打，针尖反手开仓赚 ×2。'},
  intro:[['narr','在韭菜村，韭菜们一茬一茬地长，\n一茬一茬地被割。'],['narr','割韭菜的人住在村口的「交易塔」里。\n他们每人手里都有一支画笔。'],['narr','画出来的线，叫做K线。\n线往哪走，韭菜的命就往哪走。'],
    ['grandpa','小韭啊，爷爷要去塔里「抄底」了。\n这次一定能翻身，给你买新花盆。'],['narr','爷爷再也没有回来。\n只剩下一截被割平的根。'],['hero','……我要上塔。\n我要看看，那支笔到底是怎么画的。'],
@@ -443,14 +444,14 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.5 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.6 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
   tagItem:'Item', tagRoot:'Revive', pickTitle:'Pick a skill', pickSub:'You busted his chips. Choose your loot.', pickTap:'Tap a card', pickNone:'You know every skill! Have 2,000 wool.', active:'Active', passive:'Passive',
   minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close', order:'Order', bluff:'Bluff',
   hourglass:'Freeze', cloak:'Cloak', report:'Report', flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
-  weather:'Weather: ', news:'NEWS', halt:'Halted…', frozen:'Frozen', paused:'Paused', yourSkills:'Your skills:', noSkills:'None yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
+  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', halt:'Halted…', frozen:'Frozen', paused:'Paused', yourSkills:'Your skills:', noSkills:'None yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
   rHarv:'FLEECED!', rKill:'SHEARER BROKE!', rFail:'He survived…', rSurv:'Survived', rScript:'Script: ', rMoney:'Wool: ', rLine:'Line: ', rIntent:'Intents: ',
   mHarv:'Your wool fell below the shear line.', mHarvSteal:'He took {n} from you.\n', mRoot:'\nYour Golden Fleece saves you.', mNoRoot:'\nNo fleece left…', mFail:'Time\'s up. He took {n}.\nHe\'s still standing. Again.',
   mKill:'You looted {n} in loot time!\nGo pick a skill.', mBook:'\nCompound Book +5%', mSteal:'Time\'s up. The minion took {n}.\nNo bust, no skill.', mSurv:'You made it.',
@@ -472,7 +473,7 @@ const EN = {
  kind:{flat:'Flat',pump:'Pump',top:'Top',dump:'Dump',bleed:'Bleed',shake:'Shakeout',bottom:'Bottom',range:'Range',breakout:'Breakout',flatspike:'Spike',pie:'Pie',spin:'Spin',fake:'Fake',react:'News',forced:'Called'},
  script:{pumpdump:'Pump & Dump',shake:'Shakeout Rally',fakebreak:'Fakeout',boil:'Boiling Frog',dragon:'Moonshot'},
  news:{cut:['Fed announces rate cut','Rate Cut'],reg:['Regulators crack down','Regulators'],kol:['Influencer shills on stream','Retail FOMO'],swan:['Black swan event!','Black Swan'],earn:['Earnings report tonight','Earnings'],halt:['Circuit breaker triggered','Halt'],
-   broke:['Rumor: shearer is out of cash','Shearer Broke'],rumUp:['Rumor: it\'s about to pump','Rumor'],rumDn:['Rumor: it\'s about to dump','Rumor'],bad:['Insiders are selling','Bad News'],good:['Mystery mega-order landed','Good News']},
+   broke:['Rumor: shearer is out of cash','Shearer Broke'],rumUp:['Rumor: it\'s about to pump','Rumor'],rumDn:['Rumor: it\'s about to dump','Rumor'],bad:['Insiders are selling','Bad News'],good:['Mystery mega-order landed','Good News'],lunch:['Lunch hour, nobody\'s trading','Quiet']},
  reactLine:{dump:'Sell the news, hehe~',shake:'Bad news? Perfect for a wash~'},
  posts:{flat:['Is this thing dead?','Consolidation = loading. IYKYK','Anyone got insider info?'],pump:['TO THE MOON 🚀','Buy now or cry later','My uncle says merger incoming','Just went all in. Lambo soon.'],
   top:['Huge volume. Moon or crash.','Every dip is a gift','Picking my Lambo color'],dump:['BUY THE DIP!','Has to bounce soon right?','Averaging down baby','WHO IS SELLING?!'],
@@ -491,7 +492,7 @@ const EN = {
   book:['Compound Book','Every win: wool +5%.'],lie:['Lie Detector','See whether the shearer\'s intent is the truth or a lie.'],bluff:['Call the Bluff','Active: force the shearer to follow through on his intent. If he was lying: instant CRIT window! Cooldown 8.']},
  item:{hourglass:['Freeze Hourglass','Pause time for 3 seconds'],cloak:['Invisibility Cloak','Clear heat and cancel the snipe'],report:['Report Letter','Interrupt the shearer\'s crazy skill']},
  rootName:['Golden Fleece','Auto-used when fleeced. Regrow and keep going.'],
- help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','','[Heat & Crit]','Big positions draw his attention.','Full heat: he locks on. The countdown ends','in one huge wick. Close first to dodge;','counter the wick = CRIT window: wool ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.'],
+ help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','Lie and quiet rates sit next to his name.','','[Heat & Crit]','Big positions draw his attention.','Full heat: he locks on. The countdown ends','in one huge wick. Close first to dodge;','counter the wick = CRIT window: wool ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.'],
  hints:{0:'The shearer is painting this candle. Watch it jump!',2:'Think it goes up? Tap LONG. Tap again to add.',6:'Tap CLOSE to bank your profit.',10:'Above his head: his intent. It might be a lie.',14:'Full heat: he locks on. The countdown ends in a big wick; close first to dodge, reverse at the wick for ×2.'},
  intro:[['narr','In Woolly Meadow, lambs grow their wool…\nand every season, it gets sheared.'],['narr','The shearers live in the Exchange Tower.\nEach one holds a brush.'],['narr','The lines they paint are called candles.\nWhere the line goes, the flock follows.'],
    ['grandpa','Lamby, Grandpa\'s going up the Tower\nto buy the dip. This time we\'ll be rich!'],['narr','Grandpa never came back.\nAll that was left was a pile of wool.'],['hero','…I\'m going up the Tower.\nI want to see how that brush really works.'],
@@ -801,7 +802,7 @@ function drawStamp(f){
   ctx.globalAlpha = 1;
 }
 const levK = () => R.skills.lev ? 2 : 1;
-const critNow = () => B.collapse || !!B.ov || B.breach>0;
+const critNow = () => (B.ov && (B.ov.type==='pie' || B.ov.type==='flatspike')) ? false : (B.collapse || !!B.ov || B.breach>0);   // 画大饼、一字插针期间不给暴击（上限 20% / 15%）
 const flipKind = k => { const d = dirOf(k); return d>0 ? 'dump' : d<0 ? 'pump' : pick(['pump','dump']); };
 
 function newCandle(){
@@ -815,14 +816,12 @@ function newCandle(){
   // 被逼宫：按他说的方向强行画
   if (B.forced && B.step >= B.forced.at && !B.ov){ B.ov = {type:'forced', t:0, len:3, d:B.forced.dir*.035}; B.forced = null; }
   if (B.gapNext){ B.price *= 1 + B.gapNext; B.gapNext = 0; shake = 8; }
-  const o = B.price; B.cur = {o,h:o,l:o,c:o,v:0}; B.tick = 0;
-  if (B.ov && B.ov.type==='pie') B.cur.pie = true;              // 画大饼的 K 线：图表缩放时不算它，允许冲出屏幕
-  let drift = 0, vol = .012, kind;
+  const o = B.price; B.cur = {o,h:o,l:o,c:o,v:0}; B.tick = 0;  let drift = 0, vol = .012, kind;
   if (B.ov){
     const ov = B.ov, k = ov.t; kind = ov.type;
     if (ov.type==='flatspike'){ drift = 0; vol = .002; }
-    else if (ov.type==='pie'){ drift = [.28,.32,.35,-.6][k]; vol = .02; }
-    else if (ov.type==='spin'){ drift = 0; vol = .003; }
+    else if (ov.type==='pie'){ drift = [.06,.07,.06,-.25][k]; vol = .006; }
+    else if (ov.type==='spin'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * .075; vol = .006; }
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
     else { drift = ov.d; vol = ov.d===0 ? .006 : .018; }
     B.mode = ov.type;
@@ -837,6 +836,13 @@ function newCandle(){
   B.vol = vol*d.volMul; B.target = o*(1 + drift + randn()*B.vol*.8);
   if (B.mode==='pie') B.target = o*(1+drift);
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
+  // 画大饼：真实价格小幅上台阶，画面（假层）照着 .28/.32/.35 飞；第四根假层直接塌回真实价
+  if (B.mode==='pie'){
+    if (!B.fcur) B.fp = o;
+    const fo = B.fp; B.fcur = {o:fo,h:fo,l:fo,c:fo,v:0,pie:true};
+    if (B.ov.t < 3) B.ftarget = fo*(1 + [.28,.32,.35][B.ov.t]);
+    else { B.ftarget = B.target; flashA=.5; flashC='#f4f4f4'; shake=Math.max(shake,6); toast(t('tTruth')); }
+  }
 
   // ---- 庄家改主意：已经说出口的意图，还会变来变去 ----
   if (B.intent && B.intent.pending && !B.collapse && !B.intent.claim.startsWith('skill:') && B.intent.at - B.step >= 1 && Math.random() < (d.waffle||0)){
@@ -862,7 +868,7 @@ function newCandle(){
       B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true};
     } else {
       const k0 = k0ahead();
-      if (k0 && B.step+k0 < B.len && Math.random() < .55){
+      if (k0 && B.step+k0 < B.len && Math.random() >= (d.quiet!=null?d.quiet:.45)){
         const actual = phaseAt(B.sstep+k0).kind, r = Math.random(); let claim;
         if (r < .15 && BIG.includes(actual)) claim = 'vague';
         else if (r < .15 + d.fake) claim = flipKind(actual);
@@ -877,28 +883,29 @@ function newCandle(){
 function startOv(type){
   const ov = {type, t:0, len:BOSS_SKILLS[type].len};
   if (type==='flatspike') ov.dir = B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1);
-  if (type==='fake') ov.d = (Math.random()<.5?1:-1)*.03;
+  if (type==='fake') ov.d = (Math.random()<.5?1:-1)*.02;
+  if (type==='spin') ov.dir = Math.random()<.5?1:-1;
   B.ov = ov; B.bubble = C.bskill[type].shout; B.bubbleT = 140; sfx('tell');
 }
 function endOv(){
   const ov = B.ov; B.ov = null;
-  if (ov.type==='flatspike') B.pendingDrift = -ov.dir*.08;
+  if (ov.type==='flatspike') B.pendingDrift = -ov.dir*.10;
   if (ov.type==='fake'){ B.fakeMap = {}; B.fcur = null; flashA=.5; flashC='#f4f4f4'; toast(t('tTruth')); shake=6; }
+  if (ov.type==='pie'){ B.fakeMap = {}; B.fcur = null; B.fp = B.price; }
 }
 function startCollapse(){
   B.collapse = true; B.killed = true; B.collapseCash = eqv(); B.collapseT = 200;
   B.windup = null; B.forced = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.heat = 0; B.intent = null; B.claimNow = null;
-  if (B.ov && B.ov.type==='fake') endOv(); B.ov = null;
+  if (B.ov && (B.ov.type==='fake' || B.ov.type==='pie')) endOv(); B.ov = null;
   B.bubble = t('brokeTruth'); B.bubbleT = 300; B.bossSwap = ANGRY;
   sfx('win'); shake = 10; flashA = .5; flashC = GOLD; burst(240,70,50,['#ffcd75','#a7f070','#f4f4f4'],3.5);
 }
 function battleTick(){
   const N = B.ticks; B.tick++; const r = Math.max(1, N - B.tick + 1); const prevP = B.price; let p = B.price; const tv = B.vol/Math.sqrt(N)*1.15;
   const ov = B.ov;
-  if (ov && ov.type==='spin'){ p = B.cur.o*(1 + ((B.tick%2)?1:-1)*(.05+Math.random()*.045)); if (r===1) p = B.target; }
-  else if (ov && ov.type==='flatspike' && ov.t===ov.len-1){
+  if (ov && ov.type==='flatspike' && ov.t===ov.len-1){
     if (B.tick < N-1) p = B.cur.o*(1+randn()*.001);
-    else if (B.tick===N-1){ p = B.cur.o*(1+ov.dir*.25); B.target = p; shake=10; sfx('harvest'); flashA=.3; flashC=ov.dir>0?UP:DN; }
+    else if (B.tick===N-1){ p = B.cur.o*(1+ov.dir*.15); B.target = p; shake=10; sfx('harvest'); flashA=.3; flashC=ov.dir>0?UP:DN; }
     else p = B.target;
   } else {
     p += (B.target-p)/r + (r>1 ? randn()*tv*p*Math.sqrt((r-1)/r) : 0);
@@ -906,7 +913,7 @@ function battleTick(){
   }
   B.price = p; const c = B.cur; c.c = p; c.h = Math.max(c.h,p); c.l = Math.min(c.l,p);
   c.v += (Math.abs(p/prevP-1)*30 + .08) * (B.mode==='flatspike'?.2:1);
-  if (ov && ov.type==='fake'){ B.fp += (B.ftarget-B.fp)/r + (r>1? randn()*tv*.5*B.fp*Math.sqrt((r-1)/r):0); const fc=B.fcur; fc.c=B.fp; fc.h=Math.max(fc.h,B.fp); fc.l=Math.min(fc.l,B.fp); fc.v += .02; }
+  if (ov && (ov.type==='fake' || ov.type==='pie') && B.fcur){ B.fp += (B.ftarget-B.fp)/r + (r>1? randn()*tv*.5*B.fp*Math.sqrt((r-1)/r):0); const fc=B.fcur; fc.c=B.fp; fc.h=Math.max(fc.h,B.fp); fc.l=Math.min(fc.l,B.fp); fc.v += .02; }
   if (B.tick%2===0) sfx('tick');
   const jump = Math.abs(p/prevP-1);
   if (R.skills.grid && jump>.02){ B.cash += eqv()*jump*.03; if (Math.random()<.3) floatText(t('tGrid'), 210, 345, GOLD); }
@@ -932,7 +939,7 @@ let X_cur = () => 200;
 function endCandle(){
   const idx = B.bars.length;
   B.bars.push(B.cur); B.log.push(B.kindNow); B.step++; sfx('candle');
-  if (B.ov && B.ov.type==='fake') B.fakeMap[idx] = B.fcur;
+  if (B.ov && (B.ov.type==='fake' || B.ov.type==='pie') && B.fcur) B.fakeMap[idx] = B.fcur;
   if (Math.abs(B.cur.c/B.cur.o-1) > .04) shake = Math.max(shake,4);
   if (B.ov){ B.ov.t++; if (B.ov.t>=B.ov.len) endOv(); } else B.sstep++;
   if (B.windup && !B.ov){ const ty = B.windup.type; B.windup = null; startOv(ty); }
@@ -949,7 +956,7 @@ function endCandle(){
 }
 function spawnNews(){
   const n = Object.assign({}, pick(NEWS)); n.left = n.len; B.nextNews = B.step + R1(7,10); sfx('news');
-  if (n.rumor) n.rumorD = (Math.random()<.5 ? n.rumor : -n.rumor)*.02;
+  if (n.rumor) n.rumorD = (Math.random()<.5 ? n.rumor : -n.rumor)*.03;
   if (n.gap) B.gapNext = (Math.random()<.5?1:-1)*n.gap;
   if (n.halt){ B.halt = n.halt; B.gapNext = (Math.random()<.5?1:-1)*.06; }
   if (n.bossHit && !B.collapse){ B.hpMax *= 1-n.bossHit; B.bubble = lines(B.def).panic; B.bubbleT = 150; burst(250,70,20,['#ffcd75','#f4f4f4']); }
@@ -1198,9 +1205,21 @@ const BattleScene = { frame(f, dt){
   const rootsR = lineX - 6;
   for (let i=0;i<R.roots;i++) spr('i_root', rootsR-8-i*10, 4, 1);
   const bossName = B.isBoss?BT.name:BT.name+t('minion');
+  // 公开的两个概率：撒谎率 + 不说话率，跟在名字后面（字号一起参与缩小，别压到复活根和收割线）
+  const probTxt = fmtS(t('prob'), {lie: Math.round((d.fake||0)*100), quiet: Math.round((d.quiet!=null?d.quiet:.45)*100)});
   const nameMax = (R.roots>0 ? rootsR-8-(R.roots-1)*10-8 : lineX-6) - 8;
-  let nameSz = 11; while (nameSz>8 && TW(bossName, nameSz) > nameMax) nameSz--;
-  T(bossName, 4, 2, B.isBoss?DANGER:'#f4f4f4', 'left', nameSz);
+  let nameSz = 11, pSz = 9;
+  const nameW = () => TW(bossName, nameSz) + 3 + TW(probTxt, pSz);
+  while (nameSz>7 && nameW() > nameMax) nameSz--;
+  while (pSz>7 && nameW() > nameMax) pSz--;
+  while (nameSz>6 && nameW() > nameMax) nameSz--;
+  let nameShow = bossName;
+  if (nameW() > nameMax){   // 极端窄（长名字 + 满复活根）：缩字号还不够就截名字，概率一定要露出来
+    while (nameShow.length>1 && TW(nameShow+'…', nameSz)+3+TW(probTxt, pSz) > nameMax) nameShow = nameShow.slice(0,-1);
+    nameShow += '…';
+  }
+  T(nameShow, 4, 2, B.isBoss?DANGER:'#f4f4f4', 'left', nameSz);
+  T(probTxt, 4+TW(nameShow,nameSz)+3, 2+(nameSz-pSz), '#94b0c2', 'left', pSz);
   T(lineLab, lineX, 2, danger?DANGER:'#566c86');
   N(lineTxt, lineX+TW(lineLab)+3, 5, danger?DANGER:'#94b0c2', 1);
   if (!B.over){
@@ -1227,7 +1246,8 @@ const BattleScene = { frame(f, dt){
   const showCur = !(B.over && !B.harvested);
   const barAt = i => B.fakeMap[i] || B.bars[i];
   const all = []; for (let i=0;i<B.bars.length;i++) all.push(barAt(i));
-  if (showCur) all.push(B.ov && B.ov.type==='fake' ? B.fcur : B.cur);
+  const fakeChart = !!(B.ov && (B.ov.type==='fake' || B.ov.type==='pie') && B.fcur);   // 假层在画：图表和画笔跟假层，钱和标签跟真实价
+  if (showCur) all.push(fakeChart ? B.fcur : B.cur);
   const maxSlots = Math.floor((CX1-CX0-6)/SW); const start = Math.max(0, all.length - maxSlots);
   const vis = all.slice(start);
   // 缩放（和 v4.3 一样：线性、看整屏可见的 K 线）。唯一例外：画大饼的 K 线不算进范围，
@@ -1265,8 +1285,9 @@ const BattleScene = { frame(f, dt){
     ctx.fillStyle = col;
     if (Yr(b.h) < CY0-2){ ctx.fillRect(x+1, CY0-2, 1, 1); ctx.fillRect(x, CY0-1, 3, 1); }
     if (Yr(b.l) > volTop+6){ ctx.fillRect(x, volTop+5, 3, 1); ctx.fillRect(x+1, volTop+6, 1, 1); } });
-  // 大 K 线标涨跌幅：单根 ≥5% 就在影线外写上 +32%，画大饼到底涨了多少一眼看见
-  vis.forEach((b,j)=>{ const ch = b.c/b.o-1; if (Math.abs(ch) < .05) return;
+  // 大 K 线标涨跌幅：单根 ≥5% 就在影线外写上 +32%。
+  // 画大饼的 K 线不标：画面上是假层，标 +28% 会骗人；揭晓后这些柱子又超出缩放范围，标出来也只会在边上叠成一团。
+  vis.forEach((b,j)=>{ if (b.pie) return; const ch = b.c/b.o-1; if (Math.abs(ch) < .05) return;
     const x = X(start+j)+2, s = pctS(ch), w = TW(s,10), col = ch>0?UP:DN;
     let yy = ch>0 ? Y(b.h)-12 : Y(b.l)+2; yy = clamp(yy, CY0+1, volTop-8);
     T(s, clamp(x, CX0+w/2+1, CX1+30-w/2), yy, col, 'center', 10); });
@@ -1285,15 +1306,16 @@ const BattleScene = { frame(f, dt){
   ctx.restore();
   // 庄家的画笔
   if (!B.over || B.harvested){
-    const ci = all.length-1, tipX = X(ci)+2 + (B.over?0:Math.round(randn()*.6)), tipY = Y(dispP());
+    const ci = all.length-1, tipX = X(ci)+2 + (B.over?0:Math.round(randn()*.6)), tipY = Y(fakeChart ? B.fp : B.price);
     const hx = bx+4, hy = by+bh*.62;
     const n = Math.max(1, Math.floor(Math.hypot(tipX-hx, tipY-hy)/2));
     for (let k=0;k<=n;k++){ const xx=Math.round(lerp(hx,tipX,k/n)), yy=Math.round(lerp(hy,tipY-8,k/n)); ctx.fillStyle = k%8<1?'#ffcd75':'#8b5a2b'; ctx.fillRect(xx,yy,2,2); ctx.fillStyle=INK; ctx.fillRect(xx,yy+2,2,1); }
-    const cc = (B.ov&&B.ov.type==='fake')?B.fcur:B.cur, inkCol = cc.c>=cc.o?UP:DN;
+    const cc = fakeChart ? B.fcur : B.cur, inkCol = cc.c>=cc.o?UP:DN;
     ctx.fillStyle=INK; ctx.fillRect(tipX-3,tipY-10,6,7); ctx.fillStyle='#f4f4f4'; ctx.fillRect(tipX-2,tipY-9,4,2); ctx.fillStyle=inkCol; ctx.fillRect(tipX-2,tipY-7,4,3); ctx.fillRect(tipX-1,tipY-4,2,2);
     if (!B.over && Math.random()<.08) parts.push({x:tipX,y:tipY,vx:0,vy:.2,life:30,col:inkCol,g:.05,sz:1});
   }
-  if (!B.over){ const pp=dispP(), yy=Y(pp), cc=(B.ov&&B.ov.type==='fake')?B.fcur:B.cur; box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); T(pctS(pp/B.base-1), CX1+17, yy-5, '#f4f4f4', 'center', 10, null); }
+  // 右侧价格签：画大饼时也显示真实价（画面是假的，钱是真的）
+  if (!B.over){ const pieNow = !!(B.ov && B.ov.type==='pie'), pp = pieNow ? B.price : dispP(), yy = clamp(Y(pp), CY0+6, volTop-6), cc = pieNow ? B.cur : (fakeChart?B.fcur:B.cur); box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); T(pctS(pp/B.base-1), CX1+17, yy-5, '#f4f4f4', 'center', 10, null); }
   if (B.warn>0 && Math.floor(B.t/5)%2){ ctx.strokeStyle=DANGER; ctx.lineWidth=2; ctx.strokeRect(CX0-3,CY0-3,CX1-CX0+36,CY1-CY0+6); }
   // 庄家气泡（画在画笔之上，别被笔划压住）
   if (B.bubbleT>0 && B.bubble){
@@ -1306,7 +1328,15 @@ const BattleScene = { frame(f, dt){
   const critLab = (crit && !B.collapse) ? (B.breach>0 ? t('crit')+' · '+B.breach : t('critOv')) : null;
   if (critLab){ box(CX0, ty, TW(critLab)+12, 16, '#1a1c2c', GOLD); T(critLab, CX0+6, ty+2, GOLD); }
   const wy = critLab ? ty+20 : ty;
-  if (B.weather && !B.over){ const lab = t('weather')+C.news[B.weather.id][1]; box(CX0, wy, TW(lab)+24, 16, '#1a1c2c', '#41a6f6'); T(lab, CX0+4, wy+2, '#73eff7'); N(String(B.weather.left), CX0+TW(lab)+18, wy+5, '#73eff7', 1, 'right'); }
+  if (B.weather && !B.over){
+    const lab = t('weather')+C.news[B.weather.id][1];
+    const vm = B.weather.volMul || 1, volTxt = vm>1.2 ? t('volUp') : vm<.8 ? t('volDown') : '';
+    const volCol = vm>1.2 ? UP : '#94b0c2', vw = volTxt ? TW(volTxt)+4 : 0;
+    box(CX0, wy, TW(lab)+vw+24, 16, '#1a1c2c', '#41a6f6');
+    T(lab, CX0+4, wy+2, '#73eff7');
+    if (volTxt) T(volTxt, CX0+4+TW(lab)+4, wy+2, volCol);
+    N(String(B.weather.left), CX0+TW(lab)+vw+18, wy+5, '#73eff7', 1, 'right');
+  }
   if (B.collapseT>0){ const ls = wrap(t('collapse'), 220); box(CX0+6, CY0+70, 232, ls.length*16+12, '#1a1c2c', GOLD); ls.forEach((l,k)=>T(l, CX0+122, CY0+76+k*16, GOLD, 'center')); }
   if (B.halt>0){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
   if (B.hintT>0 && B.hint){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
