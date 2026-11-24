@@ -378,7 +378,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.9 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.10 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -459,7 +459,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.9 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.10 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -845,7 +845,7 @@ function newCandle(){
   if (B.ov){
     const ov = B.ov, k = ov.t; kind = ov.type;
     if (ov.type==='flatspike'){ drift = 0; vol = .002; }
-    else if (ov.type==='pie'){ drift = [.06,.07,.06,-.25][k]; vol = .006; }
+    else if (ov.type==='pie'){ drift = [.05,.06,.06,-.16][k]; vol = .006; }   // 画大饼：真实 K 线，三根合计约 +18%，第四根砸 16%（不暴击）
     else if (ov.type==='spin'){ drift = 0; vol = .003; }                                  // 甩干（老版）：一根里上下乱抖
     else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * .075; vol = .006; }  // 拉锯：逐根来回 ±7.5%
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
@@ -862,13 +862,6 @@ function newCandle(){
   B.vol = vol*d.volMul; B.target = o*(1 + drift + randn()*B.vol*.8);
   if (B.mode==='pie') B.target = o*(1+drift);
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
-  // 画大饼：真实价格小幅上台阶，画面（假层）照着 .28/.32/.35 飞；第四根假层直接塌回真实价
-  if (B.mode==='pie'){
-    if (!B.fcur) B.fp = o;
-    const fo = B.fp; B.fcur = {o:fo,h:fo,l:fo,c:fo,v:0,pie:true};
-    if (B.ov.t < 3) B.ftarget = fo*(1 + [.28,.32,.35][B.ov.t]);
-    else { B.ftarget = B.target; flashA=.5; flashC='#f4f4f4'; shake=Math.max(shake,6); toast(t('tTruth')); }
-  }
 
   // ---- 庄家改主意：已经说出口的意图，还会变来变去 ----
   if (B.intent && B.intent.pending && !B.collapse && !B.intent.claim.startsWith('skill:') && B.intent.at - B.step >= 1 && Math.random() < (d.waffle||0)){
