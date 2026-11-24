@@ -368,7 +368,7 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.5 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -443,7 +443,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.5 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -816,6 +816,7 @@ function newCandle(){
   if (B.forced && B.step >= B.forced.at && !B.ov){ B.ov = {type:'forced', t:0, len:3, d:B.forced.dir*.035}; B.forced = null; }
   if (B.gapNext){ B.price *= 1 + B.gapNext; B.gapNext = 0; shake = 8; }
   const o = B.price; B.cur = {o,h:o,l:o,c:o,v:0}; B.tick = 0;
+  if (B.ov && B.ov.type==='pie') B.cur.pie = true;              // 画大饼的 K 线：图表缩放时不算它，允许冲出屏幕
   let drift = 0, vol = .012, kind;
   if (B.ov){
     const ov = B.ov, k = ov.t; kind = ov.type;
@@ -1229,23 +1230,20 @@ const BattleScene = { frame(f, dt){
   if (showCur) all.push(B.ov && B.ov.type==='fake' ? B.fcur : B.cur);
   const maxSlots = Math.floor((CX1-CX0-6)/SW); const start = Math.max(0, all.length - maxSlots);
   const vis = all.slice(start);
-  // 缩放：对数坐标（同样的涨跌幅 = 同样的高度）；只按最近 FOCUS 根定范围，
-  // 画大饼这种超长 K 线滚出这段后，窗口会慢慢缩回来，小涨跌重新看得清；更早的超长线裁到边上画小箭头
-  const FOCUS = 10, foc = vis.slice(-FOCUS);
-  let lhi = Math.log(Math.max(...foc.map(b=>b.h))), llo = Math.log(Math.min(...foc.map(b=>b.l)));
-  const minSpan = Math.log(1.06); if (lhi-llo < minSpan){ const mid=(lhi+llo)/2; lhi=mid+minSpan/2; llo=mid-minSpan/2; }
-  const mg = (lhi-llo)*.12, thi = lhi+mg, tlo = llo-mg;
-  if (B.lvhi==null){ B.lvhi = thi; B.lvlo = tlo; }
-  const zk = Math.min(1, .06*f);
-  B.lvhi = thi > B.lvhi ? thi : lerp(B.lvhi, thi, zk); B.lvlo = tlo < B.lvlo ? tlo : lerp(B.lvlo, tlo, zk);
+  // 缩放（和 v4.3 一样：线性、看整屏可见的 K 线）。唯一例外：画大饼的 K 线不算进范围，
+  // 让它直接冲出屏幕（边上画小箭头），其他 K 线不会被它压扁。
+  const rng = vis.filter(b=>!b.pie); const rv = rng.length ? rng : vis;
+  let hi = Math.max(...rv.map(b=>b.h)), lo = Math.min(...rv.map(b=>b.l));
+  const mg = (hi-lo)*.12 + hi*.004;
+  B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
   const volTop = CY1-34, chH = volTop-CY0-10;
-  const Yr = p => CY0+4 + (B.lvhi-Math.log(p))/(B.lvhi-B.lvlo)*chH;
-  const Y = p => Math.round(clamp(Yr(p), CY0-2, volTop+6));
+  const Yr = p => CY0+4 + (B.vhi-p)/(B.vhi-B.vlo)*chH;
+  const Y = p => Math.round(clamp(Yr(p), CY0-40, volTop+40));
   const X = i => CX0+2 + (i-start)*SW;
   X_cur = () => X(all.length-1)+2;
   ctx.save(); ctx.beginPath(); ctx.rect(CX0-3, CY0-3, CX1-CX0+36, CY1-CY0+6); ctx.clip();
   // 刻度：相对开局价格的涨跌幅（%），赚多少一眼能对上
-  for (let k=0;k<=4;k++){ const p = Math.exp(B.lvlo+(B.lvhi-B.lvlo)*k/4), yy=Y(p); ctx.fillStyle='#1d2234'; for (let x=CX0;x<CX1;x+=4) ctx.fillRect(x,yy,2,1); T(pctS(p/B.base-1), CX1+32, yy-5, '#566c86', 'right', 10, null); }
+  for (let k=0;k<=4;k++){ const p = B.vlo+(B.vhi-B.vlo)*k/4, yy=Y(p); ctx.fillStyle='#1d2234'; for (let x=CX0;x<CX1;x+=4) ctx.fillRect(x,yy,2,1); T(pctS(p/B.base-1), CX1+32, yy-5, '#566c86', 'right', 10, null); }
   if (HIST>=start){ ctx.fillStyle='#333c57'; const xx=X(HIST)-1; for (let y=CY0;y<CY1-14;y+=4) ctx.fillRect(xx,y,1,2); }
   if (B.over){
     const log = B.log; let s=0;
