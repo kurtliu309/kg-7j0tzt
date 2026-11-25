@@ -241,7 +241,7 @@ const TRACKS = {
 };
 let curTrack=null, mStep=0, mNext=0;
 // 背景音乐：有音频文件的场景放文件（bgm/），没有或加载失败就退回合成曲。rate>1 时加速并升调（第二阶段 / 加时）
-const BGM_FILES = { battle:'bgm/dark_dragon.mp3', boss:'bgm/jrpg_boss.mp3' };
+const BGM_FILES = {}; // 暂停用真曲（和合成曲不搭），以后再定。原来：{ battle:'bgm/dark_dragon.mp3', boss:'bgm/jrpg_boss.mp3' }
 const bgmEls = {}; let bgmCur = null, musicName = null, musicRate = 1;
 function bgmEl(name){
   if (!BGM_FILES[name]) return null;
@@ -456,7 +456,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.3 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -581,7 +581,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.3 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
