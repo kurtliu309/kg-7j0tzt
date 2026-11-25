@@ -364,10 +364,10 @@ const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, saw:{len:4},
   mind:{len:4}, oracle:{len:5}, beat:{len:8}, fast:{len:3}, mirror:{len:3}, fakesky:{len:5,curse:true} };
 // fake = 撒谎概率，quiet = 不说话的概率，waffle = 每根线改主意的概率
 // 血量 = 进场本金 × 系数（docs/sim 机器人反推：普通人第一层小庄约 70%、Boss 约 60%）；第一场（教学）用 tut
-const HPK = { qian:.56, granny:2.0, tut:.32,   // 第一层：Kurt 定（v5.4 ×0.8）；第二层：机器人反推（高手规则约 65%、普通人规则约 30%）
-  minion:[[.4,.36,.32,.24,.4], [1.3,.8,.75,.25,.85]] };   // 第一层按难度分开：开天眼都约 70% 过（喊单哥的篡改天气不赚钱，血量低）
+const HPK = { qian:.52, granny:2.0, tut:.29,   // 第一层：Kurt 定（v5.6 再 ×0.92，2026-11-25）；第二层：机器人反推（高手规则约 65%、普通人规则约 30%）
+  minion:[[.37,.33,.29,.22,.37], [1.3,.8,.75,.25,.85]] };   // 第一层按难度分开：开天眼都约 70% 过（喊单哥的篡改天气不赚钱，血量低）
 // 第一层按排期放招：Boss 6 次、小庄 4 次、教学 3 次（高手做对约 3 次死，普通人错一两次还有机会）
-const SKILL_PLAN = (isBoss) => isBoss ? 6 : (R.floor===0 && R.tutorial) ? 3 : 4;   // [层][小庄 idx]：游资小弟 / 短线阿飞 / 私募小王 / 喊单哥 / 荐股群主
+const SKILL_PLAN = (isBoss) => isBoss ? 6 : 4;   // [层][小庄 idx]：游资小弟 / 短线阿飞 / 私募小王 / 喊单哥 / 荐股群主
 const SKILL_CD = () => R.floor===0 ? R1(5,7) : R1(7,10);   // 庄家放技能的间隔（根）
 const BOSSES = [
   {key:'qian',spr:'qian',script:'pumpdump',hp:12000,hpK:HPK.qian,len:40,volMul:1,heatMul:.9,sig:'mind',skills:['flatspike','pie','fake'],fake:.1,quiet:.25,waffle:.2,react:{good:'dump'}},
@@ -435,7 +435,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v5.6 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v5.7 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -555,7 +555,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v5.6 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v5.7 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1117,11 +1117,11 @@ function newCandle(){
     else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * (R.floor>0 ? .05 : .075); vol = .006; }   // 第二层能双向吃，幅度收一点  // 拉锯：逐根来回 ±7.5%
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
     // ---- 专属意图 ----
-    else if (ov.type==='mind'){ { const a = R.floor>0 ? .6 : 1; drift = (B.sh>0 ? -.04 : B.sh<0 ? .04 : (Math.random()<.5?1:-1)*.03)*a; } vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
+    else if (ov.type==='mind'){ { const a = R.floor>0 ? .6 : 1; drift = (B.sh>0 ? -.04 : B.sh<0 ? .04 : (R.floor===0 ? 1 : (Math.random()<.5?1:-1))*.03)*a; } vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
     else if (ov.type==='oracle'){ drift = ov.plan[k]; vol = .006;
       if (k===ov.len-1){ B.bubble = t('fateLine'); B.bubbleT = 140; flashA = .35; flashC = '#d44dff'; shake = Math.max(shake,5); sfx('tell'); } }   // 算一卦：前 4 根照预言走，最后一根反着来
     else if (ov.type==='beat'){ const b = k%4; drift = (b===3 ? -ov.dir*.05 : ov.dir*.02) * (R.floor>0 ? .6 : 1); vol = .005; beatSnd(b===3); }   // 节奏：1 2 3 同向，第 4 拍反转
-    else if (ov.type==='fast'){ drift = (Math.random()<.5?1:-1)*.03; vol = .01; }   // 三秒进出：3 倍速
+    else if (ov.type==='fast'){ drift = (R.floor===0 ? 1 : (Math.random()<.5?1:-1))*.03; vol = .01; }   // 三秒进出：3 倍速
     else { drift = ov.d; vol = ov.d===0 ? .006 : .018; }
     B.mode = ov.type;
   } else {
@@ -1207,14 +1207,16 @@ function oracleGhosts(){
 }
 function startOv(type){
   const ov = {type, t:0, len:BOSS_SKILLS[type].len};
-  if (type==='flatspike') ov.dir = has('bearfaith') ? -1 : (B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1));
-  if (type==='fake') ov.d = (Math.random()<.5?1:-1)*.02;
-  if (type==='saw') ov.dir = Math.random()<.5?1:-1;
+  // 第一层没有做空：庄家只用诱多套路，每个招都留一个做多能赚的方向
+  const up0 = R.floor===0;
+  if (type==='flatspike') ov.dir = (has('bearfaith') || up0) ? -1 : (B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1));
+  if (type==='fake') ov.d = (up0 ? 1 : (Math.random()<.5?1:-1))*.02;
+  if (type==='saw') ov.dir = up0 ? 1 : (Math.random()<.5?1:-1);
   if (type==='oracle'){ const dd = Math.random()<.5?1:-1; ov.dir = dd;
     ov.plan = [0,1,2,3].map(()=>dd*(.02+Math.random()*.015)).concat([-dd*.06]);      // 真实走势
     ov.ghost = ov.plan.slice(0,4).concat([dd*.03]); }                              // 画面上的预言：最后一根也照原方向画（骗你）
-  if (type==='beat') ov.dir = Math.random()<.5?1:-1;
-  if (type==='mirror') ov.d = (Math.random()<.5?1:-1)*.025;   // 报表做反：价格照常有个方向，只是画面倒过来
+  if (type==='beat') ov.dir = up0 ? 1 : (Math.random()<.5?1:-1);
+  if (type==='mirror') ov.d = (up0 ? 1 : (Math.random()<.5?1:-1))*.025;   // 报表做反：价格照常有个方向，只是画面倒过来
   B.ov = ov; B.bubble = C.bskill[type].shout; B.bubbleT = 140; sfx('tell');
 }
 // 妨碍类技能：不进入 B.ov，不碰价格；left 按 K 线根数倒数（endCandle 里减），unplug 改用真实秒数 sec
