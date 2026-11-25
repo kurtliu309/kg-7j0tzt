@@ -76,8 +76,8 @@ i_glass:['kkkkkkkk','.kyyyyk.','..kyyk..','...kk...','...kk...','..kwyk..','.kyy
 i_cloak:['...kk...','..kppk..','.kppppk.','.kppppk.','kppppppk','kppppppk','kpkppkpk','kk.kk.kk'],
 i_amulet:['..kkkk..','.k....k.','..k..k..','...kk...','..kyyk..','.kyrryk.','.kyrryk.','..kyyk..'],
 i_glove:['..c.c...','.cwcwc..','.cwcwcc.','.cwwwwc.','.cwwwwc.','..cwwc..','..cccc..','........'],
-i_phone:['..kkkk..','.k....k.','k......k','k......k','kk....kk','rk....kr','rk....kr','........'],
-i_specs:['........','........','kkk..kkk','kckkkkck','kkk..kkk','........','........','........'],
+i_phone:['..cccc..','.cw..wc.','cw....wc','cw....wc','cww..wwc','rw....wr','rw....wr','........'],
+i_specs:['........','........','cccc.ccc','cwcccccw','cccc.ccc','........','........','........'],
 i_book:['.kkkkkk.','.kyyyyk.','.kyrryk.','.kyyyyk.','.kyyyyk.','.kyrryk.','.kyyyyk.','.kkkkkk.'],
 i_potion:['...kk...','...ww...','..kwwk..','.krrrrk.','krrrrrrk','krrwrrrk','.krrrrk.','..kkkk..'],
 i_root:['...gg...','..g..g..','...gg...','..kwwk..','..kwwk..','.z.zz.z.','z..z..z.','........'],
@@ -89,7 +89,14 @@ i_sickle:['..zzzz..','.z....z.','......z.','.....z..','....z...','...n....','..n
 i_bait:['...r....','..rrr...','...r....','..kyk...','.kyyyk..','.kyyyk..','..kyk...','........'],
 i_report:['kkkkkkk.','kwwwwwk.','kwkkkwk.','kwwwwwk.','kwrrrwk.','kwwwwwk.','kkkkkkk.','........'],
 i_note:['kkkkkk..','kwwwwkk.','kwkkwwk.','kwwwwwk.','kwkkkwk.','kwwwwwk.','kwkkwwk.','kkkkkkk.'],
-i_wifi:['........','..kkkk..','.k....k.','k..kk..k','...kk...','..k..k..','...kk...','....k...'],
+i_wifi:['...cc...','..c..c..','.c.cc.c.','c..cc..c','...cc...','..c..c..','...cc...','....c...'],
+i_diamond:['...kk...','..kyyk..','.kywwyk.','kywwwwyk','.kywwyk.','..kyyk..','...kk...','........'],
+i_mega:['.....kk.','....kyyk','...kyyyk','kkkyyyyk','kyyyyyyk','kkkyyyyk','...kyyyk','....kyyk'],
+i_bear:['r......r','rr....rr','rrrrrrrr','ryrrrryr','rrrrrrrr','rrrkkrrr','rrrrrrrr','.r.rr.r.'],
+i_stamp:['..kkkk..','.kyyyyk.','kykkykyk','kyyyyyyk','.kkkkkk.','..k..k..','..k..k..','........'],
+i_panic:['..kkkk..','..kyyk..','..kyyk..','..kyyk..','..kkkk..','..kyyk..','..kkkk..','........'],
+i_crown:['k..k..k.','kk.kk.kk','kykkkkyk','kyyyyyyk','kyyyyyyk','kkkkkkkk','........','........'],
+i_point:['..kkkk..','..kyyk..','..kyyk..','..kyyk..','kkyyyykk','kyyyyyyk','kkyyyykk','..kkkk..'],
 };
 SPR.heroH = SPR.hero.map((r,i)=> i===11?'....kwkwwkwk....': i===12?'....kwwkkwwk....': r);
 SPR.heroS = SPR.hero.map((r,i)=> i===11?'....kwwwwwwk....': i===12?'....kwwkkwwk....': i===13?'.....kkwwkk.....': r);
@@ -189,16 +196,17 @@ function btn(x,y,w,h,label,o={}){
   T(label, lx, y+dy+(h-2)/2-6, o.tc || '#f4f4f4', 'center', 12);
   if (o.sub) N(o.sub, x+w-4, y+dy+3, o.subc||GOLD, 1, 'right');
   ctx.restore();
-  if (dis || fadeTo) return false;
+  if (dis || fadeTo || cardModal) return false;
   if (clk && hit(clk,x,y,w,h)){ clk=null; sfx('click'); return true; }
   if (o.key && key(o.key)){ sfx('click'); return true; }
   return false;
 }
-function tapAny(){ if (fadeTo) return false; if (clk){ clk=null; return true; } if (key(' ')||key('enter')) return true; return false; }
+function tapAny(){ if (fadeTo || cardModal) return false; if (clk){ clk=null; return true; } if (key(' ')||key('enter')) return true; return false; }
 
 // ---------- 声音（WebAudio 芯片音） ----------
 let AC=null, master=null, muted=false;
 function initAudio(){ if (AC){ if (AC.state==='suspended') AC.resume(); return; } try{ AC = new (window.AudioContext||window.webkitAudioContext)(); master = AC.createGain(); master.gain.value=.55; master.connect(AC.destination); mNext = AC.currentTime+.05; }catch(e){} }
+function beatSnd(acc){ tone(acc?98:73,.09,'square',.07,-30); tone(acc?196:147,.05,'triangle',.05,0,.03); }   // 节奏意图的鼓点（第 4 拍重一点）
 function tone(f,d,type='square',v=.06,slide=0,delay=0){ if(!AC||muted)return; const t=AC.currentTime+delay; const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.02); }
 function noise(d,v=.08,delay=0){ if(!AC||muted)return; const t=AC.currentTime+delay, len=Math.floor(AC.sampleRate*d), b=AC.createBuffer(1,len,AC.sampleRate), data=b.getChannelData(0); for(let i=0;i<len;i++) data[i]=(Math.random()*2-1)*(1-i/len); const s=AC.createBufferSource(); s.buffer=b; const g=AC.createGain(); g.gain.value=v; s.connect(g); g.connect(master); s.start(t); }
 const SFX = {
@@ -351,14 +359,17 @@ const BIG = ['pump','dump','shake','breakout'];
 const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, saw:{len:4}, fake:{len:5},
   // 纯妨碍类：不驱动价格、不给暴击，到点后进入 B.curse（len 是持续根数；unplug 用真实秒数）
   unplug:{len:3,curse:true}, t1:{len:4,curse:true}, fee:{len:4,curse:true},
-  allin:{len:4,curse:true}, halt2:{len:3,curse:true}, stopout:{len:5,curse:true} };
+  allin:{len:4,curse:true}, halt2:{len:3,curse:true}, stopout:{len:5,curse:true},
+  // 专属意图：每个庄家一个，放技能时 50% 选它
+  mind:{len:4}, oracle:{len:5}, beat:{len:8}, fast:{len:3}, mirror:{len:3}, fakesky:{len:5,curse:true} };
 // fake = 撒谎概率，quiet = 不说话的概率，waffle = 每根线改主意的概率
 const BOSSES = [
-  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,skills:['flatspike','pie','unplug','t1'],fake:.1,quiet:.45,waffle:.2,react:{good:'dump'}},
-  {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,skills:['spin','saw','fake','stopout','allin'],fake:.3,quiet:.45,waffle:.25,react:{bad:'shake'}},
+  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,len:40,volMul:1,heatMul:.9,sig:'mind',skills:['flatspike','pie','unplug','t1'],fake:.1,quiet:.45,waffle:.2,react:{good:'dump'}},
+  {key:'granny',spr:'granny',script:'shake',hp:24000,len:40,volMul:1.05,heatMul:1,sig:'oracle',skills:['spin','saw','fake','stopout','allin'],fake:.3,quiet:.45,waffle:.25,react:{bad:'shake'}},
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
-function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
+const MINION_SIG = ['beat','fast','mirror','fakesky',null];   // 荐股群主没有专属技能，他的特性是"群发"意图（spam）
+function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,sig:MINION_SIG[i],spam:i===4,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
   hp:[3500,12000,40000][R.floor],len:30,volMul:1,heatMul:.8,
   skills:[pick(['flatspike','pie','spin','saw','fake','fee','halt2','unplug','t1','stopout','allin'])],fake:R.floor===0?.1:.2,quiet:.45,waffle:.15,react:{}}; }
 // 新闻 = 波动系统：drift 每根的方向漂移，volMul 波动倍数（>1 变猛，<1 变平静）
@@ -371,35 +382,70 @@ const NEWS = [
   {id:'scallop',len:3,drift:-.03,volMul:1.4,mood:'bad'},{id:'lead',len:3,drift:.03,volMul:1.3,mood:'good'},
   {id:'sellDown',len:3,drift:-.025,volMul:1.2},{id:'dip',len:4,drift:-.012,volMul:2},
 ];
-const SKILLS = {
-  order:{school:'ambush',active:true,icon:'i_net'}, tp:{school:'ambush',icon:'i_flag'}, grid:{school:'ambush',icon:'i_bot'}, combo:{school:'ambush',icon:'i_chain'},
-  counter:{school:'contra',icon:'i_sickle'}, bait:{school:'contra',icon:'i_bait'}, lev:{school:'degen',icon:'i_potion'},
-  glove:{school:'survive',icon:'i_glove'}, insure:{school:'survive',icon:'i_amulet'}, book:{school:'survive',icon:'i_book'},
-  lie:{school:'intel',icon:'i_specs'}, bluff:{school:'intel',active:true,icon:'i_phone'},
+// 卡牌池（v5）：school 流派 / type 类别（sig 信号 act 执行 fac 因子）/ legend 传说
+const CARDS = {
+  // 针尖流
+  rod:{school:'pin',type:'act',icon:'i_flag'},
+  echo:{school:'pin',type:'act',icon:'i_wifi'},
+  counter:{school:'pin',type:'act',icon:'i_sickle'},
+  wick:{school:'pin',type:'act',icon:'i_bait'},
+  thousand:{school:'pin',type:'act',legend:true,icon:'i_net'},
+  // 消息流
+  leak:{school:'msg',type:'act',icon:'i_note'},
+  retweet:{school:'msg',type:'act',icon:'i_phone'},
+  insider:{school:'msg',type:'fac',icon:'i_eye'},
+  resonance:{school:'msg',type:'act',icon:'i_chain'},
+  debunk:{school:'msg',type:'act',icon:'i_report'},
+  iamnews:{school:'msg',type:'act',legend:true,icon:'i_mega'},
+  // 长持流
+  lieflat:{school:'hold',type:'sig',icon:'i_cloak'},
+  diamond:{school:'hold',type:'fac',icon:'i_diamond'},
+  dividend:{school:'hold',type:'act',icon:'i_root'},
+  value:{school:'hold',type:'sig',icon:'i_eye'},
+  omaha:{school:'hold',type:'fac',legend:true,icon:'i_book'},
+  // 空头流
+  bearfaith:{school:'bear',type:'sig',icon:'i_bear'},
+  stampede:{school:'bear',type:'act',icon:'i_stamp'},
+  shortsell:{school:'bear',type:'act',icon:'i_sickle'},
+  panic:{school:'bear',type:'sig',icon:'i_panic'},
+  bigshort:{school:'bear',type:'fac',legend:true,icon:'i_crown'},
+  // 情报
+  premeet:{school:'intel',type:'sig',icon:'i_glass'},
+  lie:{school:'intel',type:'sig',icon:'i_specs'},
+  report:{school:'intel',type:'act',icon:'i_report'},
+  expose:{school:'intel',type:'act',icon:'i_point'},
+  // 因子
+  lev:{school:'fac',type:'fac',icon:'i_potion'},
+  glove:{school:'fac',type:'fac',icon:'i_glove'},
+  combo:{school:'fac',type:'fac',icon:'i_chain'},
+  engine:{school:'fac',type:'fac',icon:'i_bot'},
+  book:{school:'fac',type:'fac',icon:'i_book'},
+  insure:{school:'fac',type:'fac',icon:'i_amulet'},
 };
-const SCHOOL_COL = {ambush:'#ffcd75',contra:'#d44dff',degen:'#e43b44',survive:'#73eff7',intel:'#a7f070'};
-const ITEMS = { hourglass:{price:600,icon:'i_glass'}, cloak:{price:900,icon:'i_cloak'}, report:{price:1200,icon:'i_report'} };
-const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
+const SCHOOL_COL = {pin:'#41a6f6',msg:'#ffcd75',hold:'#a7f070',bear:'#e43b44',intel:'#73eff7',fac:'#d44dff'};
+const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 
 // =====================================================================
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.11 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v5.0 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
-  tagItem:'消耗品', tagRoot:'复活', pickTitle:'选一个技能', pickSub:'打空了庄家的筹码条，战利品三选一', pickTap:'点一张卡拿走', pickNone:'技能全学会了！送你 2000 叶。', active:'主动', passive:'被动',
-  minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓', order:'挂单', bluff:'逼宫',
-  hourglass:'冻结', cloak:'斗篷', report:'举报', flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
-  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', halt:'熔断中…', frozen:'时间冻结', paused:'暂停', yourSkills:'你的技能：', noSkills:'还没有。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
+  tagRoot:'复活', pickTitle:'选一张卡', pickSub:'打空了庄家的筹码条，战利品三选一', pickTap:'点一张卡拿走', pickNone:'卡池已经空了！送你 2000 叶。',
+  build:'构筑', empty:'空', fullTitle:'构筑栏满了', fullSub:'用新卡替换一张，或放弃新卡', discard:'放弃新卡', chain:'连锁 ×{n}', slotUp:'构筑栏 +1 格！',
+  minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓',
+  flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
+  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', msgN:'消息', halt:'熔断中…', paused:'暂停', yourSkills:'你的构筑：', noSkills:'还没有卡。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
   rHarv:'被收割了！', rKill:'庄家崩盘！', rFail:'没打空筹码条…', rSurv:'撑过去了', rScript:'庄家剧本：', rMoney:'叶子：', rLine:'收割线：', rIntent:'意图真假：',
   mHarv:'叶子掉到了收割线以下。', mHarvSteal:'庄家抽走了 {n}，\n', mRoot:'\n还有一条根，可以重新发芽。', mNoRoot:'\n没有根了……', mFail:'时间到，庄家抽走了 {n}。\n他还站着，再打一次。',
-  mKill:'清算时间捞到 {n}！\n去挑一个技能吧。', mBook:'\n复利存折 +5%', mSteal:'时间到，小庄抽走了 {n}。\n没打空，没有技能奖励。', mSurv:'撑过去了。',
-  tShortLocked:'做空还没解锁（打败老钱后获得）', tFull:'已经满仓了', tNoSkill:'庄家现在没在放技能', tReported:'举报成功，庄家技能被打断', tInsure:'爆仓保险生效！',
-  tDodge:'躲开了！破绽 ×2', tMiss:'扑空！破绽 ×2', tStrike:'被插针强平一仓！', tCounter:'反向收割！', tCaught:'接住了！', tCaughtS:'空住了！', tTp:'接针止盈！', tTp2:'止盈挂单',
-  tGrid:'+网格', tBait:'诱饵 +3%', tCloak:'隐身！', tTruth:'真相大白！', tLie:'骗你的！', tCalled:'被逼宫了！暴击 ×2', tWasTrue:'本来就是真的~', tNoIntent:'现在没有可逼的意图', tGoLong:'做多！', tGoShort:'做空！', tCollapse:'清算 ×2',
-  tCritHit:'抓住破绽，暴击！', heal:'回血', stolen:'被抽走', allinBtn:'梭哈', halt2:'停牌', feeBadge:'手续费 3%', tNetDown:'断网了', tHalt2:'停牌中，不能交易', t1Lock:'T+1 锁定，还剩 {n} 根', tStop:'风控强平', tCurseEnd:'恢复交易', testEnd:'测试版到此为止', testWin:'你打通了前两层！', testFoot:'玩完告诉 Kurt 手感怎么样~', sFinal:'最终叶子', sTrades:'交易次数', sHarv:'被收割', sSkills:'技能',
+  mKill:'清算时间捞到 {n}！\n去挑一张卡吧。', mBook:'\n复利存折 +5%', mSteal:'时间到，小庄抽走了 {n}。\n没打空，没有卡牌奖励。', mSurv:'撑过去了。',
+  tShortLocked:'做空还没解锁（打败老钱后获得）', tFull:'已经满仓了', tReported:'举报成功，庄家技能被打断', tInsure:'爆仓保险生效！',
+  tDodge:'躲开了！破绽 ×2', tMiss:'扑空！破绽 ×2', tStrike:'被插针强平一仓！', tCounter:'反向收割！',
+  tTruth:'真相大白！', tLie:'骗你的！', tGoLong:'做多！', tGoShort:'做空！', tCollapse:'清算 ×2',
+  tThousand:'千针！庄家筹码 -10%', tBigShort:'大空头！利润 ×2', tDividend:'分红 +1%', tExpose:'戳穿！筹码 -3%',
+  tCritHit:'抓住破绽，暴击！', heal:'回血', stolen:'被抽走', allinBtn:'梭哈', halt2:'停牌', feeBadge:'手续费 3%', tNetDown:'断网了', tHalt2:'停牌中，不能交易', t1Lock:'T+1 锁定，还剩 {n} 根', tStop:'风控强平', tCurseEnd:'恢复交易', tFakeSky:'天气是假的！', pvQian:'上车！', pvGranny:'孩子，别怕。', pvGuard:'第 {n} 层守塔人', pvSig:'招牌：{s}　谎 {n}%', pvMinion:'{n} 来了！', busted:'爆仓！', fateLine:'天机不可泄露~', spamHead:'群发', fakeTag:'假', testEnd:'测试版到此为止', testWin:'你打通了前两层！', testFoot:'玩完告诉 Kurt 手感怎么样~', sFinal:'最终叶子', sTrades:'交易次数', sHarv:'被收割', sSkills:'卡牌',
   goTitle:'你被彻底收割了', goWhere:'倒在了 {f}', goStats:'交易 {t} 次 · 被收割 {h} 次', goQuote:'「韭菜割了，还会再长。」', goWho:'—— 爷爷', goAgain:'重新发芽', langPick:'选择语言 / Choose language',
  },
  floors:['一层 · 饼屋','二层 · 洗衣房','三层 · 剧场','四层 · 温泉','顶层 · 收割台'],
@@ -412,8 +458,10 @@ const ZH = {
  minionLines:{lock:'大哥，这有棵韭菜！',dodge:'跑得挺快啊',hit:'嘿嘿，到手',miss:'咦，空的？',panic:'完了完了',lie:'骗你的啦',called:'行行行，真拉！',idle:['我大哥在楼上。','跟着我有肉吃。','今天割谁好呢~','你看我这线画得直不直？']},
  bskill:{flatspike:{name:'一字插针',shout:'嘘——'},pie:{name:'画大饼',shout:'画——大——饼！'},spin:{name:'甩干',shout:'甩干咯~'},saw:{name:'拉锯',shout:'拉——锯——！'},fake:{name:'假K线',shout:'洗得白白的~'},
    unplug:{name:'拔网线',shout:'网线我拔了~'},t1:{name:'T+1',shout:'明天才能卖哦~'},fee:{name:'手续费暴涨',shout:'手续费涨一点~'},
-   allin:{name:'限仓梭哈',shout:'梭哈！梭哈！'},halt2:{name:'停牌',shout:'停牌整顿~'},stopout:{name:'风控强平',shout:'风控来了~'}},
- kind:{flat:'横盘',pump:'拉升',top:'派发',dump:'砸盘',bleed:'阴跌',shake:'洗盘',bottom:'吸筹',range:'震荡',breakout:'突破',flatspike:'一字插针',pie:'画大饼',spin:'甩干',saw:'拉锯',fake:'假K线',react:'借消息',forced:'被逼宫',
+   allin:{name:'限仓梭哈',shout:'梭哈！梭哈！'},halt2:{name:'停牌',shout:'停牌整顿~'},stopout:{name:'风控强平',shout:'风控来了~'},
+   mind:{name:'读心',shout:'让我看看你在想什么~'},oracle:{name:'算一卦',shout:'婆婆给你算一卦~'},beat:{name:'跟大哥节奏',shout:'跟上节奏！'},
+   fast:{name:'三秒进出',shout:'三秒进，三秒出！'},mirror:{name:'报表做反',shout:'报表嘛，倒过来看~'},fakesky:{name:'篡改天气',shout:'家人们，暴风雨要来了！'}},
+ kind:{flat:'横盘',pump:'拉升',top:'派发',dump:'砸盘',bleed:'阴跌',shake:'洗盘',bottom:'吸筹',range:'震荡',breakout:'突破',flatspike:'一字插针',pie:'画大饼',spin:'甩干',saw:'拉锯',fake:'假K线',react:'借消息',mind:'读心',oracle:'算一卦',beat:'节奏',fast:'三秒进出',mirror:'报表做反',
    unplug:'拔网线',t1:'T+1',fee:'手续费暴涨',allin:'限仓梭哈',halt2:'停牌',stopout:'风控强平'},
  script:{pumpdump:'诱多出货',shake:'洗盘拉升',fakebreak:'假突破',boil:'温水煮青蛙',dragon:'真龙出海'},
  news:{cut:['央行宣布降息','降息'],reg:['监管：严查操纵市场','监管进场'],kol:['某大V直播喊单','散户涌入'],swan:['突发黑天鹅事件','黑天鹅'],earn:['今晚公布财报','财报日'],halt:['交易所临时熔断','熔断'],
@@ -428,18 +476,46 @@ const ZH = {
   bottom:['跌不动了，底在哪','没人说话了，好安静','我已经卸载软件了'],range:['箱体震荡，高抛低吸','又是这个位置，没意思','等突破再说'],
   breakout:['突破箱体！历史性时刻！','这都不追？等着后悔吧','还犹豫什么，梭哈！'],flatspike:['怎么不动了？停牌了？','一字线，懂的都懂','庄家睡着了？'],
   pie:['十倍股！十倍股！','我就知道！财富自由！','卖房上车！'],spin:['这是K线还是心电图','我止损被打了八次','头好晕'],fake:['稳了稳了','这走势也太完美了吧','成交量怎么这么小？'],
-  react:['消息出来了！','利好兑现就是利空？','这消息是真的吗'],forced:['庄家被逼宫了！','这下他不拉也得拉','哈哈哈说谎被抓了']},
+  react:['消息出来了！','利好兑现就是利空？','这消息是真的吗']},
  posters:['价值投资老王','满仓哥','韭菜一号','反向指标','股神本神','退休大爷','小白','技术派阿强'],
  cutLoss:['割在了地板上，庄家感谢你的筹码','你一卖它就涨，这是宇宙定律','教科书级的追涨杀跌'], take:['落袋为安，今晚加鸡腿','赚钱了？庄家记住你了','漂亮！'],
- school:{ambush:'埋伏流',contra:'反向流',degen:'赌徒流',survive:'苟命流',intel:'情报流'},
- skill:{order:['接针单','主动：上下 5% 各挂一单。价格扎过去自动接住，弹回原位自动止盈。冷却 5 根。'],tp:['止盈挂单','持仓浮盈到 10% 自动平仓。'],
-  grid:['网格机器人','价格每跳超过 2%，自动赚一点差价。越乱越赚。'],combo:['连环套','连续盈利平仓，每次额外多赚 25%，可叠加。亏一次清零。'],
-  counter:['反向收割','被庄家狙击时不会被强平，反而在针尖加一仓。'],bait:['诱饵','关注度涨两倍；每次躲开或让庄家扑空，白捡 3% 叶子。'],
-  lev:['杠杆药水','仓位翻倍。关注度也涨得更快。'],glove:['钻石手套','关注度增长减半。'],insure:['爆仓保险','每场第一次要被收割时，保住收割线的 1.3 倍叶子。'],
-  book:['复利存折','每赢一场，叶子 +5%。'],lie:['测谎仪','看出庄家公开的意图是真话还是谎话。'],bluff:['逼宫','主动：逼庄家兑现他公开的意图。如果他在撒谎，直接打开暴击窗口！冷却 8 根。']},
- item:{hourglass:['冻结沙漏','时间暂停 3 秒，慢慢想'],cloak:['隐身斗篷','清空关注度，取消庄家的狙击'],report:['举报信','打断庄家正在放的离谱技能']},
+ school:{pin:'针尖流',msg:'消息流',hold:'长持流',bear:'空头流',intel:'情报流',fac:'因子流'},
+ cat:{sig:'信号',act:'执行',fac:'因子'},
+ card:{
+  rod:['避雷针','躲开狙击时，在针尖派一个反方向分身。'],
+  echo:['回声','暴击平仓时，下一根扎一根 5% 小针，方向与刚平的仓相反。'],
+  counter:['反向收割','被狙击时不被强平，反而在针尖加一仓。'],
+  wick:['接针','每次插针，在针尖派一个反方向分身。'],
+  thousand:['千针','分身连续 5 次盈利平仓，庄家筹码 -10%，计数归零。'],
+  leak:['放料','盈利平仓时，放出一条同方向小消息。'],
+  retweet:['转发','每出现一条消息，50% 再复制一条同方向的。'],
+  insider:['内幕','场上每条消息，平仓利润 +4%。'],
+  resonance:['共振','同方向消息叠到 3 条：清掉这 3 条，下一根 ±8%，并开 2 根暴击窗口。'],
+  debunk:['辟谣','消息过期时，派一个反方向分身。'],
+  iamnews:['我就是新闻','暴击平仓时，放出 3 条同方向消息。'],
+  lieflat:['躺平','持仓超过 5 根后，关注度不再上涨。'],
+  diamond:['钻石手','持仓每多 1 根，平仓利润 +5%，最多 +60%。'],
+  dividend:['分红','持仓每满 5 根，叶子 +1%。'],
+  value:['价值发现','庄家撒谎揭晓时你的仓位没动过，开 3 根暴击窗口。'],
+  omaha:['奥马哈老头','持仓超过 15 根再平仓，利润 ×3。'],
+  bearfaith:['空头信仰','所有插针只往下扎，做多时也一样，更疼。'],
+  stampede:['踩踏','连跌 3 根后，下一根跌幅 ×1.5。'],
+  shortsell:['融券','开空仓时，同时派一个空头分身。'],
+  panic:['恐慌指数','有偏空消息或利空新闻生效时，空仓平仓必暴击。'],
+  bigshort:['大空头','单根跌超 8% 时，手上的空仓立刻按双倍利润结算。'],
+  premeet:['盘前会议','庄家公布大意图（拉升/砸盘/突破/洗盘）时，K 线停 1.5 秒。'],
+  lie:['测谎仪','看出意图真假；群发时标出真的那条。'],
+  report:['实名举报','庄家放技能时 30% 直接打断。'],
+  expose:['戳穿','庄家撒谎揭晓时，庄家筹码 -3%。'],
+  lev:['杠杆药水','仓位翻倍，关注度涨得更快。'],
+  glove:['冷静手套','关注度增长减半。'],
+  combo:['连环套','连续盈利平仓，每次额外 +25%，可叠加，亏一次清零。'],
+  engine:['量化引擎','同一根里每多一次连锁，这根的盈利 +10%。'],
+  book:['复利存折','打空庄家时，叶子 +5%。'],
+  insure:['爆仓保险','每场第一次要被割时，保住收割线 1.3 倍。'],
+ },
  rootName:['韭菜根','被割时自动用掉，重新发芽'],
- help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','庄家的撒谎率和不说话率写在名字旁边。','','【关注与暴击】','仓位越重，庄家越注意你。满了会锁定你，','倒数结束一定会扎一根大针；','结束前平仓就不挨打，插针后还会回弹。','反手接针、针尖开仓 = 暴击窗口，赚 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。','','【庄家的招】','有些招根本不动价格，专门妨碍你操作：','拔网线、T+1、涨手续费、停牌、','限仓梭哈、风控强平。'],
+ help:['【基本】','庄家用画笔一根一根画K线，画的时候会乱跳。','做多 / 做空 / 平仓，最多加三次仓。','你赚的叶子 = 打在庄家筹码上的伤害。','','【意图】','庄家头上会公开他的下一步。','但他经常撒谎。局末回放会揭晓真假。','庄家的撒谎率和不说话率写在名字旁边。','','【关注与暴击】','仓位越重，庄家越注意你。满了会锁定你，','倒数结束一定会扎一根大针；','结束前平仓就不挨打，插针后还会回弹。','反手接针、针尖开仓 = 暴击窗口，赚 ×2。','','【叶子就是命】','叶子掉到收割线以下就会被割。','收割线每过一层都会猛涨，必须滚雪球。','早点打空庄家筹码，剩下的时间全是 ×2 清算。','','【庄家的招】','有些招根本不动价格，专门妨碍你操作：','拔网线、T+1、涨手续费、停牌、','限仓梭哈、风控强平。','每个庄家还有一招专属意图，出场名片上写着。','','【构筑】','底部是你的量化策略：最多 6 张卡，从左往右结算。','每张卡都是“当 X 发生，就做 Y”，单拿就能用。','一张卡做的事，可能触发另一张卡——这就是连锁。','卡亮一下就是它在干活。暂停里点两张卡能换位置。'],
  hints:{0:'庄家正在画这根K线，看它乱跳！',2:'觉得要涨？点【做多】上车，多点几次加仓。',6:'赚到了点【平仓】，叶子才算到手。',10:'庄家头上是他的意图——可能是假的。',14:'关注度满了会被锁定：数完一定扎大针；结束前平仓就不挨打，针尖反手开仓赚 ×2。'},
  intro:[['narr','在韭菜村，韭菜们一茬一茬地长，\n一茬一茬地被割。'],['narr','割韭菜的人住在村口的「交易塔」里。\n他们每人手里都有一支画笔。'],['narr','画出来的线，叫做K线。\n线往哪走，韭菜的命就往哪走。'],
    ['grandpa','小韭啊，爷爷要去塔里「抄底」了。\n这次一定能翻身，给你买新花盆。'],['narr','爷爷再也没有回来。\n只剩下一截被割平的根。'],['hero','……我要上塔。\n我要看看，那支笔到底是怎么画的。'],
@@ -457,13 +533,13 @@ const ZH = {
  retry:['就这？再来。','筹码我收下了~','欢迎再来送叶子~'], retryHero:'（还没被割……再来！）',
  revive:['你被割了。\n但地下还留着一条根。','根重新发芽了。\n叶子回到 {n}。这是最后的机会。'], lineUp:'收割线上涨到 {n}！\n叶子掉到线下就会被割。',
  ev:{
-  old:{title:'塔下的老韭菜',text:'一棵灰白的老韭菜坐在台阶上。\n「我在这塔下被割了三十年，\n二百九十九次。」',opts:['听他讲经验','送他 500 叶'],res:[['「庄家嘴上说的，十句里有三句是假的。\n局末回放不会骗人。」\n\n获得 冻结沙漏 ×2'],['他把一截旧根塞到你手里：\n「留着，能多活一次。」\n\n韭菜根 +1']]},
-  guru:{title:'股神直播间',text:'屏幕里的股神声嘶力竭：\n「限时特价！带你翻十倍！\n课程只要 2000 叶！」',opts:['报名！','举报直播间'],res:[['没想到真学到了东西。\n\n获得技能：{skill}','课程内容只有一句话：\n\n「多喝热水。」'],['你写了一封举报信。\n写完发现……这玩意儿塔里也能用。\n\n获得 举报信 ×1']]},
-  broker:{title:'热情的券商小哥',text:'「开通两倍杠杆吗？\n赚得快，亏得……也快。」',opts:['开通','不了谢谢'],res:[['获得技能：杠杆药水\n仓位翻倍，庄家也更容易盯上你。'],['小哥失望地走了，\n临走前还回头看了你三次。']]},
+  old:{title:'塔下的老韭菜',text:'一棵灰白的老韭菜坐在台阶上。\n「我在这塔下被割了三十年，\n二百九十九次。」',opts:['听他讲经验','送他 500 叶'],res:[['「庄家嘴上说的，十句里有三句是假的。\n局末回放不会骗人。」\n\n获得卡牌：盘前会议'],['他把一截旧根塞到你手里：\n「留着，能多活一次。」\n\n韭菜根 +1']]},
+  guru:{title:'股神直播间',text:'屏幕里的股神声嘶力竭：\n「限时特价！带你翻十倍！\n课程只要 2000 叶！」',opts:['报名！','举报直播间'],res:[['没想到真学到了东西。\n\n获得卡牌：{skill}','课程内容只有一句话：\n\n「多喝热水。」'],['你写了一封实名举报。\n写完发现……这玩意儿塔里也能用。\n\n获得卡牌：实名举报']]},
+  broker:{title:'热情的券商小哥',text:'「开通两倍杠杆吗？\n赚得快，亏得……也快。」',opts:['开通','不了谢谢'],res:[['获得卡牌：杠杆药水\n仓位翻倍，庄家也更容易盯上你。'],['小哥失望地走了，\n临走前还回头看了你三次。']]},
   field:{title:'塔里的韭菜田',text:'塔里竟然藏着一片韭菜田，\n阳光从天窗照下来，很暖和。',opts:['晒晒太阳','帮忙除草'],res:[['你的根重新长出来一截。\n\n韭菜根 +1','晒得很舒服，精神焕发！\n\n叶子 +1000'],['干了一下午，赚了 1500 叶。']]},
   casino:{title:'楼梯间的猜大小',text:'「来来来，买大买小，买定离手！\n一把 2000 叶！」',opts:['押大！','不赌'],res:[['开大！你赢了 2000 叶。\n\n（爷爷在天上叹了口气）','开小。\n\n钱没了，庄家笑了。'],['你想起爷爷的话：\n「十赌九输，剩下那个是庄家。」']]},
-  friend:{title:'被套的同伴',text:'一棵年轻的韭菜抱着手机发呆：\n「我满仓了……它还在跌……」',opts:['教他挂单','陪他坐一会'],res:[['你们一起研究了一下午挂单。\n\n获得技能：接针单'],['你们一起看了会儿夕阳。\n他送你一件旧斗篷。\n\n获得 隐身斗篷 ×1']]},
-  liar:{title:'说谎的庄家',text:'楼梯间里，一个小庄家在练习表情：\n「我要拉了……我要拉了……」\n他看到了你。',opts:['偷走他的测谎仪','假装没看见'],res:[['你顺走了他口袋里的小玩意儿。\n\n获得技能：测谎仪'],['他松了口气，塞给你 800 叶封口费。']]},
+  friend:{title:'被套的同伴',text:'一棵年轻的韭菜抱着手机发呆：\n「我满仓了……它还在跌……」',opts:['教他接针','陪他坐一会'],res:[['你们研究了一下午什么时候接针。\n\n获得卡牌：接针'],['你们一起看了会儿夕阳。\n他教你怎样拿得住。\n\n获得卡牌：躺平']]},
+  liar:{title:'说谎的庄家',text:'楼梯间里，一个小庄家在练习表情：\n「我要拉了……我要拉了……」\n他看到了你。',opts:['偷走他的测谎仪','假装没看见'],res:[['你顺走了他口袋里的小玩意儿。\n\n获得卡牌：测谎仪'],['他松了口气，塞给你 800 叶封口费。']]},
   rest:{title:'打工',text:'叶子不够了？\n塔里也有正经活可以干。',opts:['送外卖','天桥摆摊'],res:[['跑了一天，腿都细了。\n\n叶子 +1200'],['生意火爆！\n\n叶子 +2500','下雨了，没人买。\n\n叶子 +300']]},
  },
 };
@@ -472,21 +548,23 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.11 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v5.0 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
-  tagItem:'Item', tagRoot:'Revive', pickTitle:'Pick a skill', pickSub:'You busted his chips. Choose your loot.', pickTap:'Tap a card', pickNone:'You know every skill! Have 2,000 wool.', active:'Active', passive:'Passive',
-  minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close', order:'Order', bluff:'Bluff',
-  hourglass:'Freeze', cloak:'Cloak', report:'Report', flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
-  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', halt:'Halted…', frozen:'Frozen', paused:'Paused', yourSkills:'Your skills:', noSkills:'None yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
+  tagRoot:'Revive', pickTitle:'Pick a card', pickSub:'You busted his chips. Choose your loot.', pickTap:'Tap a card', pickNone:'Out of cards! Have 2,000 wool.',
+  build:'Build', empty:'Empty', fullTitle:'Build full', fullSub:'Replace a card with the new one, or discard it.', discard:'Discard new card', chain:'Chain ×{n}', slotUp:'Build slot +1!',
+  minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close',
+  flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
+  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', msgN:'Rumors', halt:'Halted…', paused:'Paused', yourSkills:'Your build:', noSkills:'No cards yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
   rHarv:'FLEECED!', rKill:'SHEARER BROKE!', rFail:'He survived…', rSurv:'Survived', rScript:'Script: ', rMoney:'Wool: ', rLine:'Line: ', rIntent:'Intents: ',
   mHarv:'Your wool fell below the shear line.', mHarvSteal:'He took {n} from you.\n', mRoot:'\nYour Golden Fleece saves you.', mNoRoot:'\nNo fleece left…', mFail:'Time\'s up. He took {n}.\nHe\'s still standing. Again.',
-  mKill:'You looted {n} in loot time!\nGo pick a skill.', mBook:'\nCompound Book +5%', mSteal:'Time\'s up. The minion took {n}.\nNo bust, no skill.', mSurv:'You made it.',
-  tShortLocked:'Short is locked (beat Pete first)', tFull:'Position full', tNoSkill:'No skill to interrupt', tReported:'Reported! Skill interrupted', tInsure:'Margin Insurance!',
-  tDodge:'Dodged! CRIT ×2', tMiss:'Missed! CRIT ×2', tStrike:'Sniped! One position liquidated', tCounter:'Counter-Shear!', tCaught:'Caught it!', tCaughtS:'Shorted it!', tTp:'Wick profit!', tTp2:'Take-Profit',
-  tGrid:'+grid', tBait:'Bait +3%', tCloak:'Invisible!', tTruth:'The truth comes out!', tLie:'Gotcha! It was a lie', tCalled:'Bluff called! CRIT ×2', tWasTrue:'It was true, silly~', tNoIntent:'No intent to call', tGoLong:'Long!', tGoShort:'Short!', tCollapse:'Loot ×2',
-  tCritHit:'Crit! You caught him slipping!', heal:'heal', stolen:'Taken', allinBtn:'ALL IN', halt2:'HALTED', feeBadge:'Fee 3%', tNetDown:'Offline!', tHalt2:'Halted — no trading', t1Lock:'T+1 lock: {n} bars left', tStop:'Stop-out!', tCurseEnd:'Trading resumes', testEnd:'End of the beta', testWin:'You cleared Floors 1-2!', testFoot:'Tell Kurt how it felt~', sFinal:'Final wool', sTrades:'Trades', sHarv:'Fleeced', sSkills:'Skills',
+  mKill:'You looted {n} in loot time!\nGo pick a card.', mBook:'\nCompound Book +5%', mSteal:'Time\'s up. The minion took {n}.\nNo bust, no card.', mSurv:'You made it.',
+  tShortLocked:'Short is locked (beat Pete first)', tFull:'Position full', tReported:'Reported! Skill interrupted', tInsure:'Margin Insurance!',
+  tDodge:'Dodged! CRIT ×2', tMiss:'Missed! CRIT ×2', tStrike:'Sniped! One position liquidated', tCounter:'Counter-Shear!',
+  tTruth:'The truth comes out!', tLie:'Gotcha! It was a lie', tGoLong:'Long!', tGoShort:'Short!', tCollapse:'Loot ×2',
+  tThousand:'Thousand Needles! Chips -10%', tBigShort:'The Big Short! Profit ×2', tDividend:'Dividend +1%', tExpose:'Called out! Chips -3%',
+  tCritHit:'Crit! You caught him slipping!', heal:'heal', stolen:'Taken', allinBtn:'ALL IN', halt2:'HALTED', feeBadge:'Fee 3%', tNetDown:'Offline!', tHalt2:'Halted — no trading', t1Lock:'T+1 lock: {n} bars left', tStop:'Stop-out!', tCurseEnd:'Trading resumes', tFakeSky:'The forecast was fake!', pvQian:'ALL ABOARD!', pvGranny:'No need to fear, dearie.', pvGuard:'Guardian of Floor {n}', pvSig:'Signature: {s}   Lie {n}%', pvMinion:'{n} appears!', busted:'BUSTED!', fateLine:'Fate is fickle, dearie~', spamHead:'Mass text', fakeTag:'FAKE', testEnd:'End of the beta', testWin:'You cleared Floors 1-2!', testFoot:'Tell Kurt how it felt~', sFinal:'Final wool', sTrades:'Trades', sHarv:'Fleeced', sSkills:'Cards',
   goTitle:'Completely fleeced', goWhere:'Fell on {f}', goStats:'{t} trades · fleeced {h} times', goQuote:'"Wool grows back."', goWho:'— Grandpa Baa', goAgain:'Regrow', langPick:'选择语言 / Choose language',
  },
  floors:['Floor 1 · Pie Shop','Floor 2 · Laundromat','Floor 3 · Theater','Floor 4 · Hot Spring','Top · Shearing Hall'],
@@ -499,8 +577,10 @@ const EN = {
  minionLines:{lock:'Boss! Fat sheep over here!',dodge:'Fast little guy',hit:'Hehe, got it',miss:'Huh, empty?',panic:'We\'re so cooked',lie:'Psych!',called:'Okay okay, it\'s real!',idle:['My boss is upstairs.','Stick with me, eat good.','Who to fleece today~','Is my line straight or what?']},
  bskill:{flatspike:{name:'Flatline Spike',shout:'Shhh…'},pie:{name:'Pie in the Sky',shout:'BIG! PIE! TIME!'},spin:{name:'Spin Cycle',shout:'Spin cycle, dearie~'},saw:{name:'Seesaw',shout:'Up! Down! Up! Down!'},fake:{name:'Fake Candles',shout:'All washed and pretty~'},
    unplug:{name:'Unplug',shout:'Oops, my cable~'},t1:{name:'T+1',shout:'Sell tomorrow, dearie~'},fee:{name:'Fee Hike',shout:'Small fee increase~'},
-   allin:{name:'All-In Only',shout:'ALL IN! ALL IN!'},halt2:{name:'Trading Halt',shout:'Halted for review~'},stopout:{name:'Stop-Out',shout:'Risk control says hi~'}},
- kind:{flat:'Flat',pump:'Pump',top:'Top',dump:'Dump',bleed:'Bleed',shake:'Shakeout',bottom:'Bottom',range:'Range',breakout:'Breakout',flatspike:'Spike',pie:'Pie',spin:'Spin',saw:'Seesaw',fake:'Fake',react:'News',forced:'Called',
+   allin:{name:'All-In Only',shout:'ALL IN! ALL IN!'},halt2:{name:'Trading Halt',shout:'Halted for review~'},stopout:{name:'Stop-Out',shout:'Risk control says hi~'},
+   mind:{name:'Mind Read',shout:'Let me read your mind~'},oracle:{name:'Fortune',shout:'Let Granny read your fortune~'},beat:{name:'On Beat',shout:'Feel the beat!'},
+   fast:{name:'Blitz',shout:'In and out, three seconds!'},mirror:{name:'Cooked Books',shout:'Read it upside down~'},fakesky:{name:'Fake Forecast',shout:'Fam, a storm is coming!'}},
+ kind:{flat:'Flat',pump:'Pump',top:'Top',dump:'Dump',bleed:'Bleed',shake:'Shakeout',bottom:'Bottom',range:'Range',breakout:'Breakout',flatspike:'Spike',pie:'Pie',spin:'Spin',saw:'Seesaw',fake:'Fake',react:'News',mind:'Mind Read',oracle:'Fortune',beat:'Beat',fast:'Blitz',mirror:'Cooked',
    unplug:'Unplug',t1:'T+1',fee:'Fee Hike',allin:'All-In',halt2:'Halted',stopout:'Stop-Out'},
  script:{pumpdump:'Pump & Dump',shake:'Shakeout Rally',fakebreak:'Fakeout',boil:'Boiling Frog',dragon:'Moonshot'},
  news:{cut:['Fed announces rate cut','Rate Cut'],reg:['Regulators crack down','Regulators'],kol:['Influencer shills on stream','Retail FOMO'],swan:['Black swan event!','Black Swan'],earn:['Earnings report tonight','Earnings'],halt:['Circuit breaker triggered','Halt'],
@@ -515,18 +595,46 @@ const EN = {
   bottom:['Where is the bottom','It got so quiet','Deleted the app'],range:['Buy low sell high, easy','Same level again, boring','Waiting for the breakout'],
   breakout:['BREAKOUT! Historic!','Not buying? Enjoy being poor','YOLO'],flatspike:['Is it halted?','Flatline. IYKYK','Is the shearer asleep?'],
   pie:['10 BAGGER!!','I KNEW IT. Financial freedom!','Sold my house, all in'],spin:['Is this a chart or an EKG','My stop got hit 8 times','I feel dizzy'],fake:['Easy money','Chart looks too perfect','Why is volume so low?'],
-  react:['News is out!','Sell the news?','Is this even real?'],forced:['The shearer got called out!','Now he HAS to follow through','LMAO caught lying']},
+  react:['News is out!','Sell the news?','Is this even real?']},
  posters:['DiamondHooves','BaaHolder','EweOnlyLiveOnce','Lambo4Lamb','PaperHooves','NumberGoUp','RetiredRam','WoolStreetBets'],
  cutLoss:['Sold the exact bottom. The shearer thanks you.','You sell, it pumps. Law of the universe.','Textbook buy high, sell low.'], take:['Bag secured!','Profit? The shearers noticed.','Nice!'],
- school:{ambush:'Ambush',contra:'Contrarian',degen:'Degen',survive:'Survivor',intel:'Intel'},
- skill:{order:['Wick Catcher','Active: orders 5% above and below. Catches spikes, takes profit when price snaps back. Cooldown 5.'],tp:['Take-Profit','Auto-close when your position is up 10%.'],
-  grid:['Grid Bot','Every price jump over 2% earns you a little. The crazier, the better.'],combo:['Chain Combo','Each profitable close in a row earns +25% more (stacks). Resets on a loss.'],
-  counter:['Counter-Shear','When sniped, you are not liquidated. You add a position at the wick instead.'],bait:['Bait','Heat rises 2x. Every dodge or miss gives you +3% wool.'],
-  lev:['Leverage Potion','Double position size. Heat rises faster too.'],glove:['Diamond Hooves','Heat rises half as fast.'],insure:['Margin Insurance','Once per fight, when you\'d be fleeced, survive at 1.3x the shear line.'],
-  book:['Compound Book','Every win: wool +5%.'],lie:['Lie Detector','See whether the shearer\'s intent is the truth or a lie.'],bluff:['Call the Bluff','Active: force the shearer to follow through on his intent. If he was lying: instant CRIT window! Cooldown 8.']},
- item:{hourglass:['Freeze Hourglass','Pause time for 3 seconds'],cloak:['Invisibility Cloak','Clear heat and cancel the snipe'],report:['Report Letter','Interrupt the shearer\'s crazy skill']},
+ school:{pin:'Pin',msg:'News',hold:'Hold',bear:'Bear',intel:'Intel',fac:'Factor'},
+ cat:{sig:'Signal',act:'Action',fac:'Factor'},
+ card:{
+  rod:['Lightning Rod','When you dodge a snipe, send a clone to the wick in the opposite direction.'],
+  echo:['Echo','On a crit close, the next candle pierces a 5% wick opposite your closed position.'],
+  counter:['Counter-Shear','When sniped, you are not liquidated. You add a position at the wick instead.'],
+  wick:['Wick Catcher','Every time a pin happens, send a clone to the wick in the opposite direction.'],
+  thousand:['Thousand Needles','5 profitable clone closes in a row: shearer chips -10%, then reset.'],
+  leak:['Leak','On a profitable close, release a small rumor in the same direction.'],
+  retweet:['Retweet','Whenever a message appears, 50% chance to copy it in the same direction.'],
+  insider:['Insider','Each active message: close profit +4%.'],
+  resonance:['Resonance','3 same-direction messages: consume them, next candle ±8%, and open a 2-candle crit window.'],
+  debunk:['Debunk','When a message expires, send a clone in the opposite direction.'],
+  iamnews:['I Am The News','On a crit close, release 3 messages in the same direction.'],
+  lieflat:['Lie Flat','After holding 5 bars, heat no longer rises.'],
+  diamond:['Diamond Hands','Each extra bar held: close profit +5% (max +60%).'],
+  dividend:['Dividend','Every 5 bars held: wool +1%.'],
+  value:['Value Hunter','When a lie is revealed and your position hasn\'t changed, open a 3-candle crit window.'],
+  omaha:['The Oracle of Omaha','Close after holding more than 15 bars: profit ×3.'],
+  bearfaith:['Bear Faith','All pins point down — even when you\'re long. Ouch.'],
+  stampede:['Stampede','After 3 straight down candles, the next drop is ×1.5.'],
+  shortsell:['Borrowed Shares','When you open a short, send a short clone too.'],
+  panic:['Fear Index','With bearish messages or bad news active, short closes always crit.'],
+  bigshort:['The Big Short','If a candle drops over 8%, your short closes instantly at double profit.'],
+  premeet:['Pre-Market Meeting','When the shearer announces a big intent (pump/dump/shake/breakout), candles pause for 1.5s.'],
+  lie:['Lie Detector','See whether the shearer\'s intent is true; when there are several, mark the real one.'],
+  report:['Whistleblower','30% chance to interrupt the shearer\'s skill.'],
+  expose:['Call Out','When a lie is revealed, shearer chips -3%.'],
+  lev:['Leverage Potion','Double position size. Heat rises faster too.'],
+  glove:['Steady Hooves','Heat rises half as fast.'],
+  combo:['Chain Combo','Each profitable close in a row earns +25% more (stacks). Resets on a loss.'],
+  engine:['Quant Engine','Each extra chain in the same candle: that candle\'s profit +10%.'],
+  book:['Compound Book','When you bust a shearer: wool +5%.'],
+  insure:['Margin Insurance','Once per fight, when you\'d be fleeced, survive at 1.3x the shear line.'],
+ },
  rootName:['Golden Fleece','Auto-used when fleeced. Regrow and keep going.'],
- help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','Lie and quiet rates sit next to his name.','','[Heat & Crit]','Big positions draw his attention.','Full heat: he locks on. The countdown ends','in one huge wick. Close first to dodge;','counter the wick = CRIT window: wool ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.','','[Dirty Tricks]','Some moves never touch the price.','They just tie your hands:','unplug, T+1, fees, halts, all-ins, stop-outs.'],
+ help:['[Basics]','The shearer paints candles one by one.','They jump around while being painted.','Long / Short / Close. Stack up to 3x.','Wool you make = damage to his chips.','','[Intent]','He announces his next move overhead.','He lies a lot. The replay tells all.','Lie and quiet rates sit next to his name.','','[Heat & Crit]','Big positions draw his attention.','Full heat: he locks on. The countdown ends','in one huge wick. Close first to dodge;','counter the wick = CRIT window: wool ×2.','','[Wool is life]','Drop below the shear line = fleeced.','The line jumps every floor. Snowball!','Bust his chips early: the rest is loot ×2.','','[Dirty Tricks]','Some moves never touch the price.','They just tie your hands:','unplug, T+1, fees, halts, all-ins, stop-outs.','Each shearer also has a signature move,','shown on his intro card.','','[Build]','The bottom row is your quant strategy:','up to 6 cards, resolved left to right.','Each card is "when X, do Y" and works alone.','One card’s action can trigger another: chains!','A card flashes when it fires.','In pause, tap two cards to swap them.'],
  hints:{0:'The shearer is painting this candle. Watch it jump!',2:'Think it goes up? Tap LONG. Tap again to add.',6:'Tap CLOSE to bank your profit.',10:'Above his head: his intent. It might be a lie.',14:'Full heat: he locks on. The countdown ends in a big wick; close first to dodge, reverse at the wick for ×2.'},
  intro:[['narr','In Woolly Meadow, lambs grow their wool…\nand every season, it gets sheared.'],['narr','The shearers live in the Exchange Tower.\nEach one holds a brush.'],['narr','The lines they paint are called candles.\nWhere the line goes, the flock follows.'],
    ['grandpa','Lamby, Grandpa\'s going up the Tower\nto buy the dip. This time we\'ll be rich!'],['narr','Grandpa never came back.\nAll that was left was a pile of wool.'],['hero','…I\'m going up the Tower.\nI want to see how that brush really works.'],
@@ -544,13 +652,13 @@ const EN = {
  retry:['That\'s it? Again.','Thanks for the wool~','Come back anytime, sucker~'], retryHero:'(Not fleeced yet… again!)',
  revive:['You got fleeced.\nBut a Golden Fleece kept you warm.','Your wool grows back to {n}.\nThis is your last chance.'], lineUp:'The shear line rose to {n}!\nDrop below it and you\'re fleeced.',
  ev:{
-  old:{title:'The Old Ram',text:'A gray old ram sits on the steps.\n"Fleeced under this tower for thirty years.\nTwo hundred ninety-nine times."',opts:['Hear him out','Give him 500 wool'],res:[['"Three out of ten things they say are lies.\nThe replay never lies."\n\nGot Freeze Hourglass ×2'],['He hands you a shiny fleece:\n"Keep it. One more life."\n\nGolden Fleece +1']]},
-  guru:{title:'Guru Livestream',text:'A guru screams at the screen:\n"LIMITED OFFER! 10x guaranteed!\nCourse is only 2,000 wool!"',opts:['Sign up!','Report the stream'],res:[['You actually learned something.\n\nNew skill: {skill}','The entire course is one sentence:\n\n"Drink more water."'],['You wrote a report letter.\nTurns out it works in the Tower too.\n\nGot Report Letter ×1']]},
-  broker:{title:'Pushy Broker',text:'"Want 2x leverage?\nWin fast. Lose… also fast."',opts:['Sign me up','No thanks'],res:[['New skill: Leverage Potion\nDouble size. Shearers notice you faster.'],['He walks off,\nlooking back at you three times.']]},
+  old:{title:'The Old Ram',text:'A gray old ram sits on the steps.\n"Fleeced under this tower for thirty years.\nTwo hundred ninety-nine times."',opts:['Hear him out','Give him 500 wool'],res:[['"Three out of ten things they say are lies.\nThe replay never lies."\n\nGot card: Pre-Market Meeting'],['He hands you a shiny fleece:\n"Keep it. One more life."\n\nGolden Fleece +1']]},
+  guru:{title:'Guru Livestream',text:'A guru screams at the screen:\n"LIMITED OFFER! 10x guaranteed!\nCourse is only 2,000 wool!"',opts:['Sign up!','Report the stream'],res:[['You actually learned something.\n\nGot card: {skill}','The entire course is one sentence:\n\n"Drink more water."'],['You wrote a whistleblower report.\nTurns out it works in the Tower too.\n\nGot card: Whistleblower']]},
+  broker:{title:'Pushy Broker',text:'"Want 2x leverage?\nWin fast. Lose… also fast."',opts:['Sign me up','No thanks'],res:[['Got card: Leverage Potion\nDouble size. Shearers notice you faster.'],['He walks off,\nlooking back at you three times.']]},
   field:{title:'Sunny Pasture',text:'A hidden pasture inside the Tower.\nWarm light through the skylight.',opts:['Sunbathe','Help weed'],res:[['Your fleece feels thicker.\n\nGolden Fleece +1','So cozy. Fully recharged!\n\nWool +1,000'],['An afternoon of honest work.\n\nWool +1,500']]},
   casino:{title:'Stairwell Dice',text:'"Big or small! Place your bets!\n2,000 wool a roll!"',opts:['Bet BIG!','Walk away'],res:[['BIG! You won 2,000 wool.\n\n(Grandpa sighs from above.)','Small.\n\nYour wool is gone. The house smiles.'],['Grandpa used to say:\n"Nine gamblers lose. The tenth is the house."']]},
-  friend:{title:'Bagholder Buddy',text:'A young lamb stares at his phone:\n"I went all in… it\'s still dropping…"',opts:['Teach him orders','Sit with him'],res:[['You spend the afternoon on limit orders.\n\nNew skill: Wick Catcher'],['You watch the sunset together.\nHe gives you an old cloak.\n\nGot Invisibility Cloak ×1']]},
-  liar:{title:'Lying Shearer',text:'In the stairwell, a small shearer\npractices his poker face:\n"I\'m gonna pump… I\'m gonna pump…"\nHe sees you.',opts:['Steal his gadget','Pretend you saw nothing'],res:[['You pocket the gizmo from his coat.\n\nNew skill: Lie Detector'],['He sighs with relief and slips you\n800 wool of hush money.']]},
+  friend:{title:'Bagholder Buddy',text:'A young lamb stares at his phone:\n"I went all in… it\'s still dropping…"',opts:['Teach him to catch wicks','Sit with him'],res:[['You spend the afternoon studying wicks.\n\nGot card: Wick Catcher'],['You watch the sunset together.\nHe teaches you how to hold.\n\nGot card: Lie Flat']]},
+  liar:{title:'Lying Shearer',text:'In the stairwell, a small shearer\npractices his poker face:\n"I\'m gonna pump… I\'m gonna pump…"\nHe sees you.',opts:['Steal his gadget','Pretend you saw nothing'],res:[['You pocket the gizmo from his coat.\n\nGot card: Lie Detector'],['He sighs with relief and slips you\n800 wool of hush money.']]},
   rest:{title:'Side Hustle',text:'Low on wool?\nThere\'s honest work in the Tower too.',opts:['Deliver food','Street stall'],res:[['You ran all day.\nYour legs are thinner now.\n\nWool +1,200'],['Business is booming!\n\nWool +2,500','It rained. Nobody came.\n\nWool +300']]},
  },
 };
@@ -560,17 +668,17 @@ function setLang(l){ LANG=l; SAVE.lang=l; writeSave(SAVE); C = l==='en'?EN:ZH; a
 function _bt_clear(){ for (const k in _bt) delete _bt[k]; }
 if (LANG) { C = LANG==='en'?EN:ZH; document.title = LANG==='en'?'Fleeced':'韭菜与画笔'; } applyColors();
 const kindTint = k => ({pump:UP+'20',breakout:UP+'30',top:'#ffcd7526',dump:DN+'22',bleed:DN+'14',shake:DN+'26',bottom:'#73eff718',range:'#94b0c214',
-  flatspike:'#d44dff30',pie:'#d44dff30',spin:'#d44dff30',saw:'#d44dff30',fake:'#d44dff30',react:'#ffcd7520',forced:'#a7f07030'})[k] || null;
+  flatspike:'#d44dff30',pie:'#d44dff30',spin:'#d44dff30',saw:'#d44dff30',fake:'#d44dff30',react:'#ffcd7520'})[k] || null;
 
 // 事件机制（文案在 C.ev 里）
 const EVENTS = [
- {id:'old',spr:()=>HERO(),swap:()=>OLD(),opts:[{f:()=>{R.items.hourglass+=2;return 0;}},{cost:500,f:()=>{R.roots=Math.min(5,R.roots+1);return 0;}}]},
- {id:'guru',spr:()=>'minion',swap:()=>({b:'r',n:'y'}),opts:[{cost:2000,f:()=>{ if(Math.random()<.5){ const k=randomSkill(); if(k){ R.skills[k]=1; return {v:0,skill:C.skill[k][0]}; } } return 1; }},{f:()=>{R.items.report+=1;return 0;}}]},
- {id:'broker',spr:()=>'qian',swap:()=>({B:'Z',y:'w',n:'k'}),opts:[{f:()=>{R.skills.lev=1;return 0;}},{f:()=>0}]},
+ {id:'old',spr:()=>HERO(),swap:()=>OLD(),opts:[{f:()=>{gainCard('premeet');return 0;}},{cost:500,f:()=>{R.roots=Math.min(5,R.roots+1);return 0;}}]},
+ {id:'guru',spr:()=>'minion',swap:()=>({b:'r',n:'y'}),opts:[{cost:2000,f:()=>{ if(Math.random()<.5){ const k=randomCard(); if(k){ gainCard(k); return {v:0,skill:C.card[k][0]}; } } return 1; }},{f:()=>{gainCard('report');return 0;}}]},
+ {id:'broker',spr:()=>'qian',swap:()=>({B:'Z',y:'w',n:'k'}),opts:[{f:()=>{gainCard('lev');return 0;}},{f:()=>0}]},
  {id:'field',spr:()=>HERO(),swap:()=>LANG==='en'?{w:'y'}:{g:'l',l:'y'},opts:[{f:()=>{ if(R.roots<3){R.roots++;return 0;} R.cap+=1000; return 1; }},{f:()=>{R.cap+=1500;return 0;}}]},
  {id:'casino',spr:()=>'minion',swap:()=>({b:'p',n:'k'}),opts:[{cost:2000,f:()=>{ if(Math.random()<.5){R.cap+=4000;return 0;} return 1; }},{f:()=>0}]},
- {id:'friend',spr:()=>HERO(),swap:()=>LANG==='en'?{w:'c'}:{g:'G',l:'g'},opts:[{f:()=>{R.skills.order=1;return 0;}},{f:()=>{R.items.cloak+=1;return 0;}}]},
- {id:'liar',spr:()=>'minion',swap:()=>({b:'D',n:'n'}),opts:[{f:()=>{R.skills.lie=1;return 0;}},{f:()=>{R.cap+=800;return 0;}}]},
+ {id:'friend',spr:()=>HERO(),swap:()=>LANG==='en'?{w:'c'}:{g:'G',l:'g'},opts:[{f:()=>{gainCard('wick');return 0;}},{f:()=>{gainCard('lieflat');return 0;}}]},
+ {id:'liar',spr:()=>'minion',swap:()=>({b:'D',n:'n'}),opts:[{f:()=>{gainCard('lie');return 0;}},{f:()=>{R.cap+=800;return 0;}}]},
 ];
 const REST = {id:'rest',spr:()=>HERO(),swap:()=>null,opts:[{f:()=>{R.cap+=1200;return 0;}},{f:()=>{ if(Math.random()<.5){R.cap+=2500;return 0;} R.cap+=300; return 1; }}]};
 
@@ -579,10 +687,19 @@ const REST = {id:'rest',spr:()=>HERO(),swap:()=>null,opts:[{f:()=>{R.cap+=1200;r
 // =====================================================================
 let R = null;
 function newRun(){
-  R = { floor:0, cap:10000, line:LINES[0], roots:1, items:{hourglass:1,cloak:1,report:0}, skills:{}, short:false,
+  R = { floor:0, cap:10000, line:LINES[0], roots:1, cards:[], slots:3, short:false,
         map:genMap(0), row:-1, col:-1, usedEv:[], tutorial:true, stats:{trades:0,harvested:0,battles:0,kills:0} };
 }
-function randomSkill(){ const pool = Object.keys(SKILLS).filter(k=>!R.skills[k]); return pool.length ? pick(pool) : null; }
+const has = k => !!(R && R.cards && R.cards.includes(k));
+// 可选卡池：没拥有的卡；传说卡要求同流派已有 ≥2 张
+function cardPool(){
+  const cnt = {};
+  for (const k of R.cards){ const s = CARDS[k].school; cnt[s] = (cnt[s]||0)+1; }
+  return Object.keys(CARDS).filter(k => !has(k) && (!CARDS[k].legend || (cnt[CARDS[k].school]||0) >= 2));
+}
+function randomCard(){ const pool = cardPool(); return pool.length ? pick(pool) : null; }
+function cardPrice(k){ return Math.round(R.line * (CARDS[k].legend ? CARD_COEF.legend : CARD_COEF.normal) / 100) * 100; }
+const rootPrice = () => Math.round(R.line * ROOT_COEF / 100) * 100;
 function genMap(f){
   const types=['battle','event','shop','rest'], w=[.46,.3,.12,.12];
   const rnd=()=>{ let r=Math.random(),a=0; for(let i=0;i<4;i++){ a+=w[i]; if(r<a) return types[i]; } return 'battle'; };
@@ -667,10 +784,13 @@ function hudTop(){
   N(fmt(R.cap), 282, 6, '#a7f070', 1, 'right'); T(t('money'), 278 - 4*fmt(R.cap).length - TW(t('money')), 1, '#94b0c2');
   N(fmt(R.line), 282, 20, DANGER, 1, 'right'); T(t('line'), 278 - 4*fmt(R.line).length - TW(t('line')), 15, '#94b0c2');
 }
-function skillBar(y){
-  box(0,y,W,22,'#141623','#333c57'); let ix=6;
-  for (const k of Object.keys(ITEMS)){ spr(ITEMS[k].icon, ix, y+7, 1); N('x'+R.items[k], ix+11, y+9, '#f4f4f4'); ix+=32; }
-  ix += 4; for (const k of Object.keys(R.skills)){ spr(SKILLS[k].icon, ix, y+7, 1); ix+=11; }
+function buildHud(y){
+  box(0,y,W,22,'#141623','#333c57'); let ix=4;
+  for (let i=0;i<R.slots;i++){
+    if (i<R.cards.length){ const s=CARDS[R.cards[i]]; spr(s.icon, ix, y+7, 1); ctx.fillStyle=SCHOOL_COL[s.school]; ctx.fillRect(ix, y+18, 8, 1); }
+    else { ctx.fillStyle='#333c57'; ctx.fillRect(ix+1, y+8, 6, 6); }
+    ix += 11;
+  }
   if (R.short) T(t('canShort'), 282, y+5, '#73eff7', 'right');
 }
 function MapScene(){
@@ -678,7 +798,7 @@ function MapScene(){
   const nodePos = (r,c) => ({ x: c===0?84:204, y: 420 - r*92 });
   const ICON = {battle:['gBattle','#b13e53','nBattle'],event:['gEvent','#3b5dc9','nEvent'],shop:['gShop','#ef7d57','nShop'],rest:['gRest','#257179','nRest']};
   return { enter(){ music('map'); }, frame(f){
-    tt+=f; ctx.drawImage(bgFor(R.floor),0,0); hudTop(); skillBar(30);
+    tt+=f; ctx.drawImage(bgFor(R.floor),0,0); hudTop(); buildHud(30);
     const cur = R.row<0 ? {x:144,y:486} : nodePos(R.row,R.col); const nextRow = R.row+1;
     const drawPath=(a,b,col)=>{ const n=Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/6); ctx.fillStyle=col; for(let i=1;i<n;i++){ ctx.fillRect(Math.round(lerp(a.x,b.x,i/n))-1,Math.round(lerp(a.y,b.y,i/n))-1,2,2);} };
     for (let r=0;r<3;r++) for (let c=0;c<2;c++){ const p=nodePos(r,c); if (r<2){ drawPath(p,nodePos(r+1,0),'#333c57'); drawPath(p,nodePos(r+1,1),'#333c57'); } else drawPath(p,{x:144,y:118},'#333c57'); }
@@ -721,15 +841,49 @@ function EventScene(ev){
     } else if (btn(84, 400, 120, 32, t('cont'), {col:'#b13e53'})) go(MapScene());
   }};
 }
+// ---------- 拿卡 / 替换界面 ----------
+let cardModal = null;
+function gainCard(k, after){
+  if (!k || has(k)){ if (after) after(); return false; }
+  if (R.cards.length < R.slots){
+    R.cards.push(k); sfx('magic'); toast(C.card[k][0]);
+    if (after) after(); return true;
+  }
+  cardModal = {k, after: after||null}; return false;
+}
+function drawCardModal(c){
+  const m = cardModal; ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
+  box(10, 44, 268, 422, '#1a1c2c', GOLD);
+  bigText(t('fullTitle'), W/2, 52, 2, GOLD); T(t('fullSub'), W/2, 84, '#94b0c2', 'center', 10);
+  const nc = CARDS[m.k], ncol = SCHOOL_COL[nc.school];
+  box(20, 102, 248, 56, '#141623', ncol);
+  spr(nc.icon, 28, 114, 3); T(C.card[m.k][0], 62, 108, ncol);
+  T(C.school[nc.school]+' · '+C.cat[nc.type], 260, 108, '#94b0c2', 'right', 10);
+  const allD = wrap(C.card[m.k][1], 196), nd = allD.slice(0,2); if (allD.length>2) nd[1] = nd[1].slice(0,-1)+'…';
+  nd.forEach((l,j)=>T(l, 62, 124+j*13, '#f4f4f4', 'left', 10));
+  R.cards.forEach((k,i)=>{ const y = 168+i*36, s=CARDS[k], sc=SCHOOL_COL[s.school];
+    const hov = c && hit(c, 20, y, 248, 32);
+    box(20, y, 248, 32, hov?'#29366f':'#141623', hov?GOLD:sc);
+    spr(s.icon, 26, y+8, 2); T(C.card[k][0], 48, y+3, sc);
+    T(C.school[s.school]+' · '+C.cat[s.type], 260, y+3, '#94b0c2', 'right', 10);
+    const dl = wrap(C.card[k][1], 196); T(dl.length>1 ? dl[0].slice(0,-1)+'…' : dl[0], 48, y+17, '#94b0c2', 'left', 10);
+    if (hov && c){ cardModal = null; R.cards[i] = m.k; sfx('magic'); burst(144, 160, 20, [GOLD,'#f4f4f4']); if (m.after) m.after(); return; }
+  });
+  if (cardModal){
+    const dx=84, dy=432, dw=120, dh=24, hov = c && hit(c, dx, dy, dw, dh);
+    box(dx, dy, dw, dh, hov ? '#3b5dc9' : '#333c57', INK, hov ? '#f4f4f4' : '#566c86');
+    T(t('discard'), W/2, dy+5, hov ? '#f4f4f4' : '#94b0c2', 'center', 11);
+    if (hov && c){ cardModal = null; sfx('click'); if (m.after) m.after(); }
+  }
+}
+
 function ShopScene(){
-  const stock = []; const PM = [1,3,10,30,100][R.floor];
-  const ip = Object.keys(ITEMS); for (let i=0;i<2;i++) stock.push({kind:'item',k:ip.splice(Math.floor(Math.random()*ip.length),1)[0]});
-  const sp = Object.keys(SKILLS).filter(k=>!R.skills[k]); for (let i=0;i<2 && sp.length;i++) stock.push({kind:'skill',k:sp.splice(Math.floor(Math.random()*sp.length),1)[0]});
-  if (stock.length<4) stock.push({kind:'root'});
+  const stock = []; const cp = cardPool();
+  for (let i=0;i<3 && cp.length;i++) stock.push({kind:'card',k:cp.splice(Math.floor(Math.random()*cp.length),1)[0]});
+  stock.push({kind:'root'});
   const sold = {}; let say=t('shopHi'), tt=0;
-  const info = s => { const o = s.kind==='item' ? {name:C.item[s.k][0],desc:C.item[s.k][1],price:ITEMS[s.k].price,icon:ITEMS[s.k].icon,tag:t('tagItem'),tc:'#73eff7'}
-    : s.kind==='skill' ? {name:C.skill[s.k][0],desc:C.skill[s.k][1],price:SKILL_PRICE,icon:SKILLS[s.k].icon,tag:C.school[SKILLS[s.k].school],tc:SCHOOL_COL[SKILLS[s.k].school]}
-    : {name:C.rootName[0],desc:C.rootName[1],price:ROOT_PRICE,icon:'i_root',tag:t('tagRoot'),tc:'#a7f070'}; o.price = Math.round(o.price*PM); return o; };
+  const info = s => { if (s.kind==='root') return {name:C.rootName[0],desc:C.rootName[1],price:rootPrice(),icon:'i_root',tag:t('tagRoot'),tc:'#a7f070'};
+    const cd = CARDS[s.k]; return {name:C.card[s.k][0],desc:C.card[s.k][1],price:cardPrice(s.k),icon:cd.icon,tag:C.school[cd.school]+' · '+C.cat[cd.type],tc:SCHOOL_COL[cd.school]}; };
   return { frame(f){
     tt+=f; ctx.drawImage(bgFor(R.floor),0,0); hudTop(); ctx.fillStyle='#0006'; ctx.fillRect(0,30,W,H);
     spr('minion', 18, 44+Math.round(Math.sin(tt*.07)*2), 4, {swap:{b:'o',n:'y'}});
@@ -740,25 +894,25 @@ function ShopScene(){
       if (sold[i]) T(t('sold'), 244, y+28, '#566c86', 'center');
       else if (btn(210, y+22, 62, 28, fmt(it.price), {col:'#257179', disabled:R.cap<it.price})){
         R.cap-=it.price; sold[i]=1; sfx('coin'); burst(240,y+30,16,['#ffcd75','#f4f4f4']);
-        if (s.kind==='item') R.items[s.k]++; else if (s.kind==='skill') R.skills[s.k]=1; else R.roots++;
+        if (s.kind==='card') gainCard(s.k); else R.roots++;
         say = pick(t('shopSay')); } });
     if (btn(84, 418, 120, 30, t('leave'), {col:'#b13e53'})) go(MapScene());
     T(t('shopFoot'), W/2, 458, '#94b0c2', 'center');
   }};
 }
-function SkillPickScene(next){
-  const pool = Object.keys(SKILLS).filter(k=>!R.skills[k]); const opts = [];
+function CardPickScene(next){
+  const pool = cardPool(); const opts = [];
   while (opts.length<3 && pool.length) opts.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
   let tt=0;
   return { enter(){ music('map'); }, frame(f){
     tt+=f; ctx.drawImage(bgFor(R.floor),0,0); ctx.fillStyle='#000a'; ctx.fillRect(0,0,W,H);
     bigText(t('pickTitle'), W/2, 36, 2, GOLD); T(t('pickSub'), W/2, 72, '#94b0c2', 'center');
     if (!opts.length){ T(t('pickNone'), W/2, 200, '#f4f4f4', 'center'); if (btn(84,400,120,32,t('cont'),{col:'#b13e53'})){ R.cap+=2000; next(); } return; }
-    opts.forEach((k,i)=>{ const s=SKILLS[k], y=98+i*112, bob=Math.round(Math.sin(tt*.08+i)*1.5); const sc=SCHOOL_COL[s.school];
+    opts.forEach((k,i)=>{ const s=CARDS[k], y=98+i*112, bob=Math.round(Math.sin(tt*.08+i)*1.5); const sc=SCHOOL_COL[s.school];
       box(14, y+bob, 260, 104, '#1a1c2c', sc, '#333c57'); spr(s.icon, 24, y+22+bob, 5);
-      T(C.skill[k][0], 76, y+8+bob, sc); T(C.school[s.school]+' · '+(s.active?t('active'):t('passive')), 266, y+8+bob, '#94b0c2', 'right');
-      wrap(C.skill[k][1], 188).slice(0,4).forEach((l,j)=>T(l, 76, y+28+j*16+bob, '#f4f4f4'));
-      if (!fadeTo && clk && hit(clk,14,y,260,104)){ clk=null; R.skills[k]=1; sfx('magic'); burst(144,y+50,30,[sc,'#f4f4f4']); next(); } });
+      T(C.card[k][0], 76, y+8+bob, sc); T(C.school[s.school]+' · '+C.cat[s.type], 266, y+8+bob, '#94b0c2', 'right');
+      wrap(C.card[k][1], 188).slice(0,4).forEach((l,j)=>T(l, 76, y+28+j*16+bob, '#f4f4f4'));
+      if (!fadeTo && clk && hit(clk,14,y,260,104)){ clk=null; gainCard(k); sfx('magic'); burst(144,y+50,30,[sc,'#f4f4f4']); next(); } });
     T(t('pickTap'), W/2, 446, '#566c86', 'center');
   }};
 }
@@ -767,6 +921,82 @@ function SkillPickScene(next){
 //  战斗
 // =====================================================================
 let B = null;
+
+// ---------- 构筑引擎 ----------
+// 按 R.cards 顺序结算；每张卡每根 K 线最多触发一次；连锁用于 engine / 飘字。
+function emit(ev, data){
+  if (!B || B.over || B.settling) return;
+  data = data || {};
+  for (let i=0;i<R.cards.length;i++){
+    const k = R.cards[i], fx = CARD_FX[k] && CARD_FX[k][ev];
+    if (!fx || B.fired[k]===B.step || B.busy[k]) continue;
+    B.busy[k] = 1; let ok = false;
+    try { ok = !!fx(data); } finally { B.busy[k] = 0; }
+    if (ok){ B.fired[k] = B.step; B.flash[i] = 20; B.chainN++; B.trig = B.trig || {}; B.trig[k] = (B.trig[k]||0)+1; }
+  }
+}
+// 被动卡 / 数值卡生效时也在构筑栏闪一下、算一次连锁（每根最多一次），让玩家看得见策略在跑
+function pulse(k){
+  if (!B || !R) return; const i = R.cards.indexOf(k); if (i<0) return;
+  B.flash[i] = 20; if (B.fired[k]!==B.step){ B.fired[k] = B.step; B.chainN++; B.trig = B.trig || {}; B.trig[k] = (B.trig[k]||0)+1; }
+}
+function spawnMsg(dir){
+  if (!B || B.over || B.settling || !dir) return false;
+  if (B.msgs.length >= 10) return false;
+  B.msgs.push({dir, left:3}); B.msgMax = Math.max(B.msgMax||0, B.msgs.length); emit('msg', {dir}); return true;
+}
+// 分身：独立的小仓，金额 = 当前权益 10%，最多 4 个；盈利平仓时暴击则利润 ×2
+function spawnClone(dir, price){
+  if (!B || B.over || B.settling || !dir) return false;
+  if (B.clones.length >= 4) return false;
+  B.clones.push({dir: Math.sign(dir)||1, entry: price, amt: Math.max(1, eqv()*.1), left: 3});
+  B.cloneMax = Math.max(B.cloneMax||0, B.clones.length);
+  return true;
+}
+function closeClone(c, price){
+  const i = B.clones.indexOf(c); if (i<0) return 0;
+  B.clones.splice(i,1);
+  const pnl = (price-c.entry)/c.entry*c.amt*c.dir, crit = pnl>0 && critNow();
+  B.cash += pnl*(crit?2:1);
+  if (pnl>0) B.cloneStreak++; else B.cloneStreak = 0;
+  if (Math.abs(pnl)>=1) floatText((pnl>=0?'+':'')+fmt(pnl)+(crit?' ×2':''), 210, 320, pnl>=0?GOLD:DANGER);
+  emit('close', {dir:c.dir, pnl, source:'clone'});
+  if (pnl>0) emit('win', {dir:c.dir, pnl, crit, source:'clone'});
+  if (pnl>0 && crit) emit('critClose', {dir:c.dir, pnl, crit, source:'clone'});
+  return pnl;
+}
+const CARD_FX = {
+  rod:{ dodge:()=>{ B.rodPend = 1; return true; } },
+  echo:{ critClose:d=>{ B.echoDir = has('bearfaith') ? -1 : -(d.dir || Math.sign(B.sh) || 1); return true; } },
+  wick:{ pin:d=>spawnClone(-(d.dir||1), d.price!=null?d.price:B.price) },
+  thousand:{ win:d=>{ if (d.source!=='clone' || B.cloneStreak<5) return false;
+    B.cloneStreak=0; B.hpMax*=.9; floatText(t('tThousand'), 210, 140, GOLD); shake=Math.max(shake,5); return true; } },
+  leak:{ win:d=>spawnMsg(d.dir||1) },
+  retweet:{ msg:d=>{ if (!d.dir || Math.random()>=.5) return false; return spawnMsg(d.dir); } },
+  resonance:{ msg:d=>{ if (!d.dir) return false;
+    let n=0; for (const m of B.msgs) if (m.dir===d.dir) n++;
+    if (n<3) return false;
+    for (let j=B.msgs.length-1, c=0; j>=0 && c<3; j--){ if (B.msgs[j].dir===d.dir){ B.msgs.splice(j,1); c++; } }
+    B.boomDrift = d.dir*.08; B.breach = Math.max(B.breach, 2);
+    floatText(C.card.resonance[0], 210, 300, GOLD); sfx('magic'); shake=Math.max(shake,4);
+    emit('boom', {dir:d.dir}); return true; } },
+  debunk:{ msgEnd:d=>spawnClone(-(d.dir||1), B.price) },
+  iamnews:{ critClose:d=>{ const dir=d.dir||1; let n=0; for (let j=0;j<3;j++) if (spawnMsg(dir)) n++; return n>0; } },
+  dividend:{ hold5:()=>{ B.cash += eqv()*.01; floatText(t('tDividend'), 210, 300, GOLD); return true; } },
+  value:{ lie:d=>{ if (B.sh===0 || (d.madeAt!=null && B.lastPosStep > d.madeAt)) return false;
+    B.breach = Math.max(B.breach, 3); floatText(C.card.value[0], 210, 300, GOLD); return true; } },
+  shortsell:{ open:d=>{ if (!d.first || d.dir>=0) return false; return spawnClone(-1, d.price); } },
+  premeet:{ bigIntent:()=>{ B.halt = Math.max(B.halt, 1.5); return true; } },
+  report:{ bossSkill:()=>{ if (Math.random()>=.3) return false;
+    B.windup = null; if (B.intent && B.intent.claim.startsWith('skill:')) B.intent = null;
+    B.bubble = lines(B.def).panic; B.bubbleT = 150; toast(t('tReported')); sfx('magic');
+    emit('interrupt', {}); return true; } },
+  expose:{ lie:()=>{ B.hpMax *= .97; floatText(t('tExpose'), 210, 300, DANGER); return true; } },
+  bigshort:{ candle:d=>{ const bar=d.bar; if (!bar || B.over || B.sh>=0) return false;
+    if (bar.c/bar.o-1 >= -.08) return false;
+    B.closeBonus = 2; closePos(true, true); floatText(t('tBigShort'), 144, 300, GOLD); sfx('coin'); return true; } },
+};
+
 const HIST = 10;
 const CX0=6, CX1=250, CY0=114, CY1=366, SW=5;
 // 战斗画面布局：K 线图上方一行放叶子（左）和庄家意图（右）
@@ -779,12 +1009,14 @@ function startBattle(def, isBoss){
         cash:eq, sh:0, entry:0, startEq:eq, stacks:0, marks:[], hpMax:def.hp, breach:0, posCrit:false,
         heat:0, warn:0, warnDir:0, dodged:false, heatMul:def.heatMul,
         ov:null, windup:null, curse:null, lockAt:0, skillCD:R1(6,9), pendingDrift:0, gapNext:0,
-        intent:null, intentLog:[], claimNow:null, forced:null, bluffCD:0,
+        intent:null, intentLog:[], claimNow:null,
         collapse:false, killed:false, collapseCash:0, collapseT:0,
         weather:null, nextNews:R1(5,8), halt:0, fakeMap:{}, pieMap:{}, fp:0, fcur:null, ftarget:0,
-        orders:null, orderCD:0, tpOrder:null, combo:0, insured:false,
+        combo:0, insured:false,
+        fired:{}, busy:{}, flash:[0,0,0,0,0,0], chainN:0, clones:[], cloneStreak:0, msgs:[],
+        holdFrom:0, lastPosStep:0, rodPend:0, echoDir:0, boomDrift:0, closeBonus:0, dnStreak:0, settling:false,
         bubble:pick(lines(def).idle), bubbleT:200, chat:'', chatBy:'',
-        freeze:0, speed:1, paused:false, over:false, result:null, harvested:false, harvT:0, trades:0, hint:null, hintT:0,
+        speed:1, paused:false, over:false, result:null, harvested:false, harvT:0, trades:0, hint:null, hintT:0,
         vhi:0, vlo:0, lvhi:null, lvlo:null, base:0, bossSwap:def.swap||null, bossSpr:def.spr, t:0, newsT:0, news:null };
   parts=[]; floats=[]; toastT=0; moneyReady = false; moneyBump = 0; moneyHurt = 0; coins = []; stamp = null;
   let p = 10 + Math.random()*30;
@@ -792,7 +1024,10 @@ function startBattle(def, isBoss){
   B.base = p; B.price = p; B.vhi = p*1.06; B.vlo = p*.94;
   newCandle();
   // 出场动画：庄家先掉下来、说两句，战斗才开始（重打也播）
-  B.intro = { t:0, i:0, lt:0, lines: isBoss ? C.bossIntro[R.floor] : [C.minionIntro[def.idx]], landed:false, endAt:null };
+  // 出场 PV：Boss 第一次见放完整版，重打只放名片；小庄只放横幅。T0 = 台词阶段开始的帧数
+  R.seenPV = R.seenPV || {};
+  const pv = isBoss ? (R.seenPV[R.floor] ? 'short' : 'full') : 'minion'; if (isBoss) R.seenPV[R.floor] = 1;
+  B.intro = { t:0, i:0, lt:0, lines: isBoss ? C.bossIntro[R.floor] : [C.minionIntro[def.idx]], endAt:null, pv, T0: pv==='full' ? 230 : pv==='short' ? 60 : 46 };
   B.bubbleT = 0; B.bubble = '';
   music(isBoss?'boss':'battle');
 }
@@ -846,7 +1081,7 @@ function drawStamp(f){
   T(stamp.sub, cx, cy+5*sc+5, stamp.col, 'center');
   ctx.globalAlpha = 1;
 }
-const levK = () => R.skills.lev ? 2 : 1;
+const levK = () => has('lev') ? 2 : 1;
 const critNow = () => (B.ov && (B.ov.type==='pie' || B.ov.type==='flatspike')) ? false : (B.collapse || !!B.ov || B.breach>0);   // 画大饼、一字插针期间不给暴击（上限 20% / 15%）
 const curseType = () => (B && B.curse) ? B.curse.type : null;   // 纯妨碍类技能；不驱动价格、不看暴击
 const feeRate = () => curseType()==='fee' ? .03 : .001;          // 开仓 / 平仓 / 强平的统一手续费
@@ -854,14 +1089,14 @@ const flipKind = k => { const d = dirOf(k); return d>0 ? 'dump' : d<0 ? 'pump' :
 
 function newCandle(){
   const d = B.def, w = B.weather;
+  B.fired = {}; B.busy = {};
   // 意图到点：揭晓真假
   if (B.intent && B.intent.pending && B.step >= B.intent.at){
     B.intent.pending = false; B.intentLog.push({i:B.bars.length, claim:B.intent.claim, truth:B.intent.truth});
-    B.claimNow = {claim:B.intent.claim, truth:B.intent.truth};
-    if (!B.intent.truth){ B.bubble = lines(d).lie; B.bubbleT = 140; floatText(t('tLie'), 180, 148, DANGER); }
+    B.claimNow = {claim:B.intent.claim, truth:B.intent.truth, madeAt:B.intent.madeAt};
+    if (!B.intent.truth){ B.bubble = lines(d).lie; B.bubbleT = 140; floatText(t('tLie'), 180, 148, DANGER);
+      emit('lie', {claim:B.intent.claim, madeAt:B.intent.madeAt}); }
   }
-  // 被逼宫：按他说的方向强行画
-  if (B.forced && B.step >= B.forced.at && !B.ov){ B.ov = {type:'forced', t:0, len:3, d:B.forced.dir*.035}; B.forced = null; }
   if (B.gapNext){ B.price *= 1 + B.gapNext; B.gapNext = 0; shake = 8; }
   const o = B.price; B.cur = {o,h:o,l:o,c:o,v:0}; B.tick = 0;  let drift = 0, vol = .012, kind;
   if (B.ov){
@@ -871,6 +1106,12 @@ function newCandle(){
     else if (ov.type==='spin'){ drift = 0; vol = .003; }                                  // 甩干（老版）：一根里上下乱抖
     else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * .075; vol = .006; }  // 拉锯：逐根来回 ±7.5%
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
+    // ---- 专属意图 ----
+    else if (ov.type==='mind'){ drift = B.sh>0 ? -.04 : B.sh<0 ? .04 : (Math.random()<.5?1:-1)*.03; vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
+    else if (ov.type==='oracle'){ drift = ov.plan[k]; vol = .006;
+      if (k===ov.len-1){ B.bubble = t('fateLine'); B.bubbleT = 140; flashA = .35; flashC = '#d44dff'; shake = Math.max(shake,5); sfx('tell'); } }   // 算一卦：前 4 根照预言走，最后一根反着来
+    else if (ov.type==='beat'){ const b = k%4; drift = b===3 ? -ov.dir*.05 : ov.dir*.02; vol = .005; beatSnd(b===3); }   // 节奏：1 2 3 同向，第 4 拍反转
+    else if (ov.type==='fast'){ drift = (Math.random()<.5?1:-1)*.03; vol = .01; }   // 三秒进出：3 倍速
     else { drift = ov.d; vol = ov.d===0 ? .006 : .018; }
     B.mode = ov.type;
   } else {
@@ -879,14 +1120,26 @@ function newCandle(){
   }
   B.kindNow = kind;
   if (w && !['pie','flatspike','spin'].includes(B.mode)){ drift += (w.drift||0) + (w.rumorD||0); vol *= (w.volMul||1); }
+  if (!['pie','flatspike','spin'].includes(B.mode)) for (const m of B.msgs) drift += m.dir*.01;   // 小消息每根推 1%
   drift += B.pendingDrift; B.pendingDrift = 0;
+  drift += B.boomDrift; B.boomDrift = 0;                       // 共振：下一根 ±8%
+  // 第一层没有做空：剧本段悄悄偏多（跌势缩 15%，每根 +0.2%），单根涨的概率约 +8%，不要明显到让玩家察觉
+  if (R.floor===0 && B.mode==='script'){ if (drift<0) drift *= .85; drift += .002; }
   if (B.collapse) drift *= 1.8;                                // 崩盘：方向性位移放大 1.8 倍（噪声不放大）
+  if (has('stampede') && B.dnStreak>=3 && drift<0){ drift *= 1.5; pulse('stampede'); }   // 踩踏：连跌 3 根后，下一根跌幅 ×1.5
   B.vol = vol*d.volMul; B.target = o*(1 + drift + randn()*B.vol*.8);
   if (B.mode==='pie') B.target = o*(1+drift);
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
+  // 回声：暴击平仓后的下一根，扎一根 5% 的针
+  if (B.echoDir){
+    const ed = B.echoDir; B.echoDir = 0;
+    const sp = B.price*(1 + ed*.05);
+    B.price = sp; B.cur.c = sp; B.cur.h = Math.max(B.cur.h, sp); B.cur.l = Math.min(B.cur.l, sp); B.cur.v += 2;
+    shake = Math.max(shake, 5); emit('pin', {dir:ed, price:sp, kind:'echo'});
+  }
 
   // ---- 庄家改主意：已经说出口的意图，还会变来变去 ----
-  if (B.intent && B.intent.pending && !B.collapse && !B.intent.claim.startsWith('skill:') && B.intent.at - B.step >= 1 && Math.random() < (d.waffle||0)){
+  if (B.intent && B.intent.pending && !B.collapse && !B.intent.spam && !B.intent.claim.startsWith('skill:') && B.intent.at - B.step >= 1 && Math.random() < (d.waffle||0)){
     const it = B.intent; it.claim = it.claim==='vague' ? flipKind(it.actual) : flipKind(it.claim);
     it.truth = dirOf(it.claim) === dirOf(it.actual);
     B.bubble = t('waffle'); B.bubbleT = 110; sfx('tell');
@@ -899,14 +1152,17 @@ function newCandle(){
     const k0 = k0ahead();
     if (k0 && B.step+k0 < B.len){
       const actual = phaseAt(B.sstep+k0).kind;
-      B.intent = {at:B.step+k0, claim:actual, truth:true, actual, pending:true};
+      B.intent = {at:B.step+k0, claim:actual, truth:true, actual, pending:true, madeAt:B.step};
+      if (BIG.includes(B.intent.claim)) emit('bigIntent', {claim:B.intent.claim});
     }
   } else if (!busy){
     B.skillCD--;
     if (B.skillCD<=0 && !(w&&w.noSkill) && B.step>3 && B.step < B.len-6){
-      const ty = pick(d.skills); B.windup = {type:ty}; B.skillCD = R1(8,11);
+      const ty = (d.sig && Math.random()<.5) ? d.sig : pick(d.skills); B.windup = {type:ty}; B.skillCD = R1(8,11);
       const lie = Math.random() < d.fake;
-      B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true};
+      B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true, madeAt:B.step};
+      emit('bossSkill', {type:ty});   // 实名举报可能在这里把技能和意图一起打断（B.intent 变 null）
+      if (B.intent && BIG.includes(B.intent.claim)) emit('bigIntent', {claim:B.intent.claim});
     } else {
       const k0 = k0ahead();
       if (k0 && B.step+k0 < B.len && Math.random() >= (d.quiet!=null?d.quiet:.45)){
@@ -914,30 +1170,56 @@ function newCandle(){
         if (r < .15 && BIG.includes(actual)) claim = 'vague';
         else if (r < .15 + d.fake) claim = flipKind(actual);
         else claim = actual;
-        B.intent = {at:B.step+k0, claim, truth: claim==='vague' || dirOf(claim)===dirOf(actual), actual, pending:true};
+        B.intent = {at:B.step+k0, claim, truth: claim==='vague' || dirOf(claim)===dirOf(actual), actual, pending:true, madeAt:B.step};
+        if (d.spam){   // 荐股群主：群发三条意图，只有一条是真的
+          const others = ['pump','dump','shake','breakout','bleed','flat'].filter(x=>x!==actual && dirOf(x)!==dirOf(actual));
+          const decoys = []; while (decoys.length<2 && others.length) decoys.push(others.splice(Math.floor(Math.random()*others.length),1)[0]);
+          claim = actual; B.intent.claim = actual; B.intent.truth = true;
+          B.intent.spam = [actual, ...decoys].sort(()=>Math.random()-.5);
+        }
+        if (BIG.includes(claim)) emit('bigIntent', {claim});
       }
     }
   }
-  if (B.step%5===3 && !B.windup && !B.ov && !B.collapse){ B.bubble = pick(lines(d).idle); B.bubbleT = 150; }
+  if (B.step%5===3 && !B.windup && !B.ov && !B.collapse && B.bubbleT<=0){ B.bubble = pick(lines(d).idle); B.bubbleT = 150; }
   if (R.tutorial && C.hints[B.step]){ B.hint = C.hints[B.step]; B.hintT = 260; }
+}
+// 算一卦：从当前这根的开盘价起，按预言推出还没走的几根（最后一根照原方向——骗你的）
+function oracleGhosts(){
+  if (!B.ov || B.ov.type!=='oracle' || B.over) return [];
+  const ov = B.ov, out = []; let p = B.cur.o*(1+ov.ghost[ov.t]);
+  for (let j=ov.t+1; j<ov.len; j++){ const o = p, c = p*(1+ov.ghost[j]); out.push({o,c}); p = c; }
+  return out;
 }
 function startOv(type){
   const ov = {type, t:0, len:BOSS_SKILLS[type].len};
-  if (type==='flatspike') ov.dir = B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1);
+  if (type==='flatspike') ov.dir = has('bearfaith') ? -1 : (B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1));
   if (type==='fake') ov.d = (Math.random()<.5?1:-1)*.02;
   if (type==='saw') ov.dir = Math.random()<.5?1:-1;
+  if (type==='oracle'){ const dd = Math.random()<.5?1:-1; ov.dir = dd;
+    ov.plan = [0,1,2,3].map(()=>dd*(.02+Math.random()*.015)).concat([-dd*.06]);      // 真实走势
+    ov.ghost = ov.plan.slice(0,4).concat([dd*.03]); }                              // 画面上的预言：最后一根也照原方向画（骗你）
+  if (type==='beat') ov.dir = Math.random()<.5?1:-1;
+  if (type==='mirror') ov.d = (Math.random()<.5?1:-1)*.025;   // 报表做反：价格照常有个方向，只是画面倒过来
   B.ov = ov; B.bubble = C.bskill[type].shout; B.bubbleT = 140; sfx('tell');
 }
 // 妨碍类技能：不进入 B.ov，不碰价格；left 按 K 线根数倒数（endCandle 里减），unplug 改用真实秒数 sec
 function startCurse(type){
   const c = {type, left:BOSS_SKILLS[type].len};
   if (type==='unplug') c.sec = 3;
+  if (type==='fakesky'){   // 篡改天气：天气框换成一条随机的假新闻，真实天气照常生效但看不到
+    const pool = NEWS.filter(n=>!B.weather || n.id!==B.weather.id);
+    const fk = pick(pool), realVm = B.weather ? (B.weather.volMul||1) : 1;
+    c.fake = fk.id; c.fvm = realVm>1.2 ? .4 : realVm<.8 ? 2 : (Math.random()<.5 ? 2 : .4);
+    B.news = B.news || fk; B.newsT = 170; sfx('news');   // 弹一条假快讯
+  }
   B.curse = c;
   B.bubble = C.bskill[type].shout; B.bubbleT = 140; sfx('tell');
 }
 function endCurse(){
   if (!B.curse) return;
   const was = B.curse.type; B.curse = null;
+  if (was==='fakesky'){ toast(t('tFakeSky')); flashA = .5; flashC = '#f4f4f4'; shake = Math.max(shake,4); return; }
   if (was!=='unplug') toast(t('tCurseEnd'));
 }
 // 风控强平：浮盈或浮亏到 ±5%（按持仓均价算，价格变动本身）就自动平掉
@@ -957,7 +1239,7 @@ function endOv(){
 }
 function startCollapse(){
   B.collapse = true; B.killed = true; B.collapseCash = eqv(); B.collapseT = 200;
-  B.windup = null; B.forced = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.heat = 0; B.intent = null; B.claimNow = null;
+  B.windup = null; B.warn = 0; B.warnDir = 0; B.dodged = false; B.rodPend = 0; B.heat = 0; B.intent = null; B.claimNow = null;
   B.curse = null; B.lockAt = 0;
   if (B.ov && (B.ov.type==='fake' || B.ov.type==='pie')) endOv(); B.ov = null;
   B.bubble = t('brokeTruth'); B.bubbleT = 300; B.bossSwap = ANGRY;
@@ -969,7 +1251,8 @@ function battleTick(){
   if (ov && ov.type==='spin'){ p = B.cur.o*(1 + ((B.tick%2)?1:-1)*(.05+Math.random()*.045)); if (r===1) p = B.target; }
   else if (ov && ov.type==='flatspike' && ov.t===ov.len-1){
     if (B.tick < N-1) p = B.cur.o*(1+randn()*.001);
-    else if (B.tick===N-1){ p = B.cur.o*(1+ov.dir*.15); B.target = p; shake=10; sfx('harvest'); flashA=.3; flashC=ov.dir>0?UP:DN; }
+    else if (B.tick===N-1){ p = B.cur.o*(1+ov.dir*.15); B.target = p; shake=10; sfx('harvest'); flashA=.3; flashC=ov.dir>0?UP:DN;
+      emit('pin', {dir:ov.dir, price:p, kind:'flatspike'}); }
     else p = B.target;
   } else {
     p += (B.target-p)/r + (r>1 ? randn()*tv*p*Math.sqrt((r-1)/r) : 0);
@@ -980,33 +1263,27 @@ function battleTick(){
   if (ov && (ov.type==='fake' || ov.type==='pie') && B.fcur){ B.fp += (B.ftarget-B.fp)/r + (r>1? randn()*tv*.5*B.fp*Math.sqrt((r-1)/r):0); const fc=B.fcur; fc.c=B.fp; fc.h=Math.max(fc.h,B.fp); fc.l=Math.min(fc.l,B.fp); fc.v += .02; }
   if (B.tick%2===0) sfx('tick');
   if (curseType()==='stopout') checkStopout();
-  const jump = Math.abs(p/prevP-1);
-  if (R.skills.grid && jump>.02){ B.cash += eqv()*jump*.03; if (Math.random()<.3) floatText(t('tGrid'), 210, 345, GOLD); }
-  if (B.orders){ const o = B.orders; if (p <= o.lo) fillOrder(1, p, o.ref); else if (p >= o.hi) fillOrder(-1, p, o.ref); }
-  if (B.tpOrder && B.sh!==0){ const tp = B.tpOrder; if ((tp.dir>0 && p>=tp.price) || (tp.dir<0 && p<=tp.price)){ B.tpOrder=null; floatText(t('tTp'), 140, 300, GOLD); closePos(false, true); } }
-  if (R.skills.tp && B.sh!==0 && (p-B.entry)*Math.sign(B.sh)/B.entry >= .10){ floatText(t('tTp2'), 140, 300, GOLD); closePos(false, true); }
+  // 分身：浮盈 ≥3% 提前平
+  if (B.clones.length){ for (const cl of B.clones.slice()){ const r2 = (B.price-cl.entry)/cl.entry*cl.dir; if (r2 >= .03) closeClone(cl, B.price); } }
   // 关注度
   const e = eqv(), expo = Math.abs(B.sh*p)/Math.max(1,e);
-  const frozen = (B.weather && B.weather.heatFreeze) || B.collapse;
-  if (B.sh!==0 && !frozen) B.heat += expo*.0085*B.heatMul*(R.skills.glove?.5:1)*(R.skills.bait?2:1); else B.heat = Math.max(0, B.heat-.01);
-  if (B.heat>=1 && B.warn<=0){ B.warn = 2.4; B.warnDir = Math.sign(B.sh); B.dodged = false; B.heat = .25; B.bubble = lines(B.def).lock; B.bubbleT = 160; sfx('lock'); flashA=.3; flashC=DANGER; }
+  const flatOn = !!(has('lieflat') && B.sh!==0 && B.holdFrom && B.bars.length-B.holdFrom > 5);
+  if (flatOn && !B.flatOn) pulse('lieflat'); B.flatOn = flatOn;   // 躺平刚生效时闪一下
+  const frozen = (B.weather && B.weather.heatFreeze) || B.collapse || flatOn;
+  if (B.sh!==0 && !frozen) B.heat += expo*.0085*B.heatMul*(has('glove')?.5:1); else B.heat = Math.max(0, B.heat-.01);
+  if (B.heat>=1 && B.warn<=0){ B.warn = 2.4; B.warnDir = Math.sign(B.sh); B.dodged = false; B.heat = .25; B.rodPend = 0; B.bubble = lines(B.def).lock; B.bubbleT = 160; sfx('lock'); flashA=.3; flashC=DANGER; emit('lock', {dir:B.warnDir}); }
   if (!B.collapse && eqv() - B.startEq >= B.hpMax) startCollapse();
   if (eqv() < R.line){ harvest(); if (B.over) return; }
   if (B.tick>=N) endCandle();
 }
-function fillOrder(dir, p, ref){
-  B.orders = null;
-  if (B.sh!==0 && Math.sign(B.sh)!==dir) closePos(true, true);
-  if (B.stacks<3) openStack(dir, p);
-  B.tpOrder = {dir, price:ref}; sfx('coin'); floatText(dir>0?t('tCaught'):t('tCaughtS'), 140, 280, GOLD); burst(X_cur(), 200, 14, [GOLD,'#f4f4f4']);
-}
 let X_cur = () => 200;
 function endCandle(){
-  const idx = B.bars.length;
-  B.bars.push(B.cur); B.log.push(B.kindNow); B.step++; sfx('candle');
+  const idx = B.bars.length, bar = B.cur;
+  B.bars.push(bar); B.log.push(B.kindNow); B.step++; sfx('candle');
   if (B.ov && B.ov.type==='fake' && B.fcur) B.fakeMap[idx] = B.fcur;
   if (B.ov && B.ov.type==='pie' && B.fcur) B.pieMap[idx] = B.fcur;     // 大饼画出来的样子永久留在图上
-  if (Math.abs(B.cur.c/B.cur.o-1) > .04) shake = Math.max(shake,4);
+  if (Math.abs(bar.c/bar.o-1) > .04) shake = Math.max(shake,4);
+  if (bar.c < bar.o) B.dnStreak++; else B.dnStreak = 0;                // 踩踏用：连跌根数
   if (B.ov){ B.ov.t++; if (B.ov.t>=B.ov.len) endOv(); } else B.sstep++;
   if (B.windup && !B.ov){ const ty = B.windup.type; B.windup = null; if (BOSS_SKILLS[ty].curse) startCurse(ty); else startOv(ty); }
   if (B.curse && B.curse.type!=='unplug'){ B.curse.left--; if (B.curse.left<=0) endCurse(); }
@@ -1014,9 +1291,18 @@ function endCandle(){
       const rx = w.mood==='good' ? B.def.react.good : w.mood==='bad' ? B.def.react.bad : null;
       if (rx && !B.ov && !B.windup && !B.collapse){ B.ov = {type:'react', t:0, len:3, d: rx==='dump'?-.035:-.03}; B.bubble = C.reactLine[rx]; B.bubbleT=150; } } }
   if (B.step>=B.nextNews && B.step < B.len-3) spawnNews();
-  if (B.orders){ B.orders.left--; if (B.orders.left<=0) B.orders=null; }
-  if (B.orderCD>0) B.orderCD--; if (B.bluffCD>0) B.bluffCD--;
   if (B.breach>0) B.breach--;
+  // ---- 构筑引擎：每根结束（大空头等卡在 candle 事件里响应）----
+  emit('candle', {kind:B.kindNow, bar});
+  // 分红：持仓每满 5 根
+  const held = B.holdFrom && B.sh!==0 ? B.bars.length - B.holdFrom : 0;
+  if (held>0 && held%5===0) emit('hold5', {n:held});
+  // 分身：3 根后自动平
+  for (const cl of B.clones.slice()){ cl.left--; if (cl.left<=0) closeClone(cl, B.price); }
+  // 小消息：3 根后过期
+  for (let i=B.msgs.length-1; i>=0; i--){ const m=B.msgs[i]; m.left--; if (m.left<=0){ B.msgs.splice(i,1); emit('msgEnd', {dir:m.dir}); } }
+  if (B.chainN>=2){ floatText(fmtS(t('chain'), {n:B.chainN}), 144, 200, GOLD); }
+  B.chainN = 0;
   if (B.step%2===0){ B.chat = pick(C.posts[B.kindNow]||C.posts.flat); B.chatBy = pick(C.posters); }
   if (B.step>=B.len){ endBattle(B.killed); return; }
   newCandle();
@@ -1028,14 +1314,19 @@ function spawnNews(){
   if (n.halt){ B.halt = n.halt; B.gapNext = (Math.random()<.5?1:-1)*.06; }
   if (n.bossHit && !B.collapse){ B.hpMax *= 1-n.bossHit; B.bubble = lines(B.def).panic; B.bubbleT = 150; burst(250,70,20,['#ffcd75','#f4f4f4']); }
   B.weather = n; B.newsT = 170; B.news = n;
+  const dir = (n.mood==='bad' || (n.drift||0)<0) ? -1 : (n.mood==='good' || (n.drift||0)>0) ? 1 : 0;
+  emit('msg', {dir, big:true});
 }
 function openStack(dir, price){
+  const first = B.sh===0;
   const e = eqv(), amt = e*levK()/3, q = amt/price*dir, fee = amt*feeRate();
-  if (B.sh===0) B.posCrit = critNow();
-  B.entry = B.sh===0 ? price : (B.entry*Math.abs(B.sh) + price*Math.abs(q)) / (Math.abs(B.sh)+Math.abs(q));
+  if (first){ B.posCrit = critNow(); B.holdFrom = B.bars.length; }
+  B.entry = first ? price : (B.entry*Math.abs(B.sh) + price*Math.abs(q)) / (Math.abs(B.sh)+Math.abs(q));
   B.sh += q; B.cash -= q*price + fee; B.stacks++; B.trades++; R.stats.trades++;
+  B.lastPosStep = B.step;
   if (curseType()==='t1') B.lockAt = B.bars.length + 2;   // T+1：新开的仓两根 K 线内锁死
   B.marks.push({i:B.bars.length, side: dir>0?'B':'S', p:price});
+  emit('open', {dir:Math.sign(dir)||1, first, price});
 }
 function trade(dir){
   if (B.over || B.halt>0) return;
@@ -1075,16 +1366,25 @@ function moneyFloat(s, col){
 function closePos(silent, force){
   if (B.sh===0) return 0;
   if (!force && B.lockAt > B.bars.length){ toast(fmtS(t('t1Lock'), {n:B.lockAt-B.bars.length})); return 0; }
+  const dir = Math.sign(B.sh) || 1, held = B.holdFrom ? Math.max(0, B.bars.length - B.holdFrom) : 0;
+  const panicCrit = has('panic') && dir<0 && (B.msgs.some(m=>m.dir<0) || (B.weather && (B.weather.mood==='bad' || (B.weather.drift||0)<0)));
   const pnl = (B.price-B.entry)*B.sh, fee = Math.abs(B.sh*B.price)*feeRate(), ratio = pnl/(Math.abs(B.sh)*B.entry);
-  const crit = B.posCrit || critNow(), eq0 = Math.max(1, eqv() - pnl);
-  B.cash += B.sh*B.price - fee; B.sh=0; B.stacks=0; B.tpOrder=null; B.posCrit=false; B.marks.push({i:B.bars.length, side:'C', p:B.price});
-  if (B.warn>0 && !B.dodged){ B.dodged=true; B.bubble=lines(B.def).dodge; B.bubbleT=140; floatText(t('tDodge'), 80, 340, '#73eff7'); sfx('dodge'); if (R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 324, DANGER); } }
+  const crit = B.posCrit || critNow() || panicCrit, eq0 = Math.max(1, eqv() - pnl);
+  B.cash += B.sh*B.price - fee; B.sh=0; B.stacks=0; B.posCrit=false; B.holdFrom=0; B.lastPosStep=B.step;
+  B.marks.push({i:B.bars.length, side:'C', p:B.price});
+  if (B.warn>0 && !B.dodged){ B.dodged=true; B.bubble=lines(B.def).dodge; B.bubbleT=140; floatText(t('tDodge'), 80, 340, '#73eff7'); sfx('dodge'); emit('dodge', {dir:B.warnDir}); }
   let total = pnl, mult = 1;
   if (pnl>0){
     if (crit) mult += 1;
-    if (R.skills.combo){ B.combo++; if (B.combo>1) mult += .25*(B.combo-1); }
+    if (panicCrit) pulse('panic');
+    if (has('combo')){ B.combo++; if (B.combo>1){ mult += .25*(B.combo-1); pulse('combo'); } }
+    if (has('diamond') && held>0){ mult += Math.min(12, held)*.05; pulse('diamond'); }      // 钻石手：每多持 1 根 +5%，上限 +60%
+    if (has('insider') && B.msgs.length){ mult += .04*B.msgs.length; pulse('insider'); }   // 内幕：每条消息 +4%
+    if (has('omaha') && held>15){ mult *= 3; pulse('omaha'); }                             // 奥马哈老头：持仓 >15 根 ×3
+    if (has('engine') && B.chainN>1){ mult += (B.chainN-1)*.10; pulse('engine'); }         // 量化引擎：同一根每多一次连锁 +10%（放最后，吃到前面的连锁）
+    if (B.closeBonus){ mult *= B.closeBonus; B.closeBonus = 0; }            // 大空头等外部倍率
     if (mult>1){ const bonus = pnl*(mult-1); B.cash += bonus; total += bonus; }
-  } else if (pnl<0) B.combo = 0;
+  } else if (pnl<0){ B.combo = 0; B.closeBonus = 0; }
   if (Math.abs(total) >= 1){
     if (total>0){
       const m = +mult.toFixed(2);
@@ -1106,78 +1406,68 @@ function closePos(silent, force){
     else if (ratio<-.02){ sfx('hurt'); toast(pick(C.cutLoss)); }
     else sfx('close');
   }
+  emit('close', {dir, pnl, source:'self'});
+  if (pnl>0) emit('win', {dir, pnl, total, crit, source:'self'});
+  if (pnl>0 && crit) emit('critClose', {dir, pnl, total, crit, source:'self'});
   return pnl;
 }
 function strike(){
   const L_ = lines(B.def); B.warn = 0;
   const dir = B.warnDir || Math.sign(B.sh) || 1;              // 锁定那一刻记下的方向
-  const hit = B.sh!==0 && Math.sign(B.sh)===dir;              // 还拿着同一方向的仓才会挨扎
-  const pre = B.price, sp = pre*(1 - dir*.1);                 // 针一定扎：往 -warnDir 方向扎 10%
+  const pd = has('bearfaith') ? -1 : -dir;                    // 插针方向（空头信仰：只往下扎）
+  if (has('bearfaith')) pulse('bearfaith');
+  const hit = B.sh!==0 && Math.sign(B.sh) === -pd;            // 仓被针扎穿才会挨打
+  const pre = B.price, sp = pre*(1 + pd*.1);
   B.price = sp; B.cur.c = sp; B.cur.h = Math.max(B.cur.h,sp); B.cur.l = Math.min(B.cur.l,sp); B.cur.v += 3;
   B.target = sp + (pre-sp)*.7;                                // 针扎下去后回撤 70%，留下长影线
   shake = 12; flashA = .45; flashC = DANGER; sfx('harvest');
+  emit('pin', {dir:pd, price:sp, kind:'snipe'});
+  if (B.rodPend){ B.rodPend = 0; spawnClone(-pd, sp); }
   if (hit){
-    if (R.skills.counter){ floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,436,24,[DANGER,'#f4f4f4']); }
+    if (has('counter')){ pulse('counter'); floatText(t('tCounter'), 80, 330, DANGER); if (B.stacks<3) openStack(dir, sp); B.posCrit = true; B.bubble='?!'; B.bubbleT=120; burst(34,436,24,[DANGER,'#f4f4f4']); }
     else {
-      const q = B.sh/B.stacks; B.cash += q*sp - Math.abs(q*sp)*feeRate(); B.sh -= q; B.stacks--; if (B.stacks<=0){ B.sh=0; B.stacks=0; }
+      const q = B.sh/B.stacks; B.cash += q*sp - Math.abs(q*sp)*feeRate(); B.sh -= q; B.stacks--; if (B.stacks<=0){ B.sh=0; B.stacks=0; B.holdFrom=0; }
       B.marks.push({i:B.bars.length, side:'C', p:sp}); B.combo = 0;
       floatText(t('tStrike'), 120, 330, DANGER); B.bubble = L_.hit; B.bubbleT = 140; burst(34,436,30,['#38b764','#a7f070']);
+      emit('struck', {dir:pd});
     }
   } else {
     const missed = B.sh===0 && !B.dodged;                     // 空仓又没躲过：扑空
     B.breach = 3;
     B.bubble = missed ? L_.miss : L_.dodge; B.bubbleT = 140;
     floatText(t(missed?'tMiss':'tDodge'), 70, 330, '#73eff7'); sfx('dodge');
-    if (!B.dodged && R.skills.bait){ B.cash += eqv()*.03; floatText(t('tBait'), 60, 314, DANGER); }
   }
   B.dodged = false; B.warnDir = 0;
   if (eqv() < R.line) harvest();
 }
-function useItem(k){
-  if (B.over || R.items[k]<=0) return;
-  if (k==='report' && !B.ov && !B.windup && !B.curse){ toast(t('tNoSkill')); return; }
-  R.items[k]--;
-  if (k==='hourglass'){ B.freeze = 3; sfx('magic'); }
-  if (k==='cloak'){ B.heat=0; if (B.warn>0){ B.warn=0; B.bubble=lines(B.def).miss; B.bubbleT=120; floatText(t('tCloak'), 40, 330, '#94b0c2'); } sfx('dodge'); burst(30,370,20,['#5d275d','#94b0c2']); }
-  if (k==='report'){ if (B.windup){ B.windup=null; if (B.intent && B.intent.pending) B.intent=null; } if (B.ov){ const ty=B.ov.type; endOv(); if (ty==='flatspike') B.pendingDrift=0; } if (B.curse) endCurse(); B.bubble='!!'; B.bubbleT=140; sfx('magic'); burst(240,70,24,['#f4f4f4','#41a6f6']); toast(t('tReported')); }
-}
-function placeOrder(){
-  if (B.over || !R.skills.order || B.orderCD>0) return;
-  const p = B.price; B.orders = {lo:p*.95, hi:p*1.05, ref:p, left:3}; B.orderCD = 5; sfx('click'); floatText(t('order')+'!', 40, 330, GOLD);
-}
-function callBluff(){
-  if (B.over || !R.skills.bluff || B.bluffCD>0) return;
-  const it = B.intent;
-  if (!it || !it.pending || B.collapse){ toast(t('tNoIntent')); return; }
-  B.bluffCD = 8;
-  if (it.truth){ B.bubble = t('tWasTrue'); B.bubbleT = 120; sfx('hurt'); return; }
-  // 他在撒谎：逼他按说的做，同时露出破绽
-  it.truth = true; B.windup = null;
-  const dir = it.claim.startsWith('skill:') ? 0 : dirOf(it.claim);
-  B.forced = {at:it.at, dir}; B.breach = 3;
-  B.bubble = lines(B.def).called; B.bubbleT = 150; floatText(t('tCalled'), 150, 148, '#a7f070'); sfx('magic'); shake=6; burst(240,70,30,['#a7f070','#f4f4f4']);
-}
 function harvest(){
-  if (R.skills.insure && !B.insured){ B.insured = true; closePos(true, true); B.cash = Math.max(B.cash, R.line*1.3); toast(t('tInsure')); sfx('dodge'); B.warn=0; return; }
-  closePos(true, true); B.over=true; B.harvested=true; B.harvT=0; R.stats.harvested++;
+  if (has('insure') && !B.insured){ pulse('insure'); B.insured = true; B.settling=true; closePos(true, true); B.settling=false; B.cash = Math.max(B.cash, R.line*1.3); toast(t('tInsure')); sfx('dodge'); B.warn=0; return; }
+  B.settling = true;
+  closePos(true, true);
+  for (const cl of B.clones.slice()) closeClone(cl, B.price);
+  B.over=true; B.harvested=true; B.harvT=0; R.stats.harvested++; B.settling=false;
   B.result = {pass:false, kill:false}; R.cap = Math.round(Math.max(0,B.cash));
   sfx('harvest'); shake=14; flashA=.7; flashC='#f4f4f4'; burst(34,436,50,LANG==='en'?['#f4f4f4','#94b0c2']:['#38b764','#a7f070','#257179'],3,.12,70);
   B.bubble = lines(B.def).hit; B.bubbleT = 300; music('sad');
 }
 function endBattle(kill){
-  closePos(true, true); B.over=true; B.curse=null; let steal = 0;
+  B.settling = true;
+  closePos(true, true);
+  for (const cl of B.clones.slice()) closeClone(cl, B.price);
+  B.over=true; B.settling=false; B.curse=null; let steal = 0;
   if (!kill){
     const left = Math.max(0, B.hpMax - (B.cash - B.startEq)); steal = Math.round(left*(B.isBoss?1:.5)); B.cash -= steal;
     if (steal>0){ floatText(`${t('stolen')} -${fmt(steal)}`, 144, 200, DANGER); shake=10; flashA=.4; flashC=DANGER; }
   }
   const pass = kill || !B.isBoss;
   B.result = {pass, kill, steal, loot: kill ? Math.max(0, B.cash - B.collapseCash) : 0}; R.cap = Math.round(B.cash); R.stats.battles++;
-  if (kill){ R.stats.kills++; if (R.skills.book){ R.cap = Math.round(R.cap*1.05); B.result.book=true; } sfx('win'); }
+  if (kill){ R.stats.kills++; if (has('book')){ R.cap = Math.round(R.cap*1.05); B.result.book=true; } sfx('win'); }
   else { sfx('lose'); B.bubble = lines(B.def).hit; B.bubbleT = 300; }
   if (R.cap < R.line){ B.harvested = true; B.result.pass = false; R.stats.harvested++; sfx('harvest'); music('sad'); }
   // 战败动画：庄家的画笔折断，变回一棵韭菜（被割了就不演）
   if (kill && !B.harvested){
-    B.defeat = { t:0, i:0, lt:0, done:false, broke:false, lines: B.isBoss ? C.bossDefeat[R.floor] : [C.minionDefeat[B.def.idx]] };
+    flashA = .85; flashC = '#f4f4f4'; tone(55,.5,'square',.1,-25);   // 先定格 24 帧：闪白 + "爆仓！"
+    B.defeat = { t:-24, i:0, lt:0, done:false, broke:false, lines: B.isBoss ? C.bossDefeat[R.floor] : [C.minionDefeat[B.def.idx]] };
     B.bubbleT = 0; B.bubble = '';
   }
 }
@@ -1191,10 +1481,14 @@ function afterBattle(){
     go(DialogScene([{w:'narr',t:C.revive[0]},{w:'narr',t:fmtS(C.revive[1],{n:fmt(R.cap)})}], back)); return;
   }
   if (!res.pass){ const f=R.floor; go(DialogScene([{w:BOSSES[f].key,t:pick(C.retry)},{w:'hero',t:C.retryHero}], ()=>{ startBattle(BOSSES[f], true); go(BattleScene); })); return; }
+  // 打赢 Boss：构筑栏 +1（上限 6）。先加格，再进选卡，免得明明还有空格却弹替换。
+  const slotUp = B.isBoss && R.slots < 6 && res.kill;
+  if (slotUp) R.slots++;
   const cont = () => {
     if (B.isBoss){
       const f = R.floor;
-      go(DialogScene(DL(C.bossPost[f]), ()=>{
+      const post = DL(C.bossPost[f]); if (slotUp) post.push({w:'narr', t:t('slotUp')});
+      go(DialogScene(post, ()=>{
         if (f===0) R.short = true;
         R.floor++; SAVE.best = Math.max(SAVE.best, R.floor+1); writeSave(SAVE);
         if (R.floor>=TEST_FLOORS){ go(TestEndScene()); return; }
@@ -1203,7 +1497,7 @@ function afterBattle(){
       }));
     } else go(MapScene());
   };
-  if (res.kill) go(SkillPickScene(cont)); else cont();
+  if (res.kill) go(CardPickScene(cont)); else cont();
 }
 function claimLabel(claim){
   if (claim.startsWith('skill:')) return {txt:'⚡'+C.bskill[claim.slice(6)].name, col:DANGER};
@@ -1216,13 +1510,19 @@ function intentLayout(){
   const it = B.intent && B.intent.pending ? B.intent : null;
   const said = it || B.claimNow;
   const collapse = !!B.collapse;
+  if (it && it.spam && !collapse){   // 群发：三条意图叠在一起，只有一条是真的
+    const head = t('next')+' · '+t('spamHead'), cnt = String(Math.max(0, it.at-B.step));
+    const labs = it.spam.map(c=>claimLabel(c)), tagW = has('lie') ? Math.max(TW(t('trueT'),10), TW(t('fakeTag'),10))+8 : 0;
+    const w = Math.max(TW(head,11)+16+4*cnt.length, ...labs.map(l=>TW(l.txt,12)+tagW+16));
+    return {kind:'spam', it, head, labs, cnt, tagW, w, x0:INTENT_R-w};
+  }
   if (collapse && !said){
     let sz = 13, w = Math.max(76, TW(t('rKill'), sz) + 14);
     return {kind:'broke', x0:INTENT_R-w, w, sz, collapse:true};
   }
   const head = it ? t('next') : t('now');
   const lab = said ? claimLabel(said.claim) : {txt:'???', col:'#94b0c2'};
-  const tagTxt = said ? (collapse ? t('trueT') : (R.skills.lie ? (said.truth ? t('trueT') : t('lieT')) : null)) : null;
+  const tagTxt = said ? (collapse ? t('trueT') : (has('lie') ? (said.truth ? t('trueT') : t('lieT')) : null)) : null;
   const cnt = it ? String(Math.max(0, it.at-B.step)) : '';
   let sz = 13;
   const calc = () => {
@@ -1238,6 +1538,15 @@ function intentLayout(){
 function drawIntent(L){
   if (!L) return;
   const y = INTENT_Y;
+  if (L.kind==='spam'){
+    const h = 18 + L.labs.length*14 + 4;
+    box(L.x0-1, y-1, L.w+2, h+2, '#1a1c2c', '#d44dff'); box(L.x0, y, L.w, h, '#1a1c2c', '#d44dff');
+    T(L.head, L.x0+6, y+3, '#94b0c2', 'left', 11); N(L.cnt, INTENT_R-6, y+6, '#f4f4f4', 1, 'right');
+    L.labs.forEach((lb,k)=>{ const yy = y+18+k*14, real = L.it.spam[k]===L.it.actual;
+      T(lb.txt, L.x0+6, yy, lb.col, 'left', 12);
+      if (L.tagW){ const tc = real ? '#257179' : DANGER; box(INTENT_R-L.tagW-3, yy, L.tagW, 12, tc, INK); T(real?t('trueT'):t('fakeTag'), INTENT_R-3-L.tagW/2, yy+1, '#f4f4f4', 'center', 10); } });
+    return;
+  }
   if (L.kind==='broke'){
     box(L.x0-1, y-1, L.w+2, INTENT_H+2, '#1a1c2c', GOLD);
     box(L.x0, y, L.w, INTENT_H, '#1a1c2c', GOLD);
@@ -1266,17 +1575,121 @@ function drawHero(hx, hy, sc, variant){
   spr(HERO(variant), hx, hy, sc);
 }
 
+// ---------- 出场 PV ----------
+const pvCross = (tt, f, at) => tt >= at && tt - f < at;
+function pvStripe(y, h, off){
+  ctx.save(); ctx.beginPath(); ctx.rect(0,y,W,h); ctx.clip(); ctx.fillStyle='#1a1c2c'; ctx.fillRect(0,y,W,h);
+  ctx.fillStyle='#b13e53'; const o = ((off%16)+16)%16;
+  for (let x=-h-16+o; x<W+16; x+=16){ ctx.beginPath(); ctx.moveTo(x,y+h); ctx.lineTo(x+8,y+h); ctx.lineTo(x+8+h,y); ctx.lineTo(x+h,y); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+function drawPV(I, f){
+  const d = B.def, BT = bossText(d);
+  if (I.pv==='minion'){ pvMinion(I.t, f, d, BT); return; }
+  const cardAt = I.pv==='full' ? 175 : 0;
+  if (I.pv==='full' && I.t < 50){   // WARNING：压暗 + 红黑斜纹 + 警报
+    ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(0,0,W,H);
+    pvStripe(178, 16, I.t*2); pvStripe(282, 16, -I.t*2);
+    if (Math.floor(I.t/8)%2===0) bigText('! WARNING !', W/2, 220, 3, DANGER);
+    if (Math.floor(I.t/12) !== Math.floor((I.t-f)/12)) tone(Math.floor(I.t/12)%2 ? 233 : 175, .18, 'sawtooth', .03);
+    return;
+  }
+  if (I.pv==='full' && I.t < cardAt){
+    ctx.drawImage(bgFor(R.floor),0,0); ctx.fillStyle='rgba(0,0,0,.55)'; ctx.fillRect(0,0,W,H);
+    if (d.key==='qian') pvQian(I.t-50, f); else pvGranny(I.t-50, f);
+    return;
+  }
+  if (pvCross(I.t, f, cardAt) || (cardAt===0 && I.t <= f)) sfx('tell');
+  pvCard(I.t-cardAt, d, BT);
+}
+// 老钱：画板滑进来 → 画一张金色大饼 → 大饼变成冲天的大阳线 + 金币雨 → 举喇叭"上车！"
+function pvQian(s, f){
+  const ex = Math.round(-100 + Math.min(1, s/20)*124), ey = 118, bw = 100, bh = 78;
+  ctx.fillStyle='#8b5a2b'; ctx.fillRect(ex+12, ey+bh, 4, 64); ctx.fillRect(ex+bw-16, ey+bh, 4, 64); ctx.fillRect(ex+bw/2-2, ey+bh, 4, 46);
+  box(ex, ey, bw, bh, '#f4f4f4', '#8b5a2b');
+  const cx = ex+bw/2, cy = ey+bh/2, pieP = clamp((s-20)/36, 0, 1), rise = clamp((s-62)/16, 0, 1);
+  if (pieP>0 && rise<1){
+    ctx.globalAlpha = 1-rise;
+    if (pieP>=1){ ctx.fillStyle=GOLD; ctx.beginPath(); ctx.arc(cx,cy,25,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#d18b2b'; for (let k=-2;k<=2;k++) ctx.fillRect(cx-15, cy+k*7, 30, 2); }
+    ctx.strokeStyle='#b0701e'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(cx, cy, 26, -Math.PI/2, -Math.PI/2+Math.PI*2*pieP); ctx.stroke();
+    if (pieP<1){ const a = -Math.PI/2+Math.PI*2*pieP; ctx.fillStyle=INK; ctx.fillRect(Math.round(cx+Math.cos(a)*26)-2, Math.round(cy+Math.sin(a)*26)-8, 4, 8); }
+    ctx.globalAlpha = 1;
+  }
+  if (rise>0){ const base = ey+bh-6, top = Math.round(lerp(base, 18, rise*rise));
+    ctx.fillStyle = UP; ctx.fillRect(cx-10, top, 20, base-top); ctx.fillRect(cx-1, top-16, 2, 16); ctx.fillStyle='#f4f4f4'; ctx.fillRect(cx-10, top, 20, 2); }
+  if (pvCross(s, f, 62)){ sfx('coin'); shake = Math.max(shake, 6); }
+  if (s>62 && s<118 && Math.random() < .7*f) parts.push({x:Math.random()*W, y:-6, vx:(Math.random()-.5)*.3, vy:1.2+Math.random(), life:140, col:pick([GOLD,'#ffcd75','#f4f4f4']), g:.03, sz:3});
+  const sc = 5, sh = sprH('qian')*sc, qx = 172, qy = 312 - sh + Math.round(Math.sin(s*.2)*2), my = qy + Math.round(sh*.45);
+  spr('qian', qx, qy, sc);
+  ctx.fillStyle='#c2c3c7'; ctx.beginPath(); ctx.moveTo(qx+2, my); ctx.lineTo(qx-20, my-11); ctx.lineTo(qx-20, my+15); ctx.lineTo(qx+2, my+6); ctx.closePath(); ctx.fill();
+  if (s>86 && Math.floor(s/4)%2){ ctx.fillStyle='#f4f4f4'; for (let k=1;k<=3;k++){ ctx.fillRect(qx-24-k*6, my-6-k*3, 2, 6+k*6); } }
+  if (pvCross(s, f, 86)) sfx('win');
+  if (s>86) bigText(t('pvQian'), W/2, 336, s<92 ? 5 : 4, GOLD);
+}
+// 婆婆：晾衣绳上挂着一根根 K 线，温柔小曲 → 音乐一断，她一拽，K 线全甩飞 → "孩子，别怕。"
+function pvGranny(s, f){
+  const ropeY = 72, yank = s >= 80, ys = s - 80;
+  ctx.fillStyle='#c2c3c7';
+  for (let x=0;x<W;x+=2){ const sag = Math.sin(x/W*Math.PI)*10 + (yank ? Math.sin(x*.1+ys*.8)*3*Math.max(0,1-ys/30) : 0); ctx.fillRect(x, Math.round(ropeY+sag), 2, 1); }
+  for (let i=0;i<6;i++){
+    const x0 = 28+i*46, hy = ropeY + Math.sin(x0/W*Math.PI)*10;
+    const ang = yank ? (ys*.35+i)*(i%2?1:-1) : Math.sin(s*.07+i)*.18;
+    const fly = yank ? ys*ys*.03*(i<3?-1:1) : 0, drop = yank ? ys*ys*.02 : 0;
+    ctx.save(); ctx.translate(Math.round(x0+fly), Math.round(hy+drop)); ctx.rotate(ang);
+    ctx.fillStyle='#8b5a2b'; ctx.fillRect(-1,-2,3,4);
+    const col = i%2===0 ? UP : DN, bh2 = 18+((i*7)%12);
+    ctx.fillStyle=col; ctx.fillRect(0, 2, 1, bh2+12); ctx.fillRect(-4, 8, 9, bh2);
+    ctx.restore();
+  }
+  const sc = 5, sh = sprH('granny')*sc, gx = 100, gy = 330 - sh + (yank ? 0 : Math.round(Math.sin(s*.1)*2));
+  spr('granny', gx + (yank && ys < 14 ? Math.round(Math.sin(ys*2)*3) : 0), gy, sc);
+  if (!yank){ ctx.fillStyle='#d44dff'; ctx.beginPath(); ctx.arc(gx+96, 318, 8, 0, Math.PI*2); ctx.fill(); ctx.fillStyle='#c2c3c7'; ctx.fillRect(gx+84, 298, 1, 22); ctx.fillRect(gx+97, 296, 1, 22); }
+  const notes = [523,659,784,659,587,698,880,698];
+  if (!yank && Math.floor(s/10) !== Math.floor((s-f)/10)) tone(notes[Math.floor(s/10)%8], .2, 'triangle', .03);
+  if (pvCross(s, f, 80)){ shake = Math.max(shake,10); sfx('hurt'); tone(110,.3,'sawtooth',.06,-60); flashA = .25; flashC = '#f4f4f4'; }
+  if (s > 96) bigText(t('pvGranny'), W/2, 372, 2, '#f4f4f4');
+}
+// 名片：斜切的名牌从右边打进来（称号 / 名字 / 招牌意图 + 撒谎率），庄家大号站在上面
+function pvCard(c, d, BT){
+  ctx.fillStyle='rgba(0,0,0,.62)'; ctx.fillRect(0,0,W,H);
+  const k = Math.min(1, c/12), e = 1-(1-k)*(1-k), px = Math.round(lerp(W+20, 13, e)), py = 214, pw = 262, ph = 92;
+  ctx.fillStyle='#b13e53'; ctx.beginPath(); ctx.moveTo(px+18, py); ctx.lineTo(px+pw, py); ctx.lineTo(px+pw-18, py+ph); ctx.lineTo(px, py+ph); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=GOLD; ctx.fillRect(px+24, py+5, pw-44, 1); ctx.fillStyle=INK; ctx.fillRect(px+8, py+ph-3, pw-28, 3);
+  T(fmtS(t('pvGuard'), {n:R.floor+1}), px+30, py+9, '#ffcd75');
+  const nsc = TW(BT.name,12)*2 > 220 ? 1 : 2;
+  bigText(BT.name, px+pw/2, py+24, nsc, '#f4f4f4');
+  const sig = d.sig && C.bskill[d.sig] ? C.bskill[d.sig].name : '—';
+  T(fmtS(t('pvSig'), {s:sig, n:Math.round((d.fake||0)*100)}), px+30, py+ph-22, '#f4f4f4');
+  const sc = 6, sh = sprH(B.bossSpr)*sc; spr(B.bossSpr, Math.round(lerp(-120, 24, e)), py - sh - 4, sc, {swap:B.bossSwap});
+}
+// 小庄：一条横幅划过，配一个小道具
+function pvMinion(tt, f, d, BT){
+  const inK = clamp(tt/10,0,1), outK = clamp((tt-34)/10,0,1);
+  const x = Math.round(lerp(-W, 0, 1-(1-inK)*(1-inK)) + outK*outK*W*1.2), y = 206, h = 48;
+  ctx.fillStyle='rgba(0,0,0,.4)'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#1a1c2c'; ctx.fillRect(x, y, W, h); ctx.fillStyle=GOLD; ctx.fillRect(x, y, W, 2); ctx.fillRect(x, y+h-2, W, 2);
+  pvProp(d.idx, x+30, y+h/2, tt);
+  const txt = fmtS(t('pvMinion'), {n:BT.name}), sc = TW(txt,12)*2 > 210 ? 1 : 2;
+  bigText(txt, x+W/2+22, y+(sc===2?12:17), sc, '#f4f4f4');
+  if (tt <= f) sfx('tell');
+}
+function pvProp(i, cx, cy, tt){
+  const R2 = (x,y,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(Math.round(cx+x), Math.round(cy+y), w, h); };
+  if (i===0){ R2(-16,-4,13,8,INK); R2(3,-4,13,8,INK); R2(-3,-3,6,2,INK); R2(-14,-3,4,2,'#94b0c2'); R2(5,-3,4,2,'#94b0c2'); }   // 墨镜
+  else if (i===1){ ctx.fillStyle=GOLD; ctx.beginPath(); [[4,-16],[-8,2],[-1,2],[-5,16],[9,-3],[2,-3]].forEach(([x,y],k)=> k ? ctx.lineTo(cx+x,cy+y) : ctx.moveTo(cx+x,cy+y)); ctx.closePath(); ctx.fill(); }   // 闪电
+  else if (i===2){ R2(-14,-8,28,18,'#8b5a2b'); R2(-5,-12,10,2,'#5d3a1a'); R2(-5,-12,2,5,'#5d3a1a'); R2(3,-12,2,5,'#5d3a1a'); R2(-2,-1,4,3,GOLD); }   // 公文包
+  else if (i===3){ R2(-8,-14,16,28,INK); R2(-6,-11,12,20,'#41a6f6'); if (Math.floor(tt/8)%2) R2(2,-9,3,3,DANGER); R2(-2,11,4,1,'#566c86'); }   // 手机直播
+  else { R2(-12,-12,24,24,'#f4f4f4'); for (let y=0;y<7;y++) for (let x=0;x<7;x++){ const on = ((x*7+y*13+x*y)%3===0) || (x<2&&y<2) || (x>4&&y<2) || (x<2&&y>4); if (on) R2(-10.5+x*3,-10.5+y*3,3,3,INK); } }   // 二维码
+}
+
 // ---------- 战斗画面 ----------
 const BattleScene = { frame(f, dt){
   const d = B.def, BT = bossText(d); B.t += f;
-  // ---- 出场动画：从屏幕上方掉下来 → 落地弹一下 → 逐句说台词 ----
+  // ---- 出场 PV：（Boss）WARNING → 招牌演出 → 名片 /（小庄）横幅 → 逐句说台词；点一下跳过演出 ----
   if (B.intro){
     const I = B.intro; I.t += f;
-    if (!I.landed && I.t >= 18){
-      I.landed = true; sfx('step'); shake = Math.max(shake, 4);
-      burst(250, 80, 16, ['#94b0c2','#f4f4f4','#566c86'], 1.6, .1, 26);
-    }
-    if (I.t >= 30){
+    if (I.t < I.T0){ if (tapAny()){ I.t = I.T0; parts = []; } }
+    else {
       I.lt += f; B.bubble = I.lines[I.i]; B.bubbleT = 999;
       if (I.endAt==null && (tapAny() || I.lt > 110)){
         I.lt = 0;
@@ -1306,11 +1719,11 @@ const BattleScene = { frame(f, dt){
   const running = !B.over && !B.paused && !B.intro;
   if (running){
     if (B.halt>0){ B.halt -= dt; }
-    else if (B.freeze>0) B.freeze -= dt;
-    else { B.acc += dt*1000*B.speed; let guard=0; while (B.acc>=B.tickMs && !B.over && guard++<6){ B.acc-=B.tickMs; battleTick(); } }
-    if (B.warn>0 && B.freeze<=0 && B.halt<=0){ B.warn -= dt; if (B.warn<=0){ B.warn=0; strike(); } }
-    // 拔网线按真实时间倒计时：暂停不算，冻结也不算（狙击倒数照走）
-    if (B.curse && B.curse.type==='unplug' && B.freeze<=0){ B.curse.sec -= dt; if (B.curse.sec<=0) endCurse(); }
+    else { const tms = B.tickMs / (B.ov && B.ov.type==='fast' ? 3 : 1);   // 三秒进出：K 线 3 倍速（和玩家的 »» 加速叠加）
+      B.acc += dt*1000*B.speed; let guard=0; while (B.acc>=tms && !B.over && guard++<12){ B.acc-=tms; battleTick(); } }
+    if (B.warn>0 && B.halt<=0){ B.warn -= dt; if (B.warn<=0){ B.warn=0; strike(); } }
+    // 拔网线按真实时间倒计时：暂停不算（狙击倒数照走）
+    if (B.curse && B.curse.type==='unplug'){ B.curse.sec -= dt; if (B.curse.sec<=0) endCurse(); }
   }
   if (B.over) B.harvT += f;
   if (B.bubbleT>0) B.bubbleT -= f; if (B.newsT>0) B.newsT -= f; if (B.hintT>0 && !B.intro) B.hintT -= f; if (B.collapseT>0) B.collapseT -= f;
@@ -1347,11 +1760,11 @@ const BattleScene = { frame(f, dt){
     if (btn(222, 1, 30, 16, B.speed>1?'»»':'»', {col:B.speed>1?'#ef7d57':'#333c57', key:'f'})) B.speed = B.speed>1?1:2;
     if (btn(254, 1, 30, 16, B.paused?'▶':'Ⅱ', {col:'#333c57', key:'escape'})) B.paused = !B.paused;
   }
-  // 庄家筹码条 + 已学技能 + 进度
+  // 庄家筹码条 + 构筑图标 + 进度
   const dmg = Math.max(0, e-B.startEq), hpLeft = B.collapse ? 0 : clamp(1 - dmg/B.hpMax, 0, 1);
   box(4, 17, 150, 10, '#1a1c2c', '#333c57'); ctx.fillStyle=DANGER; ctx.fillRect(6,19,Math.round(146*hpLeft),6);
   N(B.collapse?'0':fmt(Math.max(0,B.hpMax-dmg)), 79, 20, '#f4f4f4', 1, 'center');
-  let skx = 162; for (const k of Object.keys(R.skills)){ if (skx>246) break; spr(SKILLS[k].icon, skx, 18, 1); skx += 10; }
+  let skx = 162; for (const k of R.cards){ if (skx>246) break; spr(CARDS[k].icon, skx, 18, 1); skx += 10; }
   N(`${B.step}/${B.len}`, 284, 20, '#566c86', 1, 'right');
   ctx.fillStyle='#333c57'; ctx.fillRect(0,29,W,1); ctx.fillStyle=GOLD; ctx.fillRect(0,29,Math.round(W*Math.min(1,B.step/B.len)),1);
 
@@ -1363,19 +1776,13 @@ const BattleScene = { frame(f, dt){
     const D = B.defeat, a = clamp((D.t-36)/24, 0, 1);
     const bob = D.done ? 0 : Math.round(Math.sin(D.t*.08)*1.5);
     spr(HERO(), bx, 82 - bh + bob, sc, {swap:DEFEAT_SWAP(), alpha:a});
-  } else if (B.defeat){
+  } else if (B.defeat && B.defeat.t >= 0){
     // 0–36 帧：左右剧烈抖，每 4 帧闪白
     const D = B.defeat, jx = Math.round(Math.sin(D.t*2.1)*3);
     const white = Math.floor(D.t/4)%2 === 0;
     spr(B.bossSpr, bx+jx, by, sc, {swap: white ? whiteSwap(B.bossSpr) : B.bossSwap});
   } else {
-    let byD = by;
-    if (B.intro){
-      const it = B.intro.t;
-      if (it < 18){ const p = it/18; byD = -bh + (by+bh)*(p*p); }
-      else { const bt = it-18; byD = by - (bt<12 ? Math.sin(bt/12*Math.PI)*4 : 0); }
-    }
-    spr(B.bossSpr, bx, byD, sc, {swap:B.bossSwap});
+    spr(B.bossSpr, bx, by, sc, {swap:B.bossSwap});
   }
   if (B.collapse && !B.defeat && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(bx+40, by+10, 2, 3); }
   const crit = critNow() && !B.over;
@@ -1392,10 +1799,14 @@ const BattleScene = { frame(f, dt){
   // 缩放：最早的方式——线性，看整屏所有可见的 K 线（Kurt 定：不做自适应聚焦、不让 K 线冲出屏幕）
   const rv = vis;
   let hi = Math.max(...rv.map(b=>b.h)), lo = Math.min(...rv.map(b=>b.l));
+  const ghosts = oracleGhosts();   // 算一卦的预言 K 线也算进缩放，不然会被裁出画面
+  for (const g of ghosts){ hi = Math.max(hi, g.o, g.c); lo = Math.min(lo, g.o, g.c); }
   const mg = (hi-lo)*.12 + hi*.004;
   B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
   const volTop = CY1-34, chH = volTop-CY0-10;
-  const Yr = p => CY0+4 + (B.vhi-p)/(B.vhi-B.vlo)*chH;
+  const mirror = !!(B.ov && B.ov.type==='mirror');   // 报表做反：画面上下翻转、涨跌颜色互换，钱和按钮都是真的
+  const Yr = mirror ? (p => CY0+4 + (p-B.vlo)/(B.vhi-B.vlo)*chH) : (p => CY0+4 + (B.vhi-p)/(B.vhi-B.vlo)*chH);
+  const colOf = b => ((b.c>=b.o) !== mirror) ? UP : DN;
   const Y = p => Math.round(Yr(p));
   const X = i => CX0+2 + (i-start)*SW;
   X_cur = () => X(all.length-1)+2;
@@ -1410,13 +1821,14 @@ const BattleScene = { frame(f, dt){
         const i0 = HIST + s, i1 = HIST + k - 1;
         if (i1>=start){ const x0=Math.max(CX0,X(i0)-1), x1=X(i1)+SW-1; const tint = kindTint(log[s]);
           if (tint){ ctx.fillStyle=tint; ctx.fillRect(x0, CY0, x1-x0, CY1-CY0-14); }
-          if (x1-x0>14) T(C.kind[log[s]]||'', x0+1, CY1-14, BOSS_SKILLS[log[s]]||log[s]==='forced'?DANGER:GOLD); }
+          if (x1-x0>14) T(C.kind[log[s]]||'', x0+1, CY1-14, BOSS_SKILLS[log[s]]?DANGER:GOLD); }
         s=k; } }
   }
   const vmax = Math.max(2, ...vis.map(b=>b.v||0)), blink = Math.floor(B.t/4)%2;
-  vis.forEach((b,j)=>{ const i=start+j, x=X(i), isCur = j===vis.length-1 && showCur && !B.over; const col = b.c>=b.o?UP:DN;
-    ctx.fillStyle = col; ctx.fillRect(x+1, Y(b.h), 1, Math.max(1,Y(b.l)-Y(b.h)+1));
-    const top = Y(Math.max(b.o,b.c)), bot = Y(Math.min(b.o,b.c)); ctx.fillRect(x, top, SW-1, Math.max(1, bot-top+1));
+  vis.forEach((b,j)=>{ const i=start+j, x=X(i), isCur = j===vis.length-1 && showCur && !B.over; const col = colOf(b);
+    const wy0 = Math.min(Y(b.h),Y(b.l)), wy1 = Math.max(Y(b.h),Y(b.l));
+    ctx.fillStyle = col; ctx.fillRect(x+1, wy0, 1, Math.max(1,wy1-wy0+1));
+    const top = Math.min(Y(b.o),Y(b.c)), bot = Math.max(Y(b.o),Y(b.c)); ctx.fillRect(x, top, SW-1, Math.max(1, bot-top+1));
     if (isCur && blink){ ctx.fillStyle='#f4f4f4'; ctx.fillRect(x, top, SW-1, 1); }
     const vh = Math.round(clamp((b.v||0)/vmax,0,1)*20); ctx.fillStyle = col; ctx.globalAlpha=.45; ctx.fillRect(x, CY1-14-vh, SW-1, vh); ctx.globalAlpha=1;
     // 超出窗口的超长 K 线：边上画小箭头
@@ -1434,7 +1846,25 @@ const BattleScene = { frame(f, dt){
     else if (m.side==='S'){ ctx.fillStyle='#73eff7'; ctx.fillRect(x,y-4,1,1); ctx.fillRect(x-1,y-5,3,1); ctx.fillRect(x-2,y-6,5,1); }
     else { ctx.fillStyle='#f4f4f4'; ctx.fillRect(x-2,y-2,1,1); ctx.fillRect(x+2,y-2,1,1); ctx.fillRect(x-1,y-1,3,3); ctx.fillRect(x-2,y+2,1,1); ctx.fillRect(x+2,y+2,1,1); } }
   if (B.sh!==0){ const yy=Y(B.entry), cc = B.posCrit?GOLD:'#ef7d57'; ctx.fillStyle=cc; for (let x=CX0;x<CX1;x+=6) ctx.fillRect(x,yy,3,1); if (B.posCrit) T(t('critPos')+' ×2', CX0+2, yy-13, GOLD); }
-  if (B.orders){ for (const pp of [B.orders.lo,B.orders.hi]){ const yy=Y(pp); ctx.fillStyle=GOLD; for (let x=CX0;x<CX1;x+=3) ctx.fillRect(x,yy,1,1); } }
+  // 算一卦：当前 K 线右边画半透明的预言 K 线（每走过一根就少一根；最后一根照原方向画——那是骗你的）
+  if (B.ov && B.ov.type==='oracle' && !B.over){
+    const ci = all.length-1, n = ghosts.length;
+    if (n>0){
+      const room = CX1+28 - (X(ci)+SW), step = Math.max(4, Math.min(SW+3, Math.floor(room/n)));
+      ghosts.forEach((g,m)=>{ const x = X(ci)+(m+1)*step, yt = Math.min(Y(g.o),Y(g.c)), yb = Math.max(Y(g.o),Y(g.c));
+        const gc = (g.c>=g.o)!==mirror ? UP : DN;
+        ctx.globalAlpha = .55 + .2*Math.sin(B.t*.15+m); ctx.fillStyle = gc;
+        for (let yy=yt; yy<=yb; yy+=2){ ctx.fillRect(x, yy, 1, 1); ctx.fillRect(x+step-2, yy, 1, 1); }
+        for (let xx=x; xx<x+step-1; xx+=2){ ctx.fillRect(xx, yt, 1, 1); ctx.fillRect(xx, yb, 1, 1); }
+        ctx.globalAlpha = .18; ctx.fillRect(x, yt, step-1, Math.max(1,yb-yt)); ctx.globalAlpha = 1; });
+      T('?', X(ci)+n*step+step, Math.min(...ghosts.map(g=>Y(Math.max(g.o,g.c))))-12, '#d44dff');
+    }
+  }
+  // 分身：主角仓位旁边的小号半透明标记
+  B.clones.forEach((cl,i)=>{ const yy = clamp(Y(cl.entry), CY0+3, volTop-3), xx = CX1-6-i*7;
+    ctx.globalAlpha=.55; ctx.fillStyle = cl.dir>0?UP:DN;
+    ctx.fillRect(xx, yy-1, 3, 3); ctx.fillRect(xx+1, yy+(cl.dir>0?-3:3), 1, 1);
+    ctx.globalAlpha=.3; ctx.fillRect(xx+1, yy-4, 1, 8); ctx.globalAlpha=1; });
   // 局末回放：庄家说过的每一句意图，真还是假
   if (B.over){
     for (const lg of B.intentLog){ if (lg.i<start) continue; const x = X(lg.i)+2, lab = claimLabel(lg.claim);
@@ -1443,7 +1873,7 @@ const BattleScene = { frame(f, dt){
   }
   ctx.restore();
   // 出场时 K 线图中间偏下的小字提示
-  if (B.intro && B.intro.t >= 30) T(t('skipHint'), CX0+122, CY1-58, '#566c86', 'center', 10);
+  if (B.intro && B.intro.t >= B.intro.T0) T(t('skipHint'), CX0+122, CY1-58, '#566c86', 'center', 10);
   // 庄家的画笔（出场动画时先不画；战败抖动的 36 帧里还握着笔）
   if (((!B.over || B.harvested) && !B.intro) || (B.defeat && B.defeat.t < 36)){
     const ci = all.length-1, tipX = X(ci)+2 + (B.over?0:Math.round(randn()*.6)), tipY = Y(fakeChart ? B.fp : B.price);
@@ -1455,7 +1885,26 @@ const BattleScene = { frame(f, dt){
     if (!B.over && Math.random()<.08) parts.push({x:tipX,y:tipY,vx:0,vy:.2,life:30,col:inkCol,g:.05,sz:1});
   }
   // 右侧价格签：画大饼时也显示真实价（画面是假的，钱是真的）
-  if (!B.over){ const pp = fakeChart ? B.fp : B.price, yy = clamp(Y(pp), CY0+6, volTop-6), cc = fakeChart ? B.fcur : B.cur; box(CX1+1, yy-5, 32, 11, cc.c>=cc.o?UP:DN, INK); T(pctS(pp/B.base-1), CX1+17, yy-5, '#f4f4f4', 'center', 10, null); }
+  if (!B.over){ const pp = fakeChart ? B.fp : B.price, yy = clamp(Y(pp), CY0+6, volTop-6), cc = fakeChart ? B.fcur : B.cur; box(CX1+1, yy-5, 32, 11, colOf(cc), INK); T(pctS(pp/B.base-1), CX1+17, yy-5, '#f4f4f4', 'center', 10, null); }
+  // 专属意图的画面提示
+  if (B.ov && !B.over){
+    const ty2 = B.ov.type, fx0 = CX0-3, fy0 = CY0-3, fw = CX1-CX0+36, fh = CY1-CY0+6;
+    if (ty2==='mirror'){   // 紫色波浪边框：画面是假的
+      ctx.fillStyle = '#d44dff';
+      for (let x=fx0; x<fx0+fw; x+=2){ const o = Math.round(Math.sin(x*.25+B.t*.2)*1.5); ctx.fillRect(x, fy0+o, 2, 2); ctx.fillRect(x, fy0+fh-2+o, 2, 2); }
+      for (let y=fy0; y<fy0+fh; y+=2){ const o = Math.round(Math.sin(y*.25+B.t*.2)*1.5); ctx.fillRect(fx0+o, y, 2, 2); ctx.fillRect(fx0+fw-2+o, y, 2, 2); }
+    }
+    if (ty2==='fast'){   // 黄框闪 + 中间 ×3
+      if (Math.floor(B.t/3)%2){ ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.strokeRect(fx0, fy0, fw, fh); }
+      if (Math.floor(B.t/6)%2) bigText('×3', CX0+122, CY0+60, 3, GOLD);
+    }
+    if (ty2==='beat'){   // ♪ 1 2 3 4，当前拍高亮
+      const b = B.ov.t%4, bx2 = CX0+76, by2 = CY1-56;
+      box(bx2-6, by2-3, 92, 20, '#1a1c2c', '#d44dff');
+      T('♪', bx2, by2, '#d44dff');
+      for (let k=0;k<4;k++){ const on = k===b, pulse = on && B.tick < 3; T(String(k+1), bx2+18+k*16, by2-(pulse?2:0), on ? (k===3 ? DANGER : GOLD) : '#566c86', 'left', on?13:11); }
+    }
+  }
   if (B.warn>0 && Math.floor(B.t/5)%2){ ctx.strokeStyle=DANGER; ctx.lineWidth=2; ctx.strokeRect(CX0-3,CY0-3,CX1-CX0+36,CY1-CY0+6); }
   // 庄家气泡（画在画笔之上，别被笔划压住）
   if (B.bubbleT>0 && B.bubble){
@@ -1471,16 +1920,28 @@ const BattleScene = { frame(f, dt){
     : (crit ? (B.breach>0 ? t('crit')+' · '+B.breach : t('critOv')) : null);
   if (critLab){ const cc2 = crit ? GOLD : '#d44dff'; box(CX0, ty, TW(critLab)+12, 16, '#1a1c2c', cc2); T(critLab, CX0+6, ty+2, cc2); }
   let wy = critLab ? ty+20 : ty;
-  if (B.weather && !B.over){
-    const lab = t('weather')+C.news[B.weather.id][1];
-    const vm = B.weather.volMul || 1, volTxt = vm>1.2 ? t('volUp') : vm<.8 ? t('volDown') : '';
+  // 小消息：天气框旁边显示条数（按净方向染色）
+  let msgLab='', msgCol='', msgW=0, msgRow=false;
+  if (B.msgs.length && !B.over){
+    const net = B.msgs.reduce((a,m)=>a+m.dir,0);
+    msgLab = t('msgN')+' ×'+B.msgs.length; msgCol = net>0?UP:net<0?DN:'#94b0c2'; msgW = TW(msgLab)+18;
+  }
+  // 篡改天气：天气框显示假新闻（真实天气照常生效但看不到）
+  const fakeSky = curseType()==='fakesky';
+  const WV = fakeSky ? {id:B.curse.fake, volMul:B.curse.fvm, left:B.curse.left} : B.weather;
+  if (WV && !B.over){
+    const lab = t('weather')+C.news[WV.id][1];
+    const vm = WV.volMul || 1, volTxt = vm>1.2 ? t('volUp') : vm<.8 ? t('volDown') : '';
     const volCol = vm>1.2 ? UP : '#94b0c2', vw = volTxt ? TW(volTxt)+4 : 0;
-    box(CX0, wy, TW(lab)+vw+24, 16, '#1a1c2c', '#41a6f6');
+    const ww = TW(lab)+vw+24;
+    box(CX0, wy, ww, 16, '#1a1c2c', '#41a6f6');
     T(lab, CX0+4, wy+2, '#73eff7');
     if (volTxt) T(volTxt, CX0+4+TW(lab)+4, wy+2, volCol);
-    N(String(B.weather.left), CX0+TW(lab)+vw+18, wy+5, '#73eff7', 1, 'right');
+    N(String(WV.left), CX0+TW(lab)+vw+18, wy+5, '#73eff7', 1, 'right');
+    if (msgLab && CX0+ww+4+msgW <= 232){ box(CX0+ww+4, wy, msgW, 16, '#1a1c2c', msgCol); T(msgLab, CX0+ww+8, wy+2, msgCol); msgRow=true; }
     wy += 20;
   }
+  if (msgLab && !msgRow){ box(CX0, wy, msgW, 16, '#1a1c2c', msgCol); T(msgLab, CX0+4, wy+2, msgCol); wy += 20; }
   // 妨碍类技能的状态框：和暴击框、天气框自动错行
   if (B.curse && !B.over){
     const nm = C.bskill[B.curse.type].name;
@@ -1492,8 +1953,7 @@ const BattleScene = { frame(f, dt){
   }
   if (B.collapseT>0){ const ls = wrap(t('collapse'), 220); box(CX0+6, CY0+70, 232, ls.length*16+12, '#1a1c2c', GOLD); ls.forEach((l,k)=>T(l, CX0+122, CY0+76+k*16, GOLD, 'center')); }
   if (B.halt>0){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
-  if (B.hintT>0 && B.hint && !B.intro){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
-  if (B.freeze>0) T(t('frozen')+' '+B.freeze.toFixed(1), CX0+122, CY0+80, '#73eff7', 'center');
+  if (B.hintT>0 && B.hint && !B.intro && !B.over){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
 
   // ===== 叶子（K 线图左上角正上方）+ 庄家意图（右上角正上方）=====
   moneyFx(f, banked());
@@ -1518,7 +1978,7 @@ const BattleScene = { frame(f, dt){
   box(0, CHAT_Y, W, 18, '#141623', '#333c57');
   if (B.newsT>0 && B.news && !B.over){
     const tag = t('news'), pad = TW(tag)+16, maxW2 = W-pad-4;
-    let head = C.news[B.news.id][0];
+    let head = C.news[curseType()==='fakesky' ? B.curse.fake : B.news.id][0];   // 篡改天气期间快讯也是假的
     box(0, CHAT_Y, W, 18, '#1a1c2c', GOLD);
     box(2, CHAT_Y+2, TW(tag)+8, 14, '#b13e53', '#b13e53'); T(tag, 6, CHAT_Y+3, '#f4f4f4');
     if (TW(head) > maxW2){ let s = head; while (s.length>1 && TW(s+'…')>maxW2) s = s.slice(0,-1); head = s+'…'; }
@@ -1531,6 +1991,14 @@ const BattleScene = { frame(f, dt){
   const hx = 10, hy = HERO_Y;
   drawHero(hx, hy + (B.sh!==0 && !B.harvested ? Math.round(Math.abs(Math.sin(B.t*.15))*-2) : 0), 3, hv);
   if (hv==='S' && !B.harvested && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(hx+38, hy+18, 2, 3); }
+  // 读心：主角头上一只紫色眼睛，每根开盘闪一下
+  if (B.ov && B.ov.type==='mind' && !B.over){
+    const ex = hx+24, ey = hy+1 + Math.round(Math.sin(B.t*.12)*1), blinkE = (B.ov.eyeT||0) > 0;
+    if (B.ov.eyeT>0) B.ov.eyeT -= f;
+    ctx.fillStyle = blinkE ? '#f4f4f4' : '#d44dff';
+    ctx.fillRect(ex-6, ey, 12, 1); ctx.fillRect(ex-8, ey+1, 16, 1); ctx.fillRect(ex-9, ey+2, 18, 3); ctx.fillRect(ex-8, ey+5, 16, 1); ctx.fillRect(ex-6, ey+6, 12, 1);
+    ctx.fillStyle = INK; ctx.fillRect(ex-3, ey+1, 6, 5); ctx.fillStyle = blinkE ? DANGER : '#f4f4f4'; ctx.fillRect(ex-1, ey+2, 2, 2);
+  }
   if (B.warn>0){ const cx=hx+24, cy=hy+22, rr2 = 18 + Math.round(B.warn*3); ctx.fillStyle=DANGER;
     for (const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ ctx.fillRect(cx+sx*rr2-(sx>0?6:0), cy+sy*rr2-(sy>0?2:0), 6, 2); ctx.fillRect(cx+sx*rr2-(sx>0?2:0), cy+sy*rr2-(sy>0?6:0), 2, 6); }
     N(String(Math.ceil(B.warn/0.8)), cx, hy-14, DANGER, 3, 'center'); }
@@ -1538,7 +2006,7 @@ const BattleScene = { frame(f, dt){
   if (B.sh===0) T(t('flat'), px, hy+6, '#94b0c2');
   else { const long = B.sh>0; T(long?t('long'):t('short'), px, hy+6, long?UP:DN); const sx0 = px+TW(long?t('long'):t('short'))+6;
     for (let k=0;k<3;k++){ ctx.fillStyle = k<B.stacks ? (B.posCrit?GOLD:(long?UP:DN)) : '#333c57'; ctx.fillRect(sx0+k*8, hy+9, 6, 8); }
-    if (R.skills.lev) T('×2', sx0+26, hy+6, GOLD);
+    if (has('lev')) T('×2', sx0+26, hy+6, GOLD);
     // 持仓浮盈浮亏：大号金额 + 百分比，暴击仓加 ×2
     const pnlNow = (dispP()-B.entry)*B.sh, pcol = pnlNow>=0?UP:DN;
     const amt = (pnlNow>=0?'+':'')+fmt(pnlNow);
@@ -1573,29 +2041,52 @@ const BattleScene = { frame(f, dt){
     if (netDown) toast(t('tNetDown')); else trade(-1); }
   if (btn(192, BTN_Y, 88, 34, closeLab, {col:(netDown||halted2)?'#333c57':'#ef7d57', key:'e', disabled:halted2||(!netDown&&(!live||B.sh===0||lockN>0)), tc:(netDown||halted2)?'#94b0c2':lockN>0?GOLD:'#f4f4f4'})){
     if (netDown) toast(t('tNetDown')); else if (lockN>0) toast(fmtS(t('t1Lock'),{n:lockN})); else closePos(false); }
-  // 第二排：技能 + 道具（图标 + 名字都压在同一个按钮里，省一行）
-  const row = [
-    {lab:t('order'), icon:'i_net', sub:R.skills.order?(B.orderCD>0?String(B.orderCD):''):'', dis:!live||!R.skills.order||B.orderCD>0, fn:placeOrder, key:'1', col:'#5a4a1a'},
-    {lab:t('bluff'), icon:'i_phone', sub:R.skills.bluff?(B.bluffCD>0?String(B.bluffCD):''):'', dis:!live||!R.skills.bluff||B.bluffCD>0, fn:callBluff, key:'2', col:'#2a4a1a'},
-    {lab:t('hourglass'), icon:'i_glass', sub:'x'+R.items.hourglass, dis:B.over||B.paused||B.intro||R.items.hourglass<=0, fn:()=>useItem('hourglass'), key:'3', col:'#333c57'},
-    {lab:t('cloak'), icon:'i_cloak', sub:'x'+R.items.cloak, dis:B.over||B.paused||B.intro||R.items.cloak<=0, fn:()=>useItem('cloak'), key:'4', col:'#333c57'},
-    {lab:t('report'), icon:'i_report', sub:'x'+R.items.report, dis:B.over||B.paused||B.intro||R.items.report<=0, fn:()=>useItem('report'), key:'5', col:'#333c57'},
-  ];
-  row.forEach((b,j)=>{ const x = 8+j*55; const gray = netDown || b.dis;
-    // 断网时道具/技能也灰掉，但不能真 disabled：点一下要能提示"断网了"
-    if (btn(x, ITEM_Y, 52, 32, '', {col:gray?'#333c57':b.col, key:b.key, disabled:netDown?false:b.dis, sub:b.sub})){
-      if (netDown) toast(t('tNetDown')); else b.fn(); }
-    spr(b.icon, x+18, ITEM_Y+1, 2, {alpha:gray?.45:1}); T(b.lab, x+26, ITEM_Y+18, gray?'#566c86':'#94b0c2', 'center', 10); });
+  // 第二排：6 格构筑栏（同一位置同一高度）
+  for (let i=0;i<6;i++){
+    const x = 6+i*46, y = ITEM_Y, w = 44, h = 32;
+    if (i >= R.slots){                              // 未开放：锁
+      box(x, y, w, h, '#0f1018', '#1a1c2c');
+      ctx.fillStyle='#333c57'; ctx.fillRect(x+w/2-4, y+13, 8, 6); ctx.fillRect(x+w/2-2, y+10, 4, 3);
+      ctx.fillRect(x+w/2-4, y+15, 1, 1);
+    } else if (i < R.cards.length){
+      const k = R.cards[i], s = CARDS[k], col = SCHOOL_COL[s.school];
+      const fl = B.flash[i]||0; if (fl>0) B.flash[i] = Math.max(0, fl-f);
+      const bob = fl>0 ? Math.round(Math.sin(fl/20*Math.PI)*-3) : 0;
+      box(x, y+bob, w, h, fl>0 ? shade(col,.35) : '#141623', fl>0 ? '#f4f4f4' : col);
+      spr(s.icon, x+w/2-8, y+7+bob, 2, {alpha: fl>0 ? 1 : .92});
+      let nm = C.card[k][0]; while (nm.length>1 && TW(nm, 8) > 40) nm = nm.slice(0,-1);
+      T(nm, x+w/2, y+22+bob, fl>0 ? '#f4f4f4' : '#94b0c2', 'center', 8, null);
+      if (fl>0){ ctx.globalAlpha = clamp(fl/20,0,1)*.35; ctx.fillStyle = col; ctx.fillRect(x, y+bob, w, h); ctx.globalAlpha = 1; }
+      if (!fadeTo && clk && hit(clk, x, y, w, h)){ clk=null; sfx('click'); toast(C.card[k][0]+' — '+C.card[k][1]); }
+    } else {
+      box(x, y, w, h, '#10121c', '#333c57');
+      ctx.save(); ctx.strokeStyle='#3b4459'; ctx.setLineDash([3,3]); ctx.strokeRect(x+4.5, y+4.5, w-9, h-9); ctx.restore();
+    }
+  }
 
   // ===== 暂停 =====
   if (B.paused && !B.over){
-    ctx.fillStyle='#000b'; ctx.fillRect(0,0,W,H); bigText(t('paused'), W/2, 110, 3, '#f4f4f4');
-    let yy = 170; T(t('yourSkills'), 24, yy, GOLD); yy+=18;
-    const ks = Object.keys(R.skills); if (!ks.length){ wrap(t('noSkills'),240).forEach(l=>{T(l, 24, yy, '#94b0c2'); yy+=16;}); }
-    for (const k of ks){ spr(SKILLS[k].icon, 24, yy+2, 1); T(C.skill[k][0], 38, yy, SCHOOL_COL[SKILLS[k].school]); yy+=16; }
-    if (btn(74, 340, 140, 32, t('resume'), {col:'#b13e53'})) B.paused=false;
-    if (btn(74, 380, 140, 28, muted?t('sndOff'):t('sndOn'), {col:'#333c57'})) muted=!muted;
-    if (btn(74, 414, 140, 28, t('toTitle'), {col:'#333c57'})){ B.paused=false; go(TitleScene()); }
+    ctx.fillStyle='#000b'; ctx.fillRect(0,0,W,H); bigText(t('paused'), W/2, 100, 3, '#f4f4f4');
+    let yy = 158; T(t('yourSkills'), 24, yy, GOLD); T(t('build'), 262, yy, '#566c86', 'right'); yy+=20;
+    if (!R.cards.length){ wrap(t('noSkills'),240).forEach(l=>{T(l, 24, yy, '#94b0c2'); yy+=16;}); }
+    for (let i=0;i<R.slots;i++){
+      const ry = yy+i*18, k = R.cards[i];
+      const sel = B.pauseSel === i;
+      if (k){ const s = CARDS[k], col = SCHOOL_COL[s.school];
+        if (sel) box(20, ry-2, 250, 17, '#29366f', '#f4f4f4');
+        spr(s.icon, 26, ry+2, 1); T(C.card[k][0], 40, ry, sel?'#f4f4f4':col);
+        T(C.school[s.school]+' · '+C.cat[s.type], 262, ry, '#94b0c2', 'right', 10);
+        if (!fadeTo && clk && hit(clk, 20, ry-2, 250, 17)){
+          clk=null;
+          if (B.pauseSel==null) B.pauseSel = i;
+          else if (B.pauseSel===i) B.pauseSel = null;
+          else { const a=B.pauseSel, tmp=R.cards[a]; R.cards[a]=R.cards[i]; R.cards[i]=tmp; B.pauseSel=null; sfx('coin'); }
+        }
+      } else T(t('empty'), 40, ry, '#566c86');
+    }
+    if (btn(74, 330, 140, 32, t('resume'), {col:'#b13e53'})){ B.paused=false; B.pauseSel=null; }
+    if (btn(74, 372, 140, 28, muted?t('sndOff'):t('sndOn'), {col:'#333c57'})) muted=!muted;
+    if (btn(74, 406, 140, 28, t('toTitle'), {col:'#333c57'})){ B.paused=false; B.pauseSel=null; go(TitleScene()); }
   }
   // ===== 结算（图表上保留回放） =====
   if (B.over && B.harvT > (B.harvested?70:30) && (!B.defeat || B.defeat.done)){
@@ -1616,6 +2107,8 @@ const BattleScene = { frame(f, dt){
     wrap(msg, 256).slice(0,4).forEach((l,k)=>T(l, 16, py+68+k*15, res.pass?'#f4f4f4':'#ef7d57'));
     if (btn(84, py+128, 120, 24, t('cont'), {col:'#b13e53', key:'enter'})) afterBattle();
   }
+  if (B.defeat && B.defeat.t < 0) bigText(t('busted'), W/2 + Math.round(Math.sin(B.t*1.3)*2), 176, 4, GOLD);
+  if (B.intro && B.intro.t < B.intro.T0) drawPV(B.intro, f);
 }};
 
 // ---------- 结束画面 ----------
@@ -1629,7 +2122,7 @@ function TestEndScene(){
     T(t('sFinal'), 50, 252, '#94b0c2'); N(fmt(R.cap), 238, 255, GOLD, 2, 'right');
     T(t('sTrades'), 50, 276, '#94b0c2'); N(String(R.stats.trades), 238, 279, '#f4f4f4', 2, 'right');
     T(t('sHarv'), 50, 300, '#94b0c2'); N(String(R.stats.harvested), 238, 303, '#f4f4f4', 2, 'right');
-    T(t('sSkills'), 50, 324, '#94b0c2'); let ix=238-11*Object.keys(R.skills).length; for (const k of Object.keys(R.skills)){ spr(SKILLS[k].icon, ix, 326, 1); ix+=11; }
+    T(t('sSkills'), 50, 324, '#94b0c2'); let ix=238-11*R.cards.length; for (const k of R.cards){ spr(CARDS[k].icon, ix, 326, 1); ix+=11; }
     T(t('testFoot'), W/2, 390, '#94b0c2', 'center');
     if (btn(74, 440, 140, 30, t('toTitle'), {col:'#b13e53'})) go(TitleScene());
   }};
@@ -1660,9 +2153,17 @@ function loop(now){
   if (shake>0){ ctx.translate(Math.round((Math.random()-.5)*shake), Math.round((Math.random()-.5)*shake)); shake = Math.max(0, shake-.6*f); }
   if (fadeTo){ fadeA += .09*f; if (fadeA>=1){ fadeA=1; scene=fadeTo; fadeTo=null; parts=[]; floats=[]; scene.enter && scene.enter(); } }
   else if (fadeA>0) fadeA = Math.max(0, fadeA-.09*f);
-  if (scene) scene.frame(f, dt);
+  if (scene){
+    const mclk = cardModal ? clk : null; if (cardModal) clk = null;
+    scene.frame(f, dt);
+    if (cardModal) drawCardModal(mclk);
+  }
   updFx(f);
-  if (toastT>0){ toastT-=f; ctx.globalAlpha=clamp(toastT/30,0,1); const w=Math.min(276,TW(toastS)+20); box(W/2-w/2, 300, w, 22, '#1a1c2c', GOLD); T(toastS, W/2, 305, '#ffcd75', 'center'); ctx.globalAlpha=1; }
+  if (toastT>0){ toastT-=f; ctx.globalAlpha=clamp(toastT/30,0,1);
+    const ls = wrap(toastS, 256), bh = ls.length*14+8, by = 298-(ls.length-1)*7;
+    box(W/2-138, by, 276, bh, '#1a1c2c', GOLD);
+    ls.forEach((l,k)=>T(l, W/2, by+4+k*14, '#ffcd75', 'center'));
+    ctx.globalAlpha=1; }
   ctx.restore();
   if (flashA>0){ ctx.fillStyle=flashC; ctx.globalAlpha=flashA; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1; flashA=Math.max(0,flashA-.04*f); }
   ctx.fillStyle='#0000000f'; for (let y=0;y<H;y+=2) ctx.fillRect(0,y,W,1);
