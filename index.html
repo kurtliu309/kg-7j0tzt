@@ -300,6 +300,13 @@ const DANGER = '#d44dff';                             // 危险统一用紫色
 function applyColors(){ const upRed = SAVE.upRed!=null ? SAVE.upRed : LANG!=='en'; UP = upRed?'#e43b44':'#3ec95b'; DN = upRed?'#3ec95b':'#e43b44'; }
 const HERO = (v='') => (LANG==='en'?'sheep':'hero') + v;
 const OLD = () => LANG==='en' ? {w:'z',z:'Z'} : GRAY;
+// 被打败的庄家变回来的那棵韭菜：褪色发灰，但比爷爷（OLD）更暗
+const DEFEAT_SWAP = () => LANG==='en' ? {w:'z',z:'Z',D:'Z',o:'n'} : {l:'z',g:'Z',G:'D',o:'n'};
+const _white = {};
+function whiteSwap(name){
+  if (!_white[name]){ const m = {}; for (const ch of SPR[name].join('')) if (ch!=='.' && !m[ch]) m[ch]='w'; _white[name]=m; }
+  return _white[name];
+}
 const fmtS = (s,o={}) => String(s).replace(/\{(\w+)\}/g,(m,k)=> o[k]!=null ? o[k] : m);
 
 // =====================================================================
@@ -378,8 +385,8 @@ const SKILL_PRICE = 2400, ROOT_PRICE = 3000;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.10 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
-  upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v4.11 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+  upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
   tagItem:'消耗品', tagRoot:'复活', pickTitle:'选一个技能', pickSub:'打空了庄家的筹码条，战利品三选一', pickTap:'点一张卡拿走', pickNone:'技能全学会了！送你 2000 叶。', active:'主动', passive:'被动',
@@ -437,10 +444,16 @@ const ZH = {
  intro:[['narr','在韭菜村，韭菜们一茬一茬地长，\n一茬一茬地被割。'],['narr','割韭菜的人住在村口的「交易塔」里。\n他们每人手里都有一支画笔。'],['narr','画出来的线，叫做K线。\n线往哪走，韭菜的命就往哪走。'],
    ['grandpa','小韭啊，爷爷要去塔里「抄底」了。\n这次一定能翻身，给你买新花盆。'],['narr','爷爷再也没有回来。\n只剩下一截被割平的根。'],['hero','……我要上塔。\n我要看看，那支笔到底是怎么画的。'],
    ['narr','叶子就是你的钱，也是你的命。\n掉到收割线以下，就会被割。']],
- bossPre:[[['qian','哟，新韭菜！来来来，\n看我这根大阳线，漂不漂亮？'],['qian','上车吧。我画的饼，从来不缺人吃。'],['hero','（他头上写着他要干嘛……\n可他会不会在骗我？）'],['narr','打空他的 12,000 筹码就赢。\n赚的叶子打他，亏的叶子给他回血。'],['narr','时间到了没打空，他会把剩下的筹码\n从你口袋里抽走。']],
-   [['granny','孩子，衣服脏了要洗，筹码脏了也要洗。'],['granny','婆婆一甩，你就会怕。你一怕，就会卖。'],['hero','（听说她比老钱更爱撒谎……）'],['narr','打空她的 24,000 筹码就赢。\n叶子掉到收割线以下，就会被割。']]],
- bossPost:[[['qian','你……居然没被我的饼噎着？'],['qian','行吧，这把「空头镰刀」给你。\n用它可以在下跌的时候赚钱。'],['qian','……反正我也是这么赚的。'],['narr','解锁【做空】！\n觉得要跌的时候，按做空。']],
-   [['granny','好孩子，拿得住。\n这年头拿得住的韭菜不多了。'],['granny','楼上还有三个人……\n比我狠多了。']]],
+ bossPre:[[['hero','（他头上写着他要干嘛……\n可他会不会在骗我？）'],['narr','打空他的 12,000 筹码就赢。\n赚的叶子打他，亏的叶子给他回血。'],['narr','时间到了没打空，他会把剩下的筹码\n从你口袋里抽走。']],
+   [['hero','（听说她比老钱更爱撒谎……）'],['narr','打空她的 24,000 筹码就赢。\n叶子掉到收割线以下，就会被割。']]],
+ bossPost:[[['qian','你……居然没被我的饼噎着？'],['qian','二十年前，我也在塔下排队等饼。\n排到我的时候，饼没了，只剩一支笔。'],['qian','行吧，这把「空头镰刀」给你。\n用它可以在下跌的时候赚钱。'],['qian','……反正我也是这么赚的。'],['narr','解锁【做空】！\n觉得要跌的时候，按做空。']],
+   [['granny','那年我拿得住，可没人告诉我要拿多久。\n我被甩下车那天，它涨了十倍。'],['granny','从那以后，婆婆就专门甩人。'],['granny','好孩子，拿得住。\n这年头拿得住的韭菜不多了。'],['granny','楼上还有三个人……\n比我狠多了。'],['granny','最顶上那个……\n叶子跟你一样绿。']]],
+ bossIntro:[['哟，新韭菜！看我这根大阳线，漂不漂亮？','上车吧。我画的饼，从来不缺人吃。'],
+   ['孩子，衣服脏了要洗，筹码脏了也要洗。','婆婆一甩，你就会怕。你一怕，就会卖。']],
+ bossDefeat:[['……哎？我的笔……','我当年也是棵韭菜啊。'],
+   ['哎哟……甩不动了。','婆婆年轻时，也是被人甩下车的。']],
+ minionIntro:['大哥让我先来试试水。','我三秒进三秒出，你跟得上吗？','我们私募讲究的是……先割为敬。','家人们！这棵韭菜，冲！','进群吗？群里都是赚钱的。'],
+ minionDefeat:['大哥……大哥救我……','跑……跑慢了一步。','这个月业绩……完了。','家人们……我先下播了。','我也是被人拉进群的……'],
  retry:['就这？再来。','筹码我收下了~','欢迎再来送叶子~'], retryHero:'（还没被割……再来！）',
  revive:['你被割了。\n但地下还留着一条根。','根重新发芽了。\n叶子回到 {n}。这是最后的机会。'], lineUp:'收割线上涨到 {n}！\n叶子掉到线下就会被割。',
  ev:{
@@ -459,8 +472,8 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.10 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
-  upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v4.11 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+  upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
   tagItem:'Item', tagRoot:'Revive', pickTitle:'Pick a skill', pickSub:'You busted his chips. Choose your loot.', pickTap:'Tap a card', pickNone:'You know every skill! Have 2,000 wool.', active:'Active', passive:'Passive',
@@ -518,10 +531,16 @@ const EN = {
  intro:[['narr','In Woolly Meadow, lambs grow their wool…\nand every season, it gets sheared.'],['narr','The shearers live in the Exchange Tower.\nEach one holds a brush.'],['narr','The lines they paint are called candles.\nWhere the line goes, the flock follows.'],
    ['grandpa','Lamby, Grandpa\'s going up the Tower\nto buy the dip. This time we\'ll be rich!'],['narr','Grandpa never came back.\nAll that was left was a pile of wool.'],['hero','…I\'m going up the Tower.\nI want to see how that brush really works.'],
    ['narr','Your wool is your money. And your life.\nDrop below the shear line and you\'re fleeced.']],
- bossPre:[[['qian','Well, well, fresh wool!\nLook at this gorgeous candle.'],['qian','Hop on. My pies never run out of buyers.'],['hero','(He says what he\'ll do next…\nbut is he lying?)'],['narr','Bust his 12,000 chips to win.\nWool you make hits him. Wool you lose heals him.'],['narr','If time runs out, he takes what\'s left\nof his chips out of YOUR wool.']],
-   [['granny','Dirty laundry needs a wash, dearie.\nSo do dirty bags.'],['granny','Granny spins, you panic.\nYou panic, you sell.'],['hero','(They say she lies even more than Pete…)'],['narr','Bust her 24,000 chips.\nDrop below the shear line and you\'re fleeced.']]],
- bossPost:[[['qian','You… didn\'t choke on my pie?'],['qian','Fine. Take my Bear Shears.\nNow you can profit when it drops.'],['qian','…That\'s how I make my money anyway.'],['narr','SHORT unlocked!\nThink it\'ll drop? Hit Short.']],
-   [['granny','Good lamb. Diamond hooves.\nRare these days.'],['granny','Three more upstairs…\nmuch meaner than me.']]],
+ bossPre:[[['hero','(He says what he\'ll do next…\nbut is he lying?)'],['narr','Bust his 12,000 chips to win.\nWool you make hits him. Wool you lose heals him.'],['narr','If time runs out, he takes what\'s left\nof his chips out of YOUR wool.']],
+   [['hero','(They say she lies even more than Pete…)'],['narr','Bust her 24,000 chips.\nDrop below the shear line and you\'re fleeced.']]],
+ bossPost:[[['qian','You… didn\'t choke on my pie?'],['qian','Twenty years ago, I stood in line for pie.\nWhen my turn came, there was only a brush left.'],['qian','Fine. Take my Bear Shears.\nNow you can profit when it drops.'],['qian','…That\'s how I make my money anyway.'],['narr','SHORT unlocked!\nThink it\'ll drop? Hit Short.']],
+   [['granny','I held. Nobody told me how long to hold.\nThe day I sold, it went up tenfold.'],['granny','Ever since, Granny shakes people off for a living.'],['granny','Good lamb. Diamond hooves.\nRare these days.'],['granny','Three more upstairs…\nmuch meaner than me.'],['granny','The one at the very top…\nhas wool just like yours.']]],
+ bossIntro:[['Well, well, fresh wool! Look at this gorgeous candle.','Hop on. My pies never run out of buyers.'],
+   ['Dirty laundry needs a wash, dearie. So do dirty bags.','Granny spins, you panic. You panic, you sell.']],
+ bossDefeat:[['…Huh? My brush…','I was a lamb once too, you know.'],
+   ['Oh dear… can\'t spin anymore.','Granny got shaken off the bus too, once.']],
+ minionIntro:['Boss said I go first. Testing the waters.','In and out in three seconds. Keep up.','At our fund, we fleece first.','Join the group? Everyone in it wins.','Fam! This one\'s going to the MOON!'],
+ minionDefeat:['Boss… Boss, help…','Too slow… by one second.','There goes my bonus.','Fam… I\'m logging off.','Someone added me to a group once too…'],
  retry:['That\'s it? Again.','Thanks for the wool~','Come back anytime, sucker~'], retryHero:'(Not fleeced yet… again!)',
  revive:['You got fleeced.\nBut a Golden Fleece kept you warm.','Your wool grows back to {n}.\nThis is your last chance.'], lineUp:'The shear line rose to {n}!\nDrop below it and you\'re fleeced.',
  ev:{
@@ -772,6 +791,9 @@ function startBattle(def, isBoss){
   for (let i=0;i<HIST;i++){ const o=p, c=o*(1+(Math.random()-.5)*.02); B.bars.push({o,h:Math.max(o,c)*(1+Math.random()*.008),l:Math.min(o,c)*(1-Math.random()*.008),c,v:.8+Math.random()*.4}); p=c; }
   B.base = p; B.price = p; B.vhi = p*1.06; B.vlo = p*.94;
   newCandle();
+  // 出场动画：庄家先掉下来、说两句，战斗才开始（重打也播）
+  B.intro = { t:0, i:0, lt:0, lines: isBoss ? C.bossIntro[R.floor] : [C.minionIntro[def.idx]], landed:false, endAt:null };
+  B.bubbleT = 0; B.bubble = '';
   music(isBoss?'boss':'battle');
 }
 function phaseAt(s){ let acc=0; for (const ph of B.phases){ if (s<acc+ph.len) return ph; acc+=ph.len; } return B.phases[B.phases.length-1]; }
@@ -1153,6 +1175,11 @@ function endBattle(kill){
   if (kill){ R.stats.kills++; if (R.skills.book){ R.cap = Math.round(R.cap*1.05); B.result.book=true; } sfx('win'); }
   else { sfx('lose'); B.bubble = lines(B.def).hit; B.bubbleT = 300; }
   if (R.cap < R.line){ B.harvested = true; B.result.pass = false; R.stats.harvested++; sfx('harvest'); music('sad'); }
+  // 战败动画：庄家的画笔折断，变回一棵韭菜（被割了就不演）
+  if (kill && !B.harvested){
+    B.defeat = { t:0, i:0, lt:0, done:false, broke:false, lines: B.isBoss ? C.bossDefeat[R.floor] : [C.minionDefeat[B.def.idx]] };
+    B.bubbleT = 0; B.bubble = '';
+  }
 }
 function afterBattle(){
   R.tutorial = false;
@@ -1242,7 +1269,41 @@ function drawHero(hx, hy, sc, variant){
 // ---------- 战斗画面 ----------
 const BattleScene = { frame(f, dt){
   const d = B.def, BT = bossText(d); B.t += f;
-  const running = !B.over && !B.paused;
+  // ---- 出场动画：从屏幕上方掉下来 → 落地弹一下 → 逐句说台词 ----
+  if (B.intro){
+    const I = B.intro; I.t += f;
+    if (!I.landed && I.t >= 18){
+      I.landed = true; sfx('step'); shake = Math.max(shake, 4);
+      burst(250, 80, 16, ['#94b0c2','#f4f4f4','#566c86'], 1.6, .1, 26);
+    }
+    if (I.t >= 30){
+      I.lt += f; B.bubble = I.lines[I.i]; B.bubbleT = 999;
+      if (I.endAt==null && (tapAny() || I.lt > 110)){
+        I.lt = 0;
+        if (I.i < I.lines.length-1) I.i++;
+        else I.endAt = I.t;
+      }
+    }
+    if (I.endAt!=null && I.t - I.endAt > 20){ B.intro = null; B.bubbleT = 0; B.bubble = ''; }
+  }
+  // ---- 战败动画：庄家颤抖 → 画笔折断 → 变回一棵褪色的韭菜 → 说台词 ----
+  if (B.defeat){
+    const D = B.defeat; D.t += f;
+    if (!D.broke && D.t >= 36){
+      D.broke = true; shake = Math.max(shake, 8);
+      burst(250, 58, 16, ['#8b5a2b','#ffcd75','#f4f4f4'], 3.2, .12, 46);
+      for (let i=0;i<40;i++) parts.push({x:250+(Math.random()-.5)*44, y:58+(Math.random()-.5)*26, vx:(Math.random()-.5)*.7, vy:-.25-Math.random()*.55, life:70+Math.random()*50, col:pick(['#f4f4f4','#94b0c2','#566c86']), g:-.004, sz:Math.random()<.5?2:3});
+      sfx('hurt'); noise(.3,.1);
+    }
+    if (D.t >= 60 && !D.done){
+      D.lt += f; B.bubble = D.lines[D.i]; B.bubbleT = 999;
+      if (tapAny() || D.lt > 120){
+        if (D.i < D.lines.length-1){ D.i++; D.lt = 0; }
+        else { D.done = true; B.bubbleT = 0; }
+      }
+    }
+  }
+  const running = !B.over && !B.paused && !B.intro;
   if (running){
     if (B.halt>0){ B.halt -= dt; }
     else if (B.freeze>0) B.freeze -= dt;
@@ -1252,7 +1313,7 @@ const BattleScene = { frame(f, dt){
     if (B.curse && B.curse.type==='unplug' && B.freeze<=0){ B.curse.sec -= dt; if (B.curse.sec<=0) endCurse(); }
   }
   if (B.over) B.harvT += f;
-  if (B.bubbleT>0) B.bubbleT -= f; if (B.newsT>0) B.newsT -= f; if (B.hintT>0) B.hintT -= f; if (B.collapseT>0) B.collapseT -= f;
+  if (B.bubbleT>0) B.bubbleT -= f; if (B.newsT>0) B.newsT -= f; if (B.hintT>0 && !B.intro) B.hintT -= f; if (B.collapseT>0) B.collapseT -= f;
 
   ctx.drawImage(bgFor(R.floor),0,0);
   const e = eqDisp();
@@ -1282,7 +1343,7 @@ const BattleScene = { frame(f, dt){
   T(probTxt, 4+TW(nameShow,nameSz)+3, 2+(nameSz-pSz), '#94b0c2', 'left', pSz);
   T(lineLab, lineX, 2, danger?DANGER:'#566c86');
   N(lineTxt, lineX+TW(lineLab)+3, 5, danger?DANGER:'#94b0c2', 1);
-  if (!B.over){
+  if (!B.over && !B.intro){
     if (btn(222, 1, 30, 16, B.speed>1?'»»':'»', {col:B.speed>1?'#ef7d57':'#333c57', key:'f'})) B.speed = B.speed>1?1:2;
     if (btn(254, 1, 30, 16, B.paused?'▶':'Ⅱ', {col:'#333c57', key:'escape'})) B.paused = !B.paused;
   }
@@ -1296,9 +1357,27 @@ const BattleScene = { frame(f, dt){
 
   // ===== 庄家舞台 =====
   const sc = 3, bh = sprH(B.bossSpr)*sc; let bx = 226, by = 82 - bh;
-  if (B.windup || B.collapse) bx += Math.round(Math.sin(B.t*.9)*1.5);
-  spr(B.bossSpr, bx, by, sc, {swap:B.bossSwap});
-  if (B.collapse && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(bx+40, by+10, 2, 3); }
+  if (!B.defeat && (B.windup || B.collapse)) bx += Math.round(Math.sin(B.t*.9)*1.5);
+  if (B.defeat && B.defeat.t >= 36){
+    // 画笔已断：换成一棵褪色的韭菜，脚底对齐原位置，烟散时渐显
+    const D = B.defeat, a = clamp((D.t-36)/24, 0, 1);
+    const bob = D.done ? 0 : Math.round(Math.sin(D.t*.08)*1.5);
+    spr(HERO(), bx, 82 - bh + bob, sc, {swap:DEFEAT_SWAP(), alpha:a});
+  } else if (B.defeat){
+    // 0–36 帧：左右剧烈抖，每 4 帧闪白
+    const D = B.defeat, jx = Math.round(Math.sin(D.t*2.1)*3);
+    const white = Math.floor(D.t/4)%2 === 0;
+    spr(B.bossSpr, bx+jx, by, sc, {swap: white ? whiteSwap(B.bossSpr) : B.bossSwap});
+  } else {
+    let byD = by;
+    if (B.intro){
+      const it = B.intro.t;
+      if (it < 18){ const p = it/18; byD = -bh + (by+bh)*(p*p); }
+      else { const bt = it-18; byD = by - (bt<12 ? Math.sin(bt/12*Math.PI)*4 : 0); }
+    }
+    spr(B.bossSpr, bx, byD, sc, {swap:B.bossSwap});
+  }
+  if (B.collapse && !B.defeat && Math.floor(B.t/10)%2){ ctx.fillStyle='#73eff7'; ctx.fillRect(bx+40, by+10, 2, 3); }
   const crit = critNow() && !B.over;
 
   // ===== K线图 =====
@@ -1363,8 +1442,10 @@ const BattleScene = { frame(f, dt){
       T(lab.txt.slice(0,1), x-3, CY0+4, lab.col); T(lg.truth?'✓':'✗', x-3, CY0+18, lg.truth?'#a7f070':DANGER); }
   }
   ctx.restore();
-  // 庄家的画笔
-  if (!B.over || B.harvested){
+  // 出场时 K 线图中间偏下的小字提示
+  if (B.intro && B.intro.t >= 30) T(t('skipHint'), CX0+122, CY1-58, '#566c86', 'center', 10);
+  // 庄家的画笔（出场动画时先不画；战败抖动的 36 帧里还握着笔）
+  if (((!B.over || B.harvested) && !B.intro) || (B.defeat && B.defeat.t < 36)){
     const ci = all.length-1, tipX = X(ci)+2 + (B.over?0:Math.round(randn()*.6)), tipY = Y(fakeChart ? B.fp : B.price);
     const hx = bx+4, hy = by+bh*.62;
     const n = Math.max(1, Math.floor(Math.hypot(tipX-hx, tipY-hy)/2));
@@ -1411,7 +1492,7 @@ const BattleScene = { frame(f, dt){
   }
   if (B.collapseT>0){ const ls = wrap(t('collapse'), 220); box(CX0+6, CY0+70, 232, ls.length*16+12, '#1a1c2c', GOLD); ls.forEach((l,k)=>T(l, CX0+122, CY0+76+k*16, GOLD, 'center')); }
   if (B.halt>0){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
-  if (B.hintT>0 && B.hint){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
+  if (B.hintT>0 && B.hint && !B.intro){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
   if (B.freeze>0) T(t('frozen')+' '+B.freeze.toFixed(1), CX0+122, CY0+80, '#73eff7', 'center');
 
   // ===== 叶子（K 线图左上角正上方）+ 庄家意图（右上角正上方）=====
@@ -1476,7 +1557,7 @@ const BattleScene = { frame(f, dt){
   if (!B.over && curseType()==='fee'){ box(150, 398, 86, 16, '#1a1c2c', '#ef7d57'); T(t('feeBadge'), 193, 401, '#ef7d57', 'center'); }
 
   // ===== 按钮 =====
-  const live = !B.over && !B.paused && B.halt<=0;
+  const live = !B.over && !B.paused && B.halt<=0 && !B.intro && !B.defeat;
   const cT = (!B.over && !B.paused) ? curseType() : null;
   const netDown = cT==='unplug', halted2 = cT==='halt2', allIn = cT==='allin';
   const critTag = crit ? ' ×2' : '';
@@ -1496,9 +1577,9 @@ const BattleScene = { frame(f, dt){
   const row = [
     {lab:t('order'), icon:'i_net', sub:R.skills.order?(B.orderCD>0?String(B.orderCD):''):'', dis:!live||!R.skills.order||B.orderCD>0, fn:placeOrder, key:'1', col:'#5a4a1a'},
     {lab:t('bluff'), icon:'i_phone', sub:R.skills.bluff?(B.bluffCD>0?String(B.bluffCD):''):'', dis:!live||!R.skills.bluff||B.bluffCD>0, fn:callBluff, key:'2', col:'#2a4a1a'},
-    {lab:t('hourglass'), icon:'i_glass', sub:'x'+R.items.hourglass, dis:B.over||B.paused||R.items.hourglass<=0, fn:()=>useItem('hourglass'), key:'3', col:'#333c57'},
-    {lab:t('cloak'), icon:'i_cloak', sub:'x'+R.items.cloak, dis:B.over||B.paused||R.items.cloak<=0, fn:()=>useItem('cloak'), key:'4', col:'#333c57'},
-    {lab:t('report'), icon:'i_report', sub:'x'+R.items.report, dis:B.over||B.paused||R.items.report<=0, fn:()=>useItem('report'), key:'5', col:'#333c57'},
+    {lab:t('hourglass'), icon:'i_glass', sub:'x'+R.items.hourglass, dis:B.over||B.paused||B.intro||R.items.hourglass<=0, fn:()=>useItem('hourglass'), key:'3', col:'#333c57'},
+    {lab:t('cloak'), icon:'i_cloak', sub:'x'+R.items.cloak, dis:B.over||B.paused||B.intro||R.items.cloak<=0, fn:()=>useItem('cloak'), key:'4', col:'#333c57'},
+    {lab:t('report'), icon:'i_report', sub:'x'+R.items.report, dis:B.over||B.paused||B.intro||R.items.report<=0, fn:()=>useItem('report'), key:'5', col:'#333c57'},
   ];
   row.forEach((b,j)=>{ const x = 8+j*55; const gray = netDown || b.dis;
     // 断网时道具/技能也灰掉，但不能真 disabled：点一下要能提示"断网了"
@@ -1517,7 +1598,7 @@ const BattleScene = { frame(f, dt){
     if (btn(74, 414, 140, 28, t('toTitle'), {col:'#333c57'})){ B.paused=false; go(TitleScene()); }
   }
   // ===== 结算（图表上保留回放） =====
-  if (B.over && B.harvT > (B.harvested?70:30)){
+  if (B.over && B.harvT > (B.harvested?70:30) && (!B.defeat || B.defeat.done)){
     const res = B.result, py = 354;
     ctx.fillStyle='#000c'; ctx.fillRect(0,py-2,W,H-py+2);
     box(6, py, 276, 154, '#1a1c2c', res.pass?'#a7f070':DANGER, '#333c57');
