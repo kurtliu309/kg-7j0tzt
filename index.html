@@ -364,10 +364,10 @@ const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, saw:{len:4},
   mind:{len:4}, oracle:{len:5}, beat:{len:8}, fast:{len:3}, mirror:{len:3}, fakesky:{len:5,curse:true} };
 // fake = 撒谎概率，quiet = 不说话的概率，waffle = 每根线改主意的概率
 // 血量 = 进场本金 × 系数（docs/sim 机器人反推：普通人第一层小庄约 70%、Boss 约 60%）；第一场（教学）用 tut
-const HPK = { qian:.7, granny:.8, tut:.4,   // Kurt 定（2026-11-25 第三次）：老钱 70%、第一层小庄约 50%、教学 40%；第二层待重算
-  minion:[[.5,.45,.4,.3,.5], [.5,.5,.5,.5,.5]] };   // 第一层按难度分开：开天眼都约 70% 过（喊单哥的篡改天气不赚钱，血量低）
+const HPK = { qian:.56, granny:2.0, tut:.32,   // 第一层：Kurt 定（v5.4 ×0.8）；第二层：机器人反推（高手规则约 65%、普通人规则约 30%）
+  minion:[[.4,.36,.32,.24,.4], [1.3,.8,.75,.25,.85]] };   // 第一层按难度分开：开天眼都约 70% 过（喊单哥的篡改天气不赚钱，血量低）
 // 第一层按排期放招：Boss 6 次、小庄 4 次、教学 3 次（高手做对约 3 次死，普通人错一两次还有机会）
-const SKILL_PLAN = (isBoss) => R.floor===0 ? (isBoss ? 6 : R.tutorial ? 3 : 4) : null;   // [层][小庄 idx]：游资小弟 / 短线阿飞 / 私募小王 / 喊单哥 / 荐股群主
+const SKILL_PLAN = (isBoss) => isBoss ? 6 : (R.floor===0 && R.tutorial) ? 3 : 4;   // [层][小庄 idx]：游资小弟 / 短线阿飞 / 私募小王 / 喊单哥 / 荐股群主
 const SKILL_CD = () => R.floor===0 ? R1(5,7) : R1(7,10);   // 庄家放技能的间隔（根）
 const BOSSES = [
   {key:'qian',spr:'qian',script:'pumpdump',hp:12000,hpK:HPK.qian,len:40,volMul:1,heatMul:.9,sig:'mind',skills:['flatspike','pie','fake'],fake:.1,quiet:.25,waffle:.2,react:{good:'dump'}},
@@ -377,7 +377,7 @@ const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z
 const MINION_SIG = ['beat','fast','mirror','fakesky',null];   // 荐股群主没有专属技能，他的特性是"群发"意图（spam）
 function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,sig:MINION_SIG[i],spam:i===4,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
   hp:[3500,12000,40000][R.floor],hpK:HPK.minion[Math.min(R.floor,HPK.minion.length-1)][i],len:30,volMul:1,heatMul:.8,
-  skills: R.floor===0 ? [pick(['flatspike','pie','fake'])] : [pick(['flatspike','pie','spin','saw','fake','fee','halt2','unplug','t1','stopout','allin'])],fake:R.floor===0?.1:.2,quiet:R.floor===0?.25:.45,waffle:.15,react:{}}; }
+  skills: R.floor===0 ? [pick(['flatspike','pie','fake'])] : [pick(['flatspike','pie','saw','fake','spin'])],fake:R.floor===0?.1:.2,quiet:R.floor===0?.25:.45,waffle:.15,react:{}}; }   // 第二层小庄不再抽纯添堵的招
 // 新闻 = 波动系统：drift 每根的方向漂移，volMul 波动倍数（>1 变猛，<1 变平静）
 const NEWS = [
   {id:'cut',len:5,drift:.025,volMul:1.3,mood:'good'},{id:'reg',len:6,volMul:.35,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:3},{id:'swan',len:1,gap:.13},
@@ -435,7 +435,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v5.4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v5.6 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -555,7 +555,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v5.4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v5.6 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1016,7 +1016,7 @@ function startBattle(def, isBoss){
         bars:[], cur:null, target:0, vol:.012, ph:null, mode:'script', kindNow:'flat', log:[],
         cash:eq, sh:0, entry:0, startEq:eq, stacks:0, marks:[], hpMax: def.hpK ? Math.max(100, Math.round(eq*(R.tutorial && !isBoss ? HPK.tut : def.hpK)/100)*100) : def.hp, breach:0, posCrit:false,
         heat:0, warn:0, warnDir:0, dodged:false, heatMul:def.heatMul,
-        ov:null, windup:null, curse:null, lockAt:0, skillCD: R.floor===0 ? 3 : R1(6,9), skillsLeft: SKILL_PLAN(isBoss), pendingDrift:0, gapNext:0,
+        ov:null, windup:null, curse:null, lockAt:0, skillCD: 3, skillsLeft: SKILL_PLAN(isBoss), pendingDrift:0, gapNext:0,
         intent:null, intentLog:[], claimNow:null,
         collapse:false, killed:false, collapseCash:0, collapseT:0,
         weather:null, nextNews:R1(5,8), halt:0, fakeMap:{}, pieMap:{}, fp:0, fcur:null, ftarget:0,
@@ -1114,13 +1114,13 @@ function newCandle(){
     if (ov.type==='flatspike'){ drift = 0; vol = .002; }
     else if (ov.type==='pie'){ drift = [.05,.06,.06,-.16][k]; vol = .006; }   // 画大饼：真实 K 线，三根合计约 +18%，第四根砸 16%（不暴击）
     else if (ov.type==='spin'){ drift = 0; vol = .003; }                                  // 甩干（老版）：一根里上下乱抖
-    else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * .075; vol = .006; }  // 拉锯：逐根来回 ±7.5%
+    else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * (R.floor>0 ? .05 : .075); vol = .006; }   // 第二层能双向吃，幅度收一点  // 拉锯：逐根来回 ±7.5%
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
     // ---- 专属意图 ----
-    else if (ov.type==='mind'){ drift = B.sh>0 ? -.04 : B.sh<0 ? .04 : (Math.random()<.5?1:-1)*.03; vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
+    else if (ov.type==='mind'){ { const a = R.floor>0 ? .6 : 1; drift = (B.sh>0 ? -.04 : B.sh<0 ? .04 : (Math.random()<.5?1:-1)*.03)*a; } vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
     else if (ov.type==='oracle'){ drift = ov.plan[k]; vol = .006;
       if (k===ov.len-1){ B.bubble = t('fateLine'); B.bubbleT = 140; flashA = .35; flashC = '#d44dff'; shake = Math.max(shake,5); sfx('tell'); } }   // 算一卦：前 4 根照预言走，最后一根反着来
-    else if (ov.type==='beat'){ const b = k%4; drift = b===3 ? -ov.dir*.05 : ov.dir*.02; vol = .005; beatSnd(b===3); }   // 节奏：1 2 3 同向，第 4 拍反转
+    else if (ov.type==='beat'){ const b = k%4; drift = (b===3 ? -ov.dir*.05 : ov.dir*.02) * (R.floor>0 ? .6 : 1); vol = .005; beatSnd(b===3); }   // 节奏：1 2 3 同向，第 4 拍反转
     else if (ov.type==='fast'){ drift = (Math.random()<.5?1:-1)*.03; vol = .01; }   // 三秒进出：3 倍速
     else { drift = ov.d; vol = ov.d===0 ? .006 : .018; }
     B.mode = ov.type;
