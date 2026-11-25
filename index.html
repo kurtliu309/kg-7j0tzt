@@ -240,9 +240,28 @@ const TRACKS = {
   sad:{bpm:70,bass:[45,0,0,0,41,0,0,0,43,0,0,0,40,0,0,0],lead:[76,0,0,74,72,0,0,0,71,0,0,72,69,0,0,0],lv:.02},
 };
 let curTrack=null, mStep=0, mNext=0;
-function music(name){ if (curTrack===TRACKS[name]) return; curTrack = TRACKS[name]||null; mStep=0; if (AC) mNext = AC.currentTime+.05; }
+// 背景音乐：有音频文件的场景放文件（bgm/），没有或加载失败就退回合成曲。rate>1 时加速并升调（第二阶段 / 加时）
+const BGM_FILES = { battle:'bgm/dark_dragon.mp3', boss:'bgm/jrpg_boss.mp3' };
+const bgmEls = {}; let bgmCur = null, musicName = null, musicRate = 1;
+function bgmEl(name){
+  if (!BGM_FILES[name]) return null;
+  if (!bgmEls[name]){ const a = new Audio(BGM_FILES[name]); a.loop = true; a.preload = 'auto'; a.volume = .5;
+    a.addEventListener('error', () => { a._bad = true; if (musicName === name){ bgmCur = null; curTrack = TRACKS[name] || null; mStep = 0; } });
+    bgmEls[name] = a; }
+  return bgmEls[name]._bad ? null : bgmEls[name];
+}
+function music(name, rate=1){
+  if (musicName === name && musicRate === rate) return;
+  const same = musicName === name; musicName = name; musicRate = rate;
+  const el = bgmEl(name);
+  if (bgmCur && bgmCur !== el) bgmCur.pause();
+  if (el){ curTrack = null; if (!same) el.currentTime = 0; el.playbackRate = rate; el.preservesPitch = false; el.mozPreservesPitch = false; el.webkitPreservesPitch = false;
+    bgmCur = el; if (!muted && AC) el.play().catch(()=>{}); }
+  else { bgmCur = null; curTrack = TRACKS[name] || null; mStep = 0; if (AC) mNext = AC.currentTime + .05; }
+}
 function note(m,t,d,type,v){ const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.value=mtof(m); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.03); }
-setInterval(()=>{ if(!AC||!curTrack||muted) return; if (mNext < AC.currentTime) mNext = AC.currentTime+.02; const sd = 60/curTrack.bpm/4;
+setInterval(()=>{ if (bgmCur){ if (muted && !bgmCur.paused) bgmCur.pause(); else if (!muted && AC && bgmCur.paused) bgmCur.play().catch(()=>{}); }
+  if(!AC||!curTrack||muted) return; if (mNext < AC.currentTime) mNext = AC.currentTime+.02; const sd = 60/curTrack.bpm/4;
   while (mNext < AC.currentTime+.15){ const b = curTrack.bass[mStep%curTrack.bass.length], l = curTrack.lead[mStep%curTrack.lead.length];
     if (b) note(b, mNext, sd*1.8, 'triangle', .07); if (l) note(l, mNext, sd*.9, 'square', curTrack.lv); mStep++; mNext += sd; } }, 30);
 
@@ -437,7 +456,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.2 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.3 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -562,7 +581,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.2 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.3 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1094,12 +1113,12 @@ function startPhase2(){
   B.bossSwap = ANGRY; B.bubble = (t('ph2')||{})[B.def.key] || '!'; B.bubbleT = 240;
   B.windup = null; if (B.intent && B.intent.pending) B.intent = null; B.warn = 0; B.warnDir = 0;
   B.def = Object.assign({}, B.def, {fake: B.def.fake2 != null ? B.def.fake2 : B.def.fake, quiet: .25});
-  B.skillsLeft = (B.skillsLeft||0) + 3; B.skillCD = 2;
+  B.skillsLeft = (B.skillsLeft||0) + 3; B.skillCD = 2; music('boss', 1.1);
   shake = 14; flashA = .7; flashC = DANGER; sfx('lock'); tone(70, .9, 'sawtooth', .07, -20); noise(.4, .09);
   burst(250, 70, 40, [DANGER, '#f4f4f4', GOLD], 3.5);
 }
 function stepOT(){
-  if (!B.ot){ B.ot = {k:0, base:B.step}; B.len = B.step + 10; B.otBanner = 260; B.skillsLeft = 999; B.skillCD = 1;
+  if (!B.ot){ music(B.isBoss ? 'boss' : 'battle', 1.12); B.ot = {k:0, base:B.step}; B.len = B.step + 10; B.otBanner = 260; B.skillsLeft = 999; B.skillCD = 1;
     shake = 8; flashA = .45; flashC = DANGER; sfx('lock'); B.bubble = lines(B.def).idle[0]; B.bubbleT = 0; return true; }
   const fee = Math.round(OT_FEE() * Math.pow(2, B.ot.k)); B.ot.k++;
   B.len = B.ot.base + 10 * Math.pow(2, B.ot.k);
