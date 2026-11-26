@@ -466,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.11 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.12 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -597,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.11 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.12 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1503,7 +1503,7 @@ function startOv(type){
     const nReal = p2 ? 4 : R1(3,4), nFake = p2 ? R1(1,2) : 0;
     bars.sort(()=>Math.random()-.5);
     const pickBars = bars.slice(0, Math.min(bars.length, nReal + nFake));
-    pickBars.forEach((b, j) => ov.spikes.push({bar:b, s: p2 ? R1(3,5) : R1(4,5), fake: j >= nReal, cue: p2 ? 3 : 4, hold: p2 ? 2 : 3, peak: p2 ? .09 : .08}));   // 2026-11-26 放宽：提示 4 tick、顶部停 3 tick（二阶段 3 / 2），弹 8%（9%）
+    pickBars.forEach((b, j) => ov.spikes.push({bar:b, s: p2 ? R1(3,5) : R1(4,5), fake: j >= nReal, cue: p2 ? 3 : 4, hold: p2 ? 2 : 3, peak: p2 ? .075 : .065}));   // 提示 4 tick、顶部停 3 tick（二阶段 3 / 2），弹 6.5%（7.5%）；v6.12 从 8%/9% 收回
   }
   if (type==='rope'){   // 晾衣绳洗盘：绳间来回弹 n 根 → 一根绳断、假突破 → 反方向真拉
     ov.n = R1(2,3); ov.len = ov.n + 3; ov.i0 = B.bars.length; ov.p2 = !!B.phase2;
@@ -1620,7 +1620,7 @@ function battleTick(){
       else if (tk === sp.s){ B.target *= .98; shake = Math.max(shake, 5); tone(300, .3, 'sawtooth', .05, -200); }   // 假咔哒：不弹，反而多砸一截
     }
     p *= 1 + off; ov.off = off;
-    // 慢动作：从咔哒前一拍到顶部停留结束，时间放慢 2.2 倍，给玩家反应时间（假咔哒也一样慢，不露馅）
+    // 慢动作：从咔哒前一拍到顶部停留结束，时间放慢 1.6 倍（v6.12 从 2.2 收回），给玩家反应时间（假咔哒也一样慢，不露馅）
     ov.slow = !!sp && tk >= sp.s - sp.cue - 1 && tk <= (sp.fake ? sp.s : sp.s + sp.hold);
   }
   B.price = p; const c = B.cur; c.c = p; c.h = Math.max(c.h,p); c.l = Math.min(c.l,p);
@@ -2095,7 +2095,7 @@ const BattleScene = { frame(f, dt){
   if (running && B.devPhase2 && !B.phase2){ B.devPhase2 = 0; startPhase2(); }   // 开发模式：出场结束后立刻进第二阶段
   if (running){
     if (B.halt>0){ B.halt -= dt; }
-    else { const tms = B.tickMs / (B.ov && B.ov.type==='fast' ? 3 : 1) * (B.ov && B.ov.type==='dip' && B.ov.slow ? 2.2 : 1);   // 三秒进出：K 线 3 倍速（和玩家的 »» 加速叠加）
+    else { const tms = B.tickMs / (B.ov && B.ov.type==='fast' ? 3 : 1) * (B.ov && B.ov.type==='dip' && B.ov.slow ? 1.6 : 1);   // 三秒进出：K 线 3 倍速（和玩家的 »» 加速叠加）
       B.acc += dt*1000*B.speed; let guard=0; while (B.acc>=tms && !B.over && guard++<12){ B.acc-=tms; battleTick(); } }
     if (B.warn>0 && B.halt<=0){ B.warn -= dt; if (B.warn<=0){ B.warn=0; strike(); } }
     // 拔网线按真实时间倒计时：暂停不算（狙击倒数照走）
