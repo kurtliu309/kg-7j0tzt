@@ -466,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.13 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.14 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -474,7 +474,7 @@ const ZH = {
   build:'构筑', empty:'空', fullTitle:'构筑栏满了', fullSub:'用新卡替换一张，或放弃新卡', discard:'放弃新卡', chain:'连锁 ×{n}', slotUp:'构筑栏 +1 格！',
   minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓',
   flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
-  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', msgN:'消息', halt:'熔断中…', closed:'休市', gapTag:'缺口', rewTag:'◀◀ REW', paused:'暂停', yourSkills:'你的构筑：', noSkills:'还没有卡。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
+  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', msgN:'消息', halt:'熔断中…', closed:'休市', gapTag:'缺口', rewTag:'◀◀ REW', paused:'暂停', yourSkills:'你的构筑：', noSkills:'还没有卡。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题', mapTitle:'标题', mapTitleAsk:'再点一次回标题（这局进度会丢）',
   rPeak:'本场最高赚到 ', rNeed:'打空要 ',
   rHarv:'被收割了！', rKill:'庄家崩盘！', rFail:'没打空筹码条…', rSurv:'撑过去了', rScript:'庄家剧本：', rMoney:'叶子：', rLine:'收割线：', rIntent:'意图真假：',
   mHarv:'叶子掉到了收割线以下。', mHarvSteal:'庄家抽走了 {n}，\n', mRoot:'\n还有一条根，可以重新发芽。', mNoRoot:'\n没有根了……', mFail:'时间到，庄家抽走了 {n}。\n他还站着，再打一次。',
@@ -597,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.13 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.14 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -605,7 +605,7 @@ const EN = {
   build:'Build', empty:'Empty', fullTitle:'Build full', fullSub:'Replace a card with the new one, or discard it.', discard:'Discard new card', chain:'Chain ×{n}', slotUp:'Build slot +1!',
   minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close',
   flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
-  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', msgN:'Rumors', halt:'Halted…', closed:'CLOSED', gapTag:'GAP', rewTag:'◀◀ REW', paused:'Paused', yourSkills:'Your build:', noSkills:'No cards yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
+  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', msgN:'Rumors', halt:'Halted…', closed:'CLOSED', gapTag:'GAP', rewTag:'◀◀ REW', paused:'Paused', yourSkills:'Your build:', noSkills:'No cards yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title', mapTitle:'Title', mapTitleAsk:'Tap again to quit to title (run is lost)',
   rPeak:'Peak gain ', rNeed:'needed ',
   rHarv:'FLEECED!', rKill:'SHEARER BROKE!', rFail:'He survived…', rSurv:'Survived', rScript:'Script: ', rMoney:'Wool: ', rLine:'Line: ', rIntent:'Intents: ',
   mHarv:'Your wool fell below the shear line.', mHarvSteal:'He took {n} from you.\n', mRoot:'\nYour Golden Fleece saves you.', mNoRoot:'\nNo fleece left…', mFail:'Time\'s up. He took {n}.\nHe\'s still standing. Again.',
@@ -1055,7 +1055,7 @@ function DeckScene(back){
   }};
 }
 function MapScene(){
-  let tt=0;
+  let tt=0, titleAsk=0;
   const nodePos = (r,c) => ({ x: c===0?84:204, y: 420 - r*92 });
   const ICON = {battle:['gBattle','#b13e53','nBattle'],event:['gEvent','#3b5dc9','nEvent'],shop:['gShop','#ef7d57','nShop'],rest:['gRest','#257179','nRest']};
   return { enter(){ music('map'); }, frame(f){
@@ -1078,6 +1078,9 @@ function MapScene(){
     }
     spr(HERO(), cur.x-8, cur.y-20 + Math.round(Math.abs(Math.sin(tt*.1))*-3), 1);
     if (R.row<0) T(t('tapNode'), 144, 494, '#94b0c2', 'center');
+    // 回标题：点两次才走（本局进度会丢），第一次只提示
+    if (titleAsk>0){ titleAsk -= f; T(t('mapTitleAsk'), 144, 478, DANGER, 'center', 10); }
+    if (btn(4, 494, 44, 16, t('mapTitle'), {col: titleAsk>0 ? '#b13e53' : '#333c57'})){ if (titleAsk>0) go(TitleScene()); else titleAsk = 150; }
     if (btn(250, 494, 34, 16, muted?'♪×':'♪', {col:'#333c57'})) muted=!muted;
   }};
 }
