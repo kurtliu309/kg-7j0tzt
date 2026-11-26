@@ -466,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.12 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.13 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -597,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.12 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.13 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1402,7 +1402,7 @@ function newCandle(){
     // ---- 专属意图 ----
     else if (ov.type==='mind'){ { const a = R.floor>0 ? .6 : 1; drift = (B.sh>0 ? -.04 : B.sh<0 ? .04 : (R.floor===0 ? 1 : (Math.random()<.5?1:-1))*.03)*a; } vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
     else if (ov.type==='dip'){   // 过山车：基础一路下滑，弹射在 battleTick 里叠加
-      drift = -.025; vol = .004; shake = Math.max(shake, 2);
+      drift = ov.p2 ? -.042 : -.035; vol = .004; shake = Math.max(shake, 2);   // v6.13：下滑从 -2.5% 加到 -3.5%（二阶段 -4.2%），抓弹射时持仓挨的跌更多
     }
     else if (ov.type==='rope'){   // 晾衣绳：绳间来回弹 → 断绳假突破 → 反向真拉（可暴击）
       const n = ov.n; vol = .005;
