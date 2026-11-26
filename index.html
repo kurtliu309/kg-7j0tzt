@@ -458,7 +458,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.5 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.6 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -484,6 +484,7 @@ const ZH = {
   goTitle:'你被彻底收割了', goWhere:'倒在了 {f}', goStats:'交易 {t} 次 · 被收割 {h} 次', goQuote:'「韭菜割了，还会再长。」', goWho:'—— 爷爷', goAgain:'重新发芽', langPick:'选择语言 / Choose language',
   levelSelect:'选关 / 测试', lsTitle:'选关 / 测试', lsOpp:'对手', lsSkill:'招', lsRandom:'随机', lsFastSkill:'招更勤', lsPhase2:'直接二阶段', lsFastOT:'快进加时', lsHP:'血量', lsShort:'做空', lsSkipIntro:'跳过出场', lsDeck:'卡组', lsOn:'开', lsOff:'关',
   lsTut:'教学·{n}', lsF1:'1F·{n}', lsF2:'2F·{n}', lsStart:'开始', lsBack:'返回标题', lsHint:'网址带 ?dev 才会出现这个界面。\n设置只在本次游戏里有效。',
+  lsTagTut:'教学', lsTagBoss:'Boss', lsSpam:'群发意图', lsOppHint:'★ 是专属招。点一下选中。', lsSkillFor:'当前对手：{n}', lsRandomSub:'按原逻辑', lsSig:'专属招', lsOwn:'本对手会放', lsCurse:'诅咒', lsSkillHint:'绿框 = 当前对手平时会放的招。强制后每次放招都是它。',
   lsCardsTitle:'选卡', lsCardsCount:'已选 {n}/6', lsCardsHint:'按点选顺序结算，最多 6 张。', lsCardsBack:'返回', lsCardsFull:'最多只能选 6 张',
  },
  floors:['一层 · 饼屋','二层 · 洗衣房','三层 · 剧场','四层 · 温泉','顶层 · 收割台'],
@@ -586,7 +587,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.5 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.6 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -612,6 +613,7 @@ const EN = {
   goTitle:'Completely fleeced', goWhere:'Fell on {f}', goStats:'{t} trades · fleeced {h} times', goQuote:'"Wool grows back."', goWho:'— Grandpa Baa', goAgain:'Regrow', langPick:'选择语言 / Choose language',
   levelSelect:'Level select', lsTitle:'Level select', lsOpp:'Foe', lsSkill:'Skill', lsRandom:'Random', lsFastSkill:'More skills', lsPhase2:'Start P2', lsFastOT:'Fast OT', lsHP:'Chips', lsShort:'Short', lsSkipIntro:'Skip intro', lsDeck:'Deck', lsOn:'On', lsOff:'Off',
   lsTut:'Tut·{n}', lsF1:'F1·{n}', lsF2:'F2·{n}', lsStart:'Start', lsBack:'Title', lsHint:'Only visible with ?dev in the URL.\nSettings last for this session only.',
+  lsTagTut:'Tut', lsTagBoss:'Boss', lsSpam:'Spam intents', lsOppHint:'★ = signature skill. Tap to pick.', lsSkillFor:'Foe: {n}', lsRandomSub:'Normal logic', lsSig:'Signature', lsOwn:'Foe uses', lsCurse:'Curse', lsSkillHint:'Green = skills this foe normally uses. Forced = every skill is this one.',
   lsCardsTitle:'Pick cards', lsCardsCount:'Picked {n}/6', lsCardsHint:'Resolved in tap order, up to 6.', lsCardsBack:'Back', lsCardsFull:'Max 6 cards',
  },
  floors:['Floor 1 · Pie Shop','Floor 2 · Laundromat','Floor 3 · Theater','Floor 4 · Hot Spring','Top · Shearing Hall'],
@@ -864,9 +866,16 @@ function LevelSelectScene(){
     ctx.drawImage(titleBg(),0,0); ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
     bigText(t('lsTitle'), W/2, 6, 2, GOLD);
     const cfg = DEV_CFG, o = DEV_OPPS[cfg.opp];
-    row(t('lsOpp'), devOppLabel(o), 46, ()=>devSetOpp(cfg.opp-1), ()=>devSetOpp(cfg.opp+1));
-    row(t('lsSkill'), DEV_SKILLS[cfg.skill] ? C.bskill[DEV_SKILLS[cfg.skill]].name : t('lsRandom'), 74,
-      ()=>{ cfg.skill = (cfg.skill + DEV_SKILLS.length - 1) % DEV_SKILLS.length; }, ()=>{ cfg.skill = (cfg.skill + 1) % DEV_SKILLS.length; });
+    // 对手、招：点开子界面，一屏看到全部再选
+    const openRow = (label, value, y, open) => {
+      box(6, y, 276, 26, '#1a1c2c', '#333c57'); T(label, 12, y+7, '#c2c3c7');
+      box(108, y+2, 174, 22, '#141623', '#566c86');
+      let vsz = 11; while (vsz>8 && TW(value+'  ▸', vsz) > 160) vsz--;
+      T(value+'  ▸', 195, y+7, GOLD, 'center', vsz);
+      if (tapAt(108, y+2, 174, 22)) open();
+    };
+    openRow(t('lsOpp'), devOppLabel(o), 46, ()=>go(OppSelectScene()));
+    openRow(t('lsSkill'), DEV_SKILLS[cfg.skill] ? C.bskill[DEV_SKILLS[cfg.skill]].name : t('lsRandom'), 74, ()=>go(SkillSelectScene()));
     row(t('lsFastSkill'), cfg.fastSkill?t('lsOn'):t('lsOff'), 102, null, null, { toggle:()=>{ cfg.fastSkill=!cfg.fastSkill; }, on:cfg.fastSkill });
     row(t('lsPhase2'), cfg.phase2?t('lsOn'):t('lsOff'), 130, null, null, { toggle:()=>{ cfg.phase2=!cfg.phase2; }, on:cfg.phase2 });
     row(t('lsFastOT'), cfg.fastOT?t('lsOn'):t('lsOff'), 158, null, null, { toggle:()=>{ cfg.fastOT=!cfg.fastOT; }, on:cfg.fastOT });
@@ -884,6 +893,55 @@ function LevelSelectScene(){
     if (btn(60, 348, 168, 28, t('lsBack'), { col:'#333c57', key:'escape' })) go(TitleScene());
     T(C.floors[o.floor]+' · '+t('line')+' '+fmt(LINES[o.floor]), 12, 386, '#94b0c2', 'left', 10);
     wrap(t('lsHint'), 264, 10).slice(0,2).forEach((l,k)=>T(l, 12, 400+k*13, '#566c86', 'left', 10));
+  }};
+}
+const devTap = (x,y,w,h) => { if (!fadeTo && clk && hit(clk,x,y,w,h)){ clk=null; sfx('click'); return true; } return false; };
+const devFit = (s, maxW, sz, minSz=6) => { while (sz>minSz && TW(s, sz) > maxW) sz--; while (s.length>1 && TW(s, sz) > maxW) s = s.slice(0,-1); return [s, sz]; };
+// 某个对手正常会放的招（专属招 + 招池）；小庄第一层/第二层招池不同
+function devOppSkills(o){
+  if (o.kind==='boss'){ const b = BOSSES[o.boss]; return {sig:b.sig, pool:b.skills}; }
+  return {sig:MINION_SIG[o.idx], pool: o.floor===0 ? ['flatspike','pie','fake'] : ['flatspike','pie','saw','fake','spin']};
+}
+function OppSelectScene(){
+  return { enter(){ music('map'); }, frame(f){
+    ctx.drawImage(titleBg(),0,0); ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
+    bigText(t('lsOpp'), W/2, 6, 2, GOLD);
+    DEV_OPPS.forEach((o,i)=>{
+      const c = i%3, r = Math.floor(i/3), x = 4+c*94, y = 44+r*76, cw = 92, chh = 72, on = DEV_CFG.opp===i;
+      const isB = o.kind==='boss', bd = isB ? DANGER : o.floor===0 ? '#38b764' : '#3b5dc9';
+      box(x, y, cw, chh, on?'#29366f':'#141623', on?GOLD:bd);
+      const def = isB ? BOSSES[o.boss] : {spr:'minion', swap:MINION_SWAPS[o.idx]};
+      spr(def.spr, x+cw/2-16, y+4, 2, {swap:def.swap});
+      const tag = o.tut ? t('lsTagTut') : isB ? t('lsTagBoss') : '';
+      T((o.floor===0?'1F':'2F')+(tag?' '+tag:''), x+4, y+3, '#94b0c2', 'left', 8, null);
+      const [nm, sz] = devFit(isB ? C.boss[def.key||BOSSES[o.boss].key].name : C.minionNames[o.idx], cw-6, 10);
+      T(nm, x+cw/2, y+42, on?'#f4f4f4':'#c2c3c7', 'center', sz, null);
+      const sg = devOppSkills(o).sig, [sn, ssz] = devFit(sg ? '★'+C.bskill[sg].name : '★'+t('lsSpam'), cw-6, 8);
+      T(sn, x+cw/2, y+57, '#ffcd75', 'center', ssz, null);
+      if (devTap(x, y, cw, chh)){ devSetOpp(i); go(LevelSelectScene()); }
+    });
+    T(t('lsOppHint'), W/2, 430, '#566c86', 'center', 10);
+    if (btn(60, 452, 168, 28, t('lsCardsBack'), { col:'#333c57', key:'escape' })) go(LevelSelectScene());
+  }};
+}
+function SkillSelectScene(){
+  const o = DEV_OPPS[DEV_CFG.opp], own = devOppSkills(o);
+  return { enter(){ music('map'); }, frame(f){
+    ctx.drawImage(titleBg(),0,0); ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
+    bigText(t('lsSkill'), W/2, 6, 2, GOLD);
+    T(fmtS(t('lsSkillFor'), {n:devOppLabel(o)}), W/2, 38, '#94b0c2', 'center', 10);
+    DEV_SKILLS.forEach((k,i)=>{
+      const c = i%3, r = Math.floor(i/3), x = 4+c*94, y = 54+r*48, cw = 92, chh = 44, on = DEV_CFG.skill===i;
+      const curse = k && BOSS_SKILLS[k].curse, mine = k && (k===own.sig || own.pool.includes(k));
+      box(x, y, cw, chh, on?'#29366f':'#141623', on?GOLD:(mine?'#38b764':'#333c57'));
+      const [nm, sz] = devFit(k ? C.bskill[k].name : t('lsRandom'), cw-6, 10);
+      T(nm, x+cw/2, y+8, on?'#f4f4f4':(mine?'#f4f4f4':'#94b0c2'), 'center', sz, null);
+      const sub = !k ? t('lsRandomSub') : (k===own.sig ? '★'+t('lsSig') : mine ? t('lsOwn') : '') + (curse ? (mine?' · ':'')+t('lsCurse') : '');
+      if (sub){ const [s2, z2] = devFit(sub, cw-6, 8); T(s2, x+cw/2, y+26, k===own.sig ? '#ffcd75' : curse ? '#b55088' : '#73eff7', 'center', z2, null); }
+      if (devTap(x, y, cw, chh)){ DEV_CFG.skill = i; go(LevelSelectScene()); }
+    });
+    wrap(t('lsSkillHint'), 264, 10).forEach((l,k)=>T(l, W/2, 400+k*13, '#566c86', 'center', 10));
+    if (btn(60, 452, 168, 28, t('lsCardsBack'), { col:'#333c57', key:'escape' })) go(LevelSelectScene());
   }};
 }
 function CardSelectScene(){
