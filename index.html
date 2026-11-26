@@ -20,6 +20,8 @@ html,body{margin:0;height:100%;background:#0b0c14;overflow:hidden;touch-action:n
 const W = 288, H = 512;
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+// 开发模式：网址带 ?dev 时，标题页多一个"选关 / 测试"按钮（正常玩家看不到）
+const DEV_MODE = location.search.indexOf('dev') >= 0;
 function fit(){ const s = Math.min(innerWidth / W, innerHeight / H); const k = s >= 2 ? Math.floor(s) : s; cv.style.width = W*k + 'px'; cv.style.height = H*k + 'px'; }
 addEventListener('resize', fit); fit();
 
@@ -396,7 +398,7 @@ const BOSSES = [
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
 const MINION_SIG = ['beat','fast','mirror','fakesky',null];   // 荐股群主没有专属技能，他的特性是"群发"意图（spam）
-function makeMinion(){ const i = R1(0,4); return {key:'minion',idx:i,sig:MINION_SIG[i],spam:i===4,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
+function makeMinion(fixedIdx){ const i = fixedIdx!=null ? fixedIdx : R1(0,4); return {key:'minion',idx:i,sig:MINION_SIG[i],spam:i===4,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
   hp:[3500,12000,40000][R.floor],hpK:HPK.minion[Math.min(R.floor,HPK.minion.length-1)][i],len:30,volMul:1,heatMul:.8,
   skills: R.floor===0 ? [pick(['flatspike','pie','fake'])] : [pick(['flatspike','pie','saw','fake','spin'])],fake:R.floor===0?.1:.2,quiet:R.floor===0?.25:.45,waffle:.15,react:{}}; }   // 第二层小庄不再抽纯添堵的招
 // 新闻 = 波动系统：drift 每根的方向漂移，volMul 波动倍数（>1 变猛，<1 变平静）
@@ -456,7 +458,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.4 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.5 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -480,6 +482,9 @@ const ZH = {
   tCritHit:'抓住破绽，暴击！', heal:'回血', stolen:'被抽走', allinBtn:'梭哈', halt2:'停牌', feeBadge:'手续费 3%', tNetDown:'断网了', tHalt2:'停牌中，不能交易', t1Lock:'T+1 锁定，还剩 {n} 根', tStop:'风控强平', tCurseEnd:'恢复交易', tFakeSky:'天气是假的！', pvQian:'上车！', pvGranny:'孩子，别怕。', pvGuard:'第 {n} 层守塔人', pvSig:'招牌：{s}　谎 {n}%', pvMinion:'{n} 来了！', busted:'爆仓！', fateLine:'天机不可泄露~', spamHead:'群发', fakeTag:'假', demoEnd:['洗盘婆婆的叹气声还留在楼梯间。','你继续往上爬。第三层的门缝里，透出一盏灯。','灯下站着一个人影，手里握着一支很大的画笔。','他回过头。\n他的叶子……跟你一样绿。'], demoTBC:'未完待续', demoTitle:'试玩版到此为止', demoBody:'感谢你玩《韭菜与画笔》的 Demo！正式版会有更多楼层、更多庄家、更多卡牌，还有爷爷的真相。', demoTap:'点击继续',
   testEnd:'测试版到此为止', testWin:'你打通了前两层！', testFoot:'玩完告诉 Kurt 手感怎么样~', sFinal:'最终叶子', sTrades:'交易次数', sHarv:'被收割', sSkills:'卡牌',
   goTitle:'你被彻底收割了', goWhere:'倒在了 {f}', goStats:'交易 {t} 次 · 被收割 {h} 次', goQuote:'「韭菜割了，还会再长。」', goWho:'—— 爷爷', goAgain:'重新发芽', langPick:'选择语言 / Choose language',
+  levelSelect:'选关 / 测试', lsTitle:'选关 / 测试', lsOpp:'对手', lsSkill:'招', lsRandom:'随机', lsFastSkill:'招更勤', lsPhase2:'直接二阶段', lsFastOT:'快进加时', lsHP:'血量', lsShort:'做空', lsSkipIntro:'跳过出场', lsDeck:'卡组', lsOn:'开', lsOff:'关',
+  lsTut:'教学·{n}', lsF1:'1F·{n}', lsF2:'2F·{n}', lsStart:'开始', lsBack:'返回标题', lsHint:'网址带 ?dev 才会出现这个界面。\n设置只在本次游戏里有效。',
+  lsCardsTitle:'选卡', lsCardsCount:'已选 {n}/6', lsCardsHint:'按点选顺序结算，最多 6 张。', lsCardsBack:'返回', lsCardsFull:'最多只能选 6 张',
  },
  floors:['一层 · 饼屋','二层 · 洗衣房','三层 · 剧场','四层 · 温泉','顶层 · 收割台'],
  who:{hero:'小韭',grandpa:'爷爷',qian:'老钱',granny:'洗盘婆婆',minion:'游资小弟'},
@@ -581,7 +586,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.4 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.5 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -605,6 +610,9 @@ const EN = {
   tCritHit:'Crit! You caught him slipping!', heal:'heal', stolen:'Taken', allinBtn:'ALL IN', halt2:'HALTED', feeBadge:'Fee 3%', tNetDown:'Offline!', tHalt2:'Halted — no trading', t1Lock:'T+1 lock: {n} bars left', tStop:'Stop-out!', tCurseEnd:'Trading resumes', tFakeSky:'The forecast was fake!', pvQian:'ALL ABOARD!', pvGranny:'No need to fear, dearie.', pvGuard:'Guardian of Floor {n}', pvSig:'Signature: {s}   Lie {n}%', pvMinion:'{n} appears!', busted:'BUSTED!', fateLine:'Fate is fickle, dearie~', spamHead:'Mass text', fakeTag:'FAKE', demoEnd:['Granny\'s sigh still echoes in the stairwell.','You keep climbing. A light glows under the door to Floor 3.','A figure stands beneath it, holding a giant brush.','He turns around.\nHis wool… is just like yours.'], demoTBC:'TO BE CONTINUED', demoTitle:'End of the Demo', demoBody:'Thanks for playing the FLEECED demo! The full game will have more floors, more shearers, more cards, and the truth about Grandpa.', demoTap:'Tap to continue',
   testEnd:'End of the beta', testWin:'You cleared Floors 1-2!', testFoot:'Tell Kurt how it felt~', sFinal:'Final wool', sTrades:'Trades', sHarv:'Fleeced', sSkills:'Cards',
   goTitle:'Completely fleeced', goWhere:'Fell on {f}', goStats:'{t} trades · fleeced {h} times', goQuote:'"Wool grows back."', goWho:'— Grandpa Baa', goAgain:'Regrow', langPick:'选择语言 / Choose language',
+  levelSelect:'Level select', lsTitle:'Level select', lsOpp:'Foe', lsSkill:'Skill', lsRandom:'Random', lsFastSkill:'More skills', lsPhase2:'Start P2', lsFastOT:'Fast OT', lsHP:'Chips', lsShort:'Short', lsSkipIntro:'Skip intro', lsDeck:'Deck', lsOn:'On', lsOff:'Off',
+  lsTut:'Tut·{n}', lsF1:'F1·{n}', lsF2:'F2·{n}', lsStart:'Start', lsBack:'Title', lsHint:'Only visible with ?dev in the URL.\nSettings last for this session only.',
+  lsCardsTitle:'Pick cards', lsCardsCount:'Picked {n}/6', lsCardsHint:'Resolved in tap order, up to 6.', lsCardsBack:'Back', lsCardsFull:'Max 6 cards',
  },
  floors:['Floor 1 · Pie Shop','Floor 2 · Laundromat','Floor 3 · Theater','Floor 4 · Hot Spring','Top · Shearing Hall'],
  who:{hero:'Lamby',grandpa:'Grandpa Baa',qian:'Pete',granny:'Granny Spin',minion:'Pump Bro'},
@@ -781,12 +789,127 @@ function TitleScene(){
     bigText(t('title'), W/2, 86, 3, LANG==='en'?'#f4f4f4':'#a7f070');
     T(t('sub'), W/2, 140, '#ffcd75', 'center'); T(t('ver'), W/2, 158, '#94b0c2', 'center');
     spr(HERO(), W/2-24, 330 + Math.round(Math.abs(Math.sin(tt*.08))*-10), 3);
+    if (DEV_MODE && btn(64, 288, 160, 26, t('levelSelect'), {col:'#257179'})) go(LevelSelectScene());
     if (btn(64, 380, 160, 30, t('start'), {col:'#b13e53', key:'enter'})){ newRun(); go(DialogScene(DL(C.intro), ()=>go(MapScene()), 'title')); }
     if (btn(64, 416, 76, 22, muted?t('sndOff'):t('sndOn'), {col:'#333c57'})) muted=!muted;
     if (btn(148, 416, 76, 22, t('help'), {col:'#333c57'})) go(HelpScene());
     if (btn(64, 444, 76, 22, t('lang'), {col:'#333c57'})){ setLang(LANG==='en'?'zh':'en'); go(TitleScene()); }
     const upRed = UP==='#e43b44';
     if (btn(148, 444, 76, 22, upRed?t('upRed'):t('upGreen'), {col:'#333c57'})){ SAVE.upRed = !upRed; writeSave(SAVE); applyColors(); }
+  }};
+}
+// =====================================================================
+//  选关 / 测试（网址带 ?dev 时标题页多一个入口，普通玩家看不到）
+// =====================================================================
+// 设置放在模块级变量里：再次进入选关界面时保留上次的选择（不存 localStorage）
+let DEV_CFG = { opp:0, skill:0, fastSkill:false, phase2:false, fastOT:false, hpMul:0, short:false, skipIntro:true, cards:[] };
+const DEV_HP = [1, .2, .5, 2];
+const DEV_SKILLS = [null].concat(Object.keys(BOSS_SKILLS));   // 0 = 随机（原逻辑）
+const DEV_OPPS = (() => {
+  const a = [{ kind:'minion', floor:0, idx:0, tut:true }];     // 教学小庄
+  for (let i=0;i<5;i++) a.push({ kind:'minion', floor:0, idx:i });
+  a.push({ kind:'boss', floor:0, boss:0 });                   // 老钱
+  for (let i=0;i<5;i++) a.push({ kind:'minion', floor:1, idx:i });
+  a.push({ kind:'boss', floor:1, boss:1 });                   // 洗盘婆婆
+  return a;
+})();
+function devOppLabel(o){
+  if (o.kind==='boss') return C.boss[BOSSES[o.boss].key].name;
+  return fmtS(o.tut ? t('lsTut') : o.floor===0 ? t('lsF1') : t('lsF2'), { n:C.minionNames[o.idx] });
+}
+function devSetOpp(i){
+  DEV_CFG.opp = (i + DEV_OPPS.length) % DEV_OPPS.length;
+  DEV_CFG.short = DEV_OPPS[DEV_CFG.opp].floor > 0;   // 做空默认按楼层：第二层自动开，第一层关
+}
+// 按选关设置开一局：不进地图、不播正常剧情，直接开打
+function devStartBattle(){
+  const cfg = DEV_CFG, o = DEV_OPPS[cfg.opp], isBoss = o.kind==='boss';
+  newRun();
+  R.dev = true;
+  R.floor = o.floor;
+  R.line = LINES[R.floor];
+  R.cap = LINES[R.floor] * 2;
+  R.tutorial = !!o.tut;
+  R.short = !!cfg.short;
+  R.cards = cfg.cards.slice();
+  R.slots = Math.max(3, R.cards.length);
+  R.seenPV = {};
+  let def = isBoss ? BOSSES[o.boss] : makeMinion(o.idx);   // makeMinion 用到 R.floor，先设好再调
+  const forceSkill = DEV_SKILLS[cfg.skill];
+  if (forceSkill) def = Object.assign({}, def, { sig:forceSkill, skills:[forceSkill] });   // sig 和 skills 都设成它，50% 分支也走它
+  startBattle(def, isBoss);
+  if (cfg.skipIntro) B.intro = null;
+  const m = DEV_HP[cfg.hpMul];
+  if (m !== 1){ B.hpMax = Math.max(1, Math.round(B.hpMax*m)); if (B.hp2) B.hp2 = Math.max(1, Math.round(B.hp2*m)); }
+  if (cfg.fastOT) B.len = 12;
+  if (cfg.fastSkill){ B.skillCD = 1; B.skillsLeft = 999; }
+  if (isBoss && cfg.phase2){ if (!B.intro) startPhase2(); else B.devPhase2 = 1; }
+  go(BattleScene);
+}
+function LevelSelectScene(){
+  const tapAt = (x,y,w,h) => { if (!fadeTo && clk && hit(clk,x,y,w,h)){ clk=null; sfx('click'); return true; } return false; };
+  // 一行：标签 + ◀ 当前值 ▶；toggle 行点一下整块开关
+  const row = (label, value, y, onPrev, onNext, o={}) => {
+    box(6, y, 276, 26, '#1a1c2c', '#333c57');
+    let lsz = 12; while (lsz>8 && TW(label, lsz) > 94) lsz--;
+    T(label, 12, y+7, '#c2c3c7', 'left', lsz);
+    box(108, y+2, 174, 22, o.toggle ? (o.on ? '#29366f' : '#141623') : '#141623', o.toggle && o.on ? GOLD : '#566c86');
+    if (!o.toggle){ T('◀', 113, y+5, '#94b0c2', 'left', 12); T('▶', 277, y+5, '#94b0c2', 'right', 12); }
+    let vsz = 11; while (vsz>8 && TW(value, vsz) > 136) vsz--;
+    T(value, 195, y+7, o.toggle ? (o.on ? GOLD : '#94b0c2') : GOLD, 'center', vsz);
+    if (o.toggle){ if (tapAt(108, y+2, 174, 22)) o.toggle(); }
+    else { if (tapAt(108, y+2, 20, 22)) onPrev(); if (tapAt(262, y+2, 20, 22)) onNext(); if (tapAt(128, y+2, 134, 22)) onNext(); }
+  };
+  return { enter(){ music('map'); }, frame(f){
+    ctx.drawImage(titleBg(),0,0); ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
+    bigText(t('lsTitle'), W/2, 6, 2, GOLD);
+    const cfg = DEV_CFG, o = DEV_OPPS[cfg.opp];
+    row(t('lsOpp'), devOppLabel(o), 46, ()=>devSetOpp(cfg.opp-1), ()=>devSetOpp(cfg.opp+1));
+    row(t('lsSkill'), DEV_SKILLS[cfg.skill] ? C.bskill[DEV_SKILLS[cfg.skill]].name : t('lsRandom'), 74,
+      ()=>{ cfg.skill = (cfg.skill + DEV_SKILLS.length - 1) % DEV_SKILLS.length; }, ()=>{ cfg.skill = (cfg.skill + 1) % DEV_SKILLS.length; });
+    row(t('lsFastSkill'), cfg.fastSkill?t('lsOn'):t('lsOff'), 102, null, null, { toggle:()=>{ cfg.fastSkill=!cfg.fastSkill; }, on:cfg.fastSkill });
+    row(t('lsPhase2'), cfg.phase2?t('lsOn'):t('lsOff'), 130, null, null, { toggle:()=>{ cfg.phase2=!cfg.phase2; }, on:cfg.phase2 });
+    row(t('lsFastOT'), cfg.fastOT?t('lsOn'):t('lsOff'), 158, null, null, { toggle:()=>{ cfg.fastOT=!cfg.fastOT; }, on:cfg.fastOT });
+    row(t('lsHP'), '×'+DEV_HP[cfg.hpMul], 186,
+      ()=>{ cfg.hpMul = (cfg.hpMul + DEV_HP.length - 1) % DEV_HP.length; }, ()=>{ cfg.hpMul = (cfg.hpMul + 1) % DEV_HP.length; });
+    row(t('lsShort'), cfg.short?t('lsOn'):t('lsOff'), 214, null, null, { toggle:()=>{ cfg.short=!cfg.short; }, on:cfg.short });
+    row(t('lsSkipIntro'), cfg.skipIntro?t('lsOn'):t('lsOff'), 242, null, null, { toggle:()=>{ cfg.skipIntro=!cfg.skipIntro; }, on:cfg.skipIntro });
+    // 卡组：点开子界面选卡
+    box(6, 270, 276, 26, '#1a1c2c', '#333c57');
+    T(t('lsDeck'), 12, 277, '#c2c3c7');
+    box(108, 272, 174, 22, '#141623', '#566c86');
+    T(fmtS(t('lsCardsCount'), { n:cfg.cards.length })+'  ▸', 195, 276, GOLD, 'center', 11);
+    if (tapAt(108, 272, 174, 22)) go(CardSelectScene());
+    if (btn(60, 304, 168, 36, t('lsStart'), { col:'#b13e53', key:'enter' })) devStartBattle();
+    if (btn(60, 348, 168, 28, t('lsBack'), { col:'#333c57', key:'escape' })) go(TitleScene());
+    T(C.floors[o.floor]+' · '+t('line')+' '+fmt(LINES[o.floor]), 12, 386, '#94b0c2', 'left', 10);
+    wrap(t('lsHint'), 264, 10).slice(0,2).forEach((l,k)=>T(l, 12, 400+k*13, '#566c86', 'left', 10));
+  }};
+}
+function CardSelectScene(){
+  const keys = Object.keys(CARDS), tapAt = (x,y,w,h) => { if (!fadeTo && clk && hit(clk,x,y,w,h)){ clk=null; sfx('click'); return true; } return false; };
+  return { enter(){ music('map'); }, frame(f){
+    ctx.drawImage(titleBg(),0,0); ctx.fillStyle='#000c'; ctx.fillRect(0,0,W,H);
+    bigText(t('lsCardsTitle'), W/2, 6, 2, GOLD);
+    T(fmtS(t('lsCardsCount'), { n:DEV_CFG.cards.length }), W/2, 40, '#94b0c2', 'center', 10);
+    keys.forEach((k,i)=>{
+      const c = i%4, r = Math.floor(i/4), x = 4+c*70, y = 54+r*44, cw = 68, chh = 40;
+      const s = CARDS[k], col = SCHOOL_COL[s.school], sel = DEV_CFG.cards.indexOf(k), on = sel >= 0;
+      box(x, y, cw, chh, on?'#29366f':'#141623', on?GOLD:col);
+      spr(s.icon, x+cw/2-8, y+4, 2);
+      let nm = C.card[k][0], sz = 8;
+      while (sz>6 && TW(nm, sz) > cw-8) sz--;
+      while (nm.length>1 && TW(nm, sz) > cw-8) nm = nm.slice(0,-1);
+      T(nm, x+cw/2, y+24, on?'#f4f4f4':'#94b0c2', 'center', sz, null);
+      if (on){ box(x+cw-13, y+2, 11, 11, GOLD, INK); N(String(sel+1), x+cw-8, y+4, INK, 1, 'center', false); }
+      if (tapAt(x, y, cw, chh)){
+        if (on) DEV_CFG.cards.splice(sel, 1);
+        else if (DEV_CFG.cards.length >= 6){ toast(t('lsCardsFull')); sfx('hurt'); }
+        else { DEV_CFG.cards.push(k); sfx('magic'); }
+      }
+    });
+    wrap(t('lsCardsHint'), 264, 10).forEach((l,k)=>T(l, W/2, 414+k*13, '#566c86', 'center', 10));
+    if (btn(60, 452, 168, 28, t('lsCardsBack'), { col:'#b13e53', key:'escape' })) go(LevelSelectScene());
   }};
 }
 function HelpScene(){
@@ -1269,7 +1392,7 @@ function newCandle(){
     if (B.skillCD<=0 && (!sched || B.skillsLeft>0) && !(w&&w.noSkill) && B.step>3 && (B.ot || B.step < B.len-6)){
       const ty = (d.sig && Math.random()<.5) ? d.sig : pick(d.skills); B.windup = {type:ty};
       if (B.ot){ B.skillCD = 1; }
-      else if (sched){ B.skillsLeft--; B.skillCD = B.skillsLeft>0 ? Math.max(1, Math.floor((B.len-7-B.step)/B.skillsLeft) - 4) : 1e9; } else B.skillCD = SKILL_CD();
+      else if (sched){ B.skillsLeft--; B.skillCD = (R && R.dev && DEV_CFG.fastSkill) ? R1(2,3) : B.skillsLeft>0 ? Math.max(1, Math.floor((B.len-7-B.step)/B.skillsLeft) - 4) : 1e9; } else B.skillCD = SKILL_CD();
       const lie = Math.random() < d.fake;
       B.intent = {at:B.step+1, claim: lie ? pick(['pump','dump']) : 'skill:'+ty, truth:!lie, actual:'skill', pending:true, madeAt:B.step};
       emit('bossSkill', {type:ty});   // 实名举报可能在这里把技能和意图一起打断（B.intent 变 null）
@@ -1609,6 +1732,7 @@ function endBattle(kill){
   }
 }
 function afterBattle(){
+  if (R && R.dev){ go(LevelSelectScene()); return; }   // 开发模式：结算点继续后回选关，不进选卡/地图
   R.tutorial = false;
   const res = B.result;
   if (B.harvested){
@@ -1854,6 +1978,7 @@ const BattleScene = { frame(f, dt){
     }
   }
   const running = !B.over && !B.paused && !B.intro;
+  if (running && B.devPhase2 && !B.phase2){ B.devPhase2 = 0; startPhase2(); }   // 开发模式：出场结束后立刻进第二阶段
   if (running){
     if (B.halt>0){ B.halt -= dt; }
     else { const tms = B.tickMs / (B.ov && B.ov.type==='fast' ? 3 : 1);   // 三秒进出：K 线 3 倍速（和玩家的 »» 加速叠加）
