@@ -466,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.10 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.11 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -597,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.10 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.11 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1375,6 +1375,7 @@ const feeRate = () => curseType()==='fee' ? .03 : .001;          // 开仓 / 平
 const flipKind = k => { const d = dirOf(k); return d>0 ? 'dump' : d<0 ? 'pump' : pick(['pump','dump']); };
 
 function newCandle(){
+  dipCam();
   const d = B.def, w = B.weather;
   B.fired = {}; B.busy = {};
   // 意图到点：揭晓真假
@@ -1572,6 +1573,12 @@ function checkStopout(){
   closePos(false, true);
   toast(t('tStop')); floatText(t('tStop'), 144, 300, '#ef7d57'); sfx('hurt'); shake = Math.max(shake,6);
   return true;
+}
+// 过山车镜头：记录量程从哪根开始算（见 K 线图缩放处的说明）。每根开盘和每帧绘制都调，重复调用无副作用
+function dipCam(){
+  if (B.ov && B.ov.type==='dip'){ if (B.dipI0 !== B.ov.i0){ B.dipI0 = B.ov.i0; B.scaleFrom = B.ov.i0; } B.dipPhase = 'on'; }
+  else if (B.dipPhase==='on'){ B.dipEndAt = B.bars.length; B.dipPhase = 'after'; }
+  if (B.dipPhase==='after' && B.bars.length - B.dipEndAt >= 6){ B.scaleFrom = B.dipEndAt - 1; B.dipPhase = 'done'; }
 }
 function endOv(){
   const ov = B.ov; B.ov = null;
@@ -2168,8 +2175,12 @@ const BattleScene = { frame(f, dt){
   const maxSlots = Math.floor((CX1-CX0-6)/SW); const start = Math.max(0, all.length - maxSlots);
   const vis = all.slice(start);
   // 缩放：最早的方式——线性，看整屏所有可见的 K 线（Kurt 定：不做自适应聚焦、不让 K 线冲出屏幕）
-  const rv = vis;
+  // 例外（2026-11-26 Kurt 定）：过山车期间镜头跟着小车、价格保持在图中间，只按过山车这段算量程；
+  // 结束 6 根后，量程只从过山车最后一根往后算，之前砸下去的那段允许跑出屏幕（否则老钱连放过山车后波动被压扁）
+  dipCam();
+  let rv = B.scaleFrom != null ? vis.filter((b,j) => start+j >= B.scaleFrom) : vis; if (!rv.length) rv = vis;
   let hi = Math.max(...rv.map(b=>b.h)), lo = Math.min(...rv.map(b=>b.l));
+  if (B.dipPhase==='on'){ const pc = B.price, half = Math.max(hi-pc, pc-lo, pc*.05); hi = pc+half; lo = pc-half; }
   const mg = (hi-lo)*.12 + hi*.004;
   B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
   const volTop = CY1-34, chH = volTop-CY0-10;
