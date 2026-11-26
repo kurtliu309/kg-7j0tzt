@@ -379,11 +379,18 @@ const SCRIPTS = Object.fromEntries(Object.keys(STYLE).map(s=>[s, ()=>genPhases(s
 const dirOf = k => ['pump','breakout'].includes(k) ? 1 : ['dump','shake','bleed'].includes(k) ? -1 : 0;
 const BIG = ['pump','dump','shake','breakout'];
 const BOSS_SKILLS = { flatspike:{len:3}, pie:{len:4}, spin:{len:2}, saw:{len:4}, fake:{len:5},
+  // 普通招：跳空缺口 / 倒带 / 天量（len 是基础值，第二层会在 startOv 里改）
+  gap:{len:3}, rewind:{len:3}, volume:{len:4},
   // 纯妨碍类：不驱动价格、不给暴击，到点后进入 B.curse（len 是持续根数；unplug 用真实秒数）
   unplug:{len:3,curse:true}, t1:{len:4,curse:true}, fee:{len:4,curse:true},
   allin:{len:4,curse:true}, halt2:{len:3,curse:true}, stopout:{len:5,curse:true},
   // 专属意图：每个庄家一个，放技能时 50% 选它
-  mind:{len:4}, oracle:{len:5}, beat:{len:8}, fast:{len:3}, mirror:{len:3}, fakesky:{len:5,curse:true}, dip:{len:4}, rope:{len:5} };
+  mind:{len:4}, beat:{len:8}, fast:{len:3}, mirror:{len:3}, fakesky:{len:5,curse:true}, dip:{len:4}, rope:{len:5} };
+// 公共招池（所有庄家共用）：第一层招都朝做多方向（up0）；第二层没有 saw、只有第二层有 mind
+const COMMON_POOL = [
+  ['flatspike','pie','fake','spin','saw','gap','rewind','volume'],
+  ['flatspike','pie','fake','spin','gap','rewind','volume','mind'],
+];
 // fake = 撒谎概率，quiet = 不说话的概率，waffle = 每根线改主意的概率
 // 血量 = 进场本金 × 系数（docs/sim 机器人反推：普通人第一层小庄约 70%、Boss 约 60%）；第一场（教学）用 tut
 const HPK = { qian:.65, qian2:.9, granny:.7, granny2:.95, tut:.29,   // Boss 两阶段：第一条血 / 第二条血（2026-11-26）
@@ -393,14 +400,15 @@ const HPK = { qian:.65, qian2:.9, granny:.7, granny2:.95, tut:.29,   // Boss 两
 const SKILL_PLAN = (isBoss) => isBoss ? 12 : 4;   // [层][小庄 idx]：游资小弟 / 短线阿飞 / 私募小王 / 喊单哥 / 荐股群主
 const SKILL_CD = () => R.floor===0 ? R1(5,7) : R1(7,10);   // 庄家放技能的间隔（根）
 const BOSSES = [
-  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,hpK:HPK.qian,hp2K:HPK.qian2,fake2:.25,len:80,volMul:1,heatMul:.9,sig:'dip',skills:['flatspike','pie','fake'],fake:.1,quiet:.25,waffle:.2,react:{good:'dump'}},
-  {key:'granny',spr:'granny',script:'shake',hp:24000,hpK:HPK.granny,hp2K:HPK.granny2,fake2:.4,len:80,volMul:1.05,heatMul:1,sig:'rope',skills:['spin','saw','fake','stopout','allin'],fake:.3,quiet:.45,waffle:.25,react:{bad:'shake'}},
+  {key:'qian',spr:'qian',script:'pumpdump',hp:12000,hpK:HPK.qian,hp2K:HPK.qian2,fake2:.25,len:80,volMul:1,heatMul:.9,sig:'dip',skills:COMMON_POOL[0].slice(),fake:.1,quiet:.25,waffle:.2,react:{good:'dump'}},
+  {key:'granny',spr:'granny',script:'shake',hp:24000,hpK:HPK.granny,hp2K:HPK.granny2,fake2:.4,len:80,volMul:1.05,heatMul:1,sig:'rope',skills:COMMON_POOL[1].slice(),fake:.3,quiet:.45,waffle:.25,react:{bad:'shake'}},
 ];
 const MINION_SWAPS = [null,{b:'r',n:'k'},{b:'D',n:'y'},{b:'o',n:'n'},{b:'p',n:'z'}];
 const MINION_SIG = ['beat','fast','mirror','fakesky',null];   // 荐股群主没有专属技能，他的特性是"群发"意图（spam）
+// 小庄的普通招池 = 当层公共招池：每次放招都从池子里随机抽（2026-11-26 起，原来一场只抽一个）
 function makeMinion(fixedIdx){ const i = fixedIdx!=null ? fixedIdx : R1(0,4); return {key:'minion',idx:i,sig:MINION_SIG[i],spam:i===4,spr:'minion',swap:MINION_SWAPS[i],script:pick(['pumpdump','shake','fakebreak','boil','dragon']),
   hp:[3500,12000,40000][R.floor],hpK:HPK.minion[Math.min(R.floor,HPK.minion.length-1)][i],len:30,volMul:1,heatMul:.8,
-  skills: R.floor===0 ? [pick(['flatspike','pie','fake'])] : [pick(['flatspike','pie','saw','fake','spin'])],fake:R.floor===0?.1:.2,quiet:R.floor===0?.25:.45,waffle:.15,react:{}}; }   // 第二层小庄不再抽纯添堵的招
+  skills: COMMON_POOL[Math.min(R.floor, COMMON_POOL.length-1)].slice(),fake:R.floor===0?.1:.2,quiet:R.floor===0?.25:.45,waffle:.15,react:{}}; }   // 第二层小庄不再抽纯添堵的招
 // 新闻 = 波动系统：drift 每根的方向漂移，volMul 波动倍数（>1 变猛，<1 变平静）
 const NEWS = [
   {id:'cut',len:5,drift:.025,volMul:1.3,mood:'good'},{id:'reg',len:6,volMul:.35,noSkill:true,heatFreeze:true},{id:'kol',len:5,volMul:3},{id:'swan',len:1,gap:.13},
@@ -458,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.6 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.7 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -466,7 +474,7 @@ const ZH = {
   build:'构筑', empty:'空', fullTitle:'构筑栏满了', fullSub:'用新卡替换一张，或放弃新卡', discard:'放弃新卡', chain:'连锁 ×{n}', slotUp:'构筑栏 +1 格！',
   minion:'（小庄）', next:'下一步', now:'现在', lieT:'谎', trueT:'真', long:'做多', short:'做空', shortLock:'做空🔒', close:'平仓',
   flat:'空仓观望', heat:'关注', crit:'暴击 ×2', critOv:'庄家放技能：开仓 ×2', critPos:'暴击仓', collapse:'庄家崩盘！剩下的时间赚的全部 ×2', brokeTruth:'破产了，只能说真话',
-  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', msgN:'消息', halt:'熔断中…', paused:'暂停', yourSkills:'你的构筑：', noSkills:'还没有卡。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
+  weather:'天气：', volUp:'波动↑', volDown:'波动↓', prob:'谎{lie}% 默{quiet}%', news:'快讯', msgN:'消息', halt:'熔断中…', closed:'休市', gapTag:'缺口', rewTag:'◀◀ REW', paused:'暂停', yourSkills:'你的构筑：', noSkills:'还没有卡。打空庄家的筹码条就能拿。', resume:'继续', toTitle:'回到标题',
   rPeak:'本场最高赚到 ', rNeed:'打空要 ',
   rHarv:'被收割了！', rKill:'庄家崩盘！', rFail:'没打空筹码条…', rSurv:'撑过去了', rScript:'庄家剧本：', rMoney:'叶子：', rLine:'收割线：', rIntent:'意图真假：',
   mHarv:'叶子掉到了收割线以下。', mHarvSteal:'庄家抽走了 {n}，\n', mRoot:'\n还有一条根，可以重新发芽。', mNoRoot:'\n没有根了……', mFail:'时间到，庄家抽走了 {n}。\n他还站着，再打一次。',
@@ -498,9 +506,10 @@ const ZH = {
  bskill:{flatspike:{name:'一字插针',shout:'嘘——'},pie:{name:'画大饼',shout:'画——大——饼！'},spin:{name:'甩干',shout:'甩干咯~'},saw:{name:'拉锯',shout:'拉——锯——！'},fake:{name:'假K线',shout:'洗得白白的~'},
    unplug:{name:'拔网线',shout:'网线我拔了~'},t1:{name:'T+1',shout:'明天才能卖哦~'},fee:{name:'手续费暴涨',shout:'手续费涨一点~'},
    allin:{name:'限仓梭哈',shout:'梭哈！梭哈！'},halt2:{name:'停牌',shout:'停牌整顿~'},stopout:{name:'风控强平',shout:'风控来了~'},
-   mind:{name:'读心',shout:'让我看看你在想什么~'},dip:{name:'过山车',shout:'坐稳了！割肉割肉~'},rope:{name:'晾衣绳',shout:'来，婆婆帮你晾一晾~'},oracle:{name:'算一卦',shout:'婆婆给你算一卦~'},beat:{name:'跟大哥节奏',shout:'跟上节奏！'},
-   fast:{name:'三秒进出',shout:'三秒进，三秒出！'},mirror:{name:'报表做反',shout:'报表嘛，倒过来看~'},fakesky:{name:'篡改天气',shout:'家人们，暴风雨要来了！'}},
- kind:{rope:'晾衣绳',dip:'过山车',flat:'横盘',pump:'拉升',top:'派发',dump:'砸盘',bleed:'阴跌',shake:'洗盘',bottom:'吸筹',range:'震荡',breakout:'突破',flatspike:'一字插针',pie:'画大饼',spin:'甩干',saw:'拉锯',fake:'假K线',react:'借消息',mind:'读心',oracle:'算一卦',beat:'节奏',fast:'三秒进出',mirror:'报表做反',
+   mind:{name:'读心',shout:'让我看看你在想什么~'},dip:{name:'过山车',shout:'坐稳了！割肉割肉~'},rope:{name:'晾衣绳',shout:'来，婆婆帮你晾一晾~'},beat:{name:'跟大哥节奏',shout:'跟上节奏！'},
+   fast:{name:'三秒进出',shout:'三秒进，三秒出！'},mirror:{name:'报表做反',shout:'报表嘛，倒过来看~'},fakesky:{name:'篡改天气',shout:'家人们，暴风雨要来了！'},
+   gap:{name:'跳空缺口',shout:'休市！'},rewind:{name:'倒带',shout:'倒——带——'},volume:{name:'天量',shout:'放量了！'}},
+ kind:{rope:'晾衣绳',dip:'过山车',flat:'横盘',pump:'拉升',top:'派发',dump:'砸盘',bleed:'阴跌',shake:'洗盘',bottom:'吸筹',range:'震荡',breakout:'突破',flatspike:'一字插针',pie:'画大饼',spin:'甩干',saw:'拉锯',fake:'假K线',react:'借消息',mind:'读心',beat:'节奏',fast:'三秒进出',mirror:'报表做反',gap:'跳空缺口',rewind:'倒带',volume:'天量',
    unplug:'拔网线',t1:'T+1',fee:'手续费暴涨',allin:'限仓梭哈',halt2:'停牌',stopout:'风控强平'},
  script:{pumpdump:'诱多出货',shake:'洗盘拉升',fakebreak:'假突破',boil:'温水煮青蛙',dragon:'真龙出海'},
  news:{cut:['央行宣布降息','降息'],reg:['监管：严查操纵市场','监管进场'],kol:['某大V直播喊单','散户涌入'],swan:['突发黑天鹅事件','黑天鹅'],earn:['今晚公布财报','财报日'],halt:['交易所临时熔断','熔断'],
@@ -515,6 +524,7 @@ const ZH = {
   bottom:['跌不动了，底在哪','没人说话了，好安静','我已经卸载软件了'],range:['箱体震荡，高抛低吸','又是这个位置，没意思','等突破再说'],
   breakout:['突破箱体！历史性时刻！','这都不追？等着后悔吧','还犹豫什么，梭哈！'],flatspike:['怎么不动了？停牌了？','一字线，懂的都懂','庄家睡着了？'],
   pie:['十倍股！十倍股！','我就知道！财富自由！','卖房上车！'],spin:['这是K线还是心电图','我止损被打了八次','头好晕'],fake:['稳了稳了','这走势也太完美了吧','成交量怎么这么小？'],
+  gap:['怎么直接跳空了？我挂的单呢？','休市回来就变天了','这缺口补不补啊？'],rewind:['等等，刚才那根呢？','怎么倒着走了？','录播？这是录播吧？'],volume:['放量了！这次是真的！','量在价先，冲啊！','这么大的量，谁在买？'],
   react:['消息出来了！','利好兑现就是利空？','这消息是真的吗']},
  posters:['价值投资老王','满仓哥','韭菜一号','反向指标','股神本神','退休大爷','小白','技术派阿强'],
  cutLoss:['割在了地板上，庄家感谢你的筹码','你一卖它就涨，这是宇宙定律','教科书级的追涨杀跌'], take:['落袋为安，今晚加鸡腿','赚钱了？庄家记住你了','漂亮！'],
@@ -587,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.6 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.7 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -595,7 +605,7 @@ const EN = {
   build:'Build', empty:'Empty', fullTitle:'Build full', fullSub:'Replace a card with the new one, or discard it.', discard:'Discard new card', chain:'Chain ×{n}', slotUp:'Build slot +1!',
   minion:' (minion)', next:'Next', now:'Now', lieT:'LIE', trueT:'TRUE', long:'Long', short:'Short', shortLock:'Short🔒', close:'Close',
   flat:'No position', heat:'Heat', crit:'CRIT ×2', critOv:'Skill active: open = ×2', critPos:'CRIT', collapse:'SHEARER BROKE! Everything now ×2', brokeTruth:'Broke — no more lies',
-  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', msgN:'Rumors', halt:'Halted…', paused:'Paused', yourSkills:'Your build:', noSkills:'No cards yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
+  weather:'Weather: ', volUp:'Vol ↑', volDown:'Vol ↓', prob:'Lie {lie}% · Quiet {quiet}%', news:'NEWS', msgN:'Rumors', halt:'Halted…', closed:'CLOSED', gapTag:'GAP', rewTag:'◀◀ REW', paused:'Paused', yourSkills:'Your build:', noSkills:'No cards yet. Bust a shearer\'s chips to earn one.', resume:'Resume', toTitle:'Title',
   rPeak:'Peak gain ', rNeed:'needed ',
   rHarv:'FLEECED!', rKill:'SHEARER BROKE!', rFail:'He survived…', rSurv:'Survived', rScript:'Script: ', rMoney:'Wool: ', rLine:'Line: ', rIntent:'Intents: ',
   mHarv:'Your wool fell below the shear line.', mHarvSteal:'He took {n} from you.\n', mRoot:'\nYour Golden Fleece saves you.', mNoRoot:'\nNo fleece left…', mFail:'Time\'s up. He took {n}.\nHe\'s still standing. Again.',
@@ -627,9 +637,10 @@ const EN = {
  bskill:{flatspike:{name:'Flatline Spike',shout:'Shhh…'},pie:{name:'Pie in the Sky',shout:'BIG! PIE! TIME!'},spin:{name:'Spin Cycle',shout:'Spin cycle, dearie~'},saw:{name:'Seesaw',shout:'Up! Down! Up! Down!'},fake:{name:'Fake Candles',shout:'All washed and pretty~'},
    unplug:{name:'Unplug',shout:'Oops, my cable~'},t1:{name:'T+1',shout:'Sell tomorrow, dearie~'},fee:{name:'Fee Hike',shout:'Small fee increase~'},
    allin:{name:'All-In Only',shout:'ALL IN! ALL IN!'},halt2:{name:'Trading Halt',shout:'Halted for review~'},stopout:{name:'Stop-Out',shout:'Risk control says hi~'},
-   mind:{name:'Mind Read',shout:'Let me read your mind~'},dip:{name:'Roller Coaster',shout:'Hold on tight! Sell sell sell~'},rope:{name:'Clothesline',shout:'Let Granny hang these out to dry~'},oracle:{name:'Fortune',shout:'Let Granny read your fortune~'},beat:{name:'On Beat',shout:'Feel the beat!'},
-   fast:{name:'Blitz',shout:'In and out, three seconds!'},mirror:{name:'Cooked Books',shout:'Read it upside down~'},fakesky:{name:'Fake Forecast',shout:'Fam, a storm is coming!'}},
- kind:{rope:'Clothesline',dip:'Coaster',flat:'Flat',pump:'Pump',top:'Top',dump:'Dump',bleed:'Bleed',shake:'Shakeout',bottom:'Bottom',range:'Range',breakout:'Breakout',flatspike:'Spike',pie:'Pie',spin:'Spin',saw:'Seesaw',fake:'Fake',react:'News',mind:'Mind Read',oracle:'Fortune',beat:'Beat',fast:'Blitz',mirror:'Cooked',
+   mind:{name:'Mind Read',shout:'Let me read your mind~'},dip:{name:'Roller Coaster',shout:'Hold on tight! Sell sell sell~'},rope:{name:'Clothesline',shout:'Let Granny hang these out to dry~'},beat:{name:'On Beat',shout:'Feel the beat!'},
+   fast:{name:'Blitz',shout:'In and out, three seconds!'},mirror:{name:'Cooked Books',shout:'Read it upside down~'},fakesky:{name:'Fake Forecast',shout:'Fam, a storm is coming!'},
+   gap:{name:'Gap',shout:'Market closed!'},rewind:{name:'Rewind',shout:'Rewiiind~'},volume:{name:'Volume Spike',shout:'Huge volume!'}},
+ kind:{rope:'Clothesline',dip:'Coaster',flat:'Flat',pump:'Pump',top:'Top',dump:'Dump',bleed:'Bleed',shake:'Shakeout',bottom:'Bottom',range:'Range',breakout:'Breakout',flatspike:'Spike',pie:'Pie',spin:'Spin',saw:'Seesaw',fake:'Fake',react:'News',mind:'Mind Read',beat:'Beat',fast:'Blitz',mirror:'Cooked',gap:'Gap',rewind:'Rewind',volume:'Volume',
    unplug:'Unplug',t1:'T+1',fee:'Fee Hike',allin:'All-In',halt2:'Halted',stopout:'Stop-Out'},
  script:{pumpdump:'Pump & Dump',shake:'Shakeout Rally',fakebreak:'Fakeout',boil:'Boiling Frog',dragon:'Moonshot'},
  news:{cut:['Fed announces rate cut','Rate Cut'],reg:['Regulators crack down','Regulators'],kol:['Influencer shills on stream','Retail FOMO'],swan:['Black swan event!','Black Swan'],earn:['Earnings report tonight','Earnings'],halt:['Circuit breaker triggered','Halt'],
@@ -644,6 +655,7 @@ const EN = {
   bottom:['Where is the bottom','It got so quiet','Deleted the app'],range:['Buy low sell high, easy','Same level again, boring','Waiting for the breakout'],
   breakout:['BREAKOUT! Historic!','Not buying? Enjoy being poor','YOLO'],flatspike:['Is it halted?','Flatline. IYKYK','Is the shearer asleep?'],
   pie:['10 BAGGER!!','I KNEW IT. Financial freedom!','Sold my house, all in'],spin:['Is this a chart or an EKG','My stop got hit 8 times','I feel dizzy'],fake:['Easy money','Chart looks too perfect','Why is volume so low?'],
+  gap:['It gapped! Where is my order?','Market reopened and everything changed','Will this gap ever fill?'],rewind:['Wait, where did that candle go?','Are we going backwards?','Is this a replay?'],volume:['VOLUME! This time it\'s real!','Volume leads price. GO!','Who is buying this much?'],
   react:['News is out!','Sell the news?','Is this even real?']},
  posters:['DiamondHooves','BaaHolder','EweOnlyLiveOnce','Lambo4Lamb','PaperHooves','NumberGoUp','RetiredRam','WoolStreetBets'],
  cutLoss:['Sold the exact bottom. The shearer thanks you.','You sell, it pumps. Law of the universe.','Textbook buy high, sell low.'], take:['Bag secured!','Profit? The shearers noticed.','Nice!'],
@@ -900,7 +912,7 @@ const devFit = (s, maxW, sz, minSz=6) => { while (sz>minSz && TW(s, sz) > maxW) 
 // 某个对手正常会放的招（专属招 + 招池）；小庄第一层/第二层招池不同
 function devOppSkills(o){
   if (o.kind==='boss'){ const b = BOSSES[o.boss]; return {sig:b.sig, pool:b.skills}; }
-  return {sig:MINION_SIG[o.idx], pool: o.floor===0 ? ['flatspike','pie','fake'] : ['flatspike','pie','saw','fake','spin']};
+  return {sig:MINION_SIG[o.idx], pool: COMMON_POOL[Math.min(o.floor, COMMON_POOL.length-1)]};
 }
 function OppSelectScene(){
   return { enter(){ music('map'); }, frame(f){
@@ -1261,7 +1273,7 @@ function startBattle(def, isBoss){
         ov:null, windup:null, curse:null, lockAt:0, skillCD: 3, skillsLeft: SKILL_PLAN(isBoss), pendingDrift:0, gapNext:0,
         intent:null, intentLog:[], claimNow:null,
         collapse:false, killed:false, collapseCash:0, collapseT:0,
-        weather:null, nextNews:R1(5,8), halt:0, fakeMap:{}, pieMap:{}, fp:0, fcur:null, ftarget:0,
+        weather:null, nextNews:R1(5,8), halt:0, fakeMap:{}, pieMap:{}, fp:0, fcur:null, ftarget:0, volSpike:null,
         combo:0, insured:false,
         fired:{}, busy:{}, flash:[0,0,0,0,0,0], chainN:0, clones:[], cloneStreak:0, msgs:[],
         holdFrom:0, lastPosStep:0, rodPend:0, echoDir:0, boomDrift:0, closeBonus:0, dnStreak:0, settling:false,
@@ -1377,14 +1389,17 @@ function newCandle(){
   if (B.ov){
     const ov = B.ov, k = ov.t; kind = ov.type;
     if (ov.type==='flatspike'){ drift = 0; vol = .002; }
-    else if (ov.type==='pie'){ drift = [.05,.06,.06,-.16][k]; vol = .006; }   // 画大饼：真实 K 线，三根合计约 +18%，第四根砸 16%（不暴击）
-    else if (ov.type==='spin'){ drift = 0; vol = .003; }                                  // 甩干（老版）：一根里上下乱抖
+    else if (ov.type==='pie'){ drift = ov.plan ? ov.plan[k] : [.05,.06,.06,-.16][k]; vol = .006; }   // 画大饼：第一层三根合计约 +18%、第四根砸 16%；第二层涨 2~4 根再砸（不暴击）
+    else if (ov.type==='spin'){ drift = (R.floor>0 && ov.dir && k<2) ? ov.dir*.025 : 0; vol = .003; }   // 甩干（老版）：一根里上下乱抖；第二层连甩两根、收盘同向
     else if (ov.type==='saw'){ drift = (ov.dir||1) * (k%2 ? -1 : 1) * (R.floor>0 ? .05 : .075); vol = .006; }   // 第二层能双向吃，幅度收一点  // 拉锯：逐根来回 ±7.5%
     else if (ov.type==='fake'){ drift = ov.d; vol = .012; }
+    else if (ov.type==='gap'){ drift = k===0 ? 0 : (ov.fill[k-1]||0); vol = .004; }   // 跳空缺口：第一根正常；跳空后两根回补
+    else if (ov.type==='rewind'){ drift = ov.seq[k] || 0; vol = .001; }               // 倒带：最近 N 根倒序取反
+    else if (ov.type==='volume'){                                                      // 天量：大 K 线那根才出方向
+      drift = (k===ov.bigK) ? ov.dir*ov.amp : 0; vol = .003;
+      if (k===ov.bigK){ shake = Math.max(shake,10); flashA = .45; flashC = ov.dir>0?UP:DN; tone(150, .35, 'square', .06, ov.dir>0?400:-200); noise(.2, .08); } }
     // ---- 专属意图 ----
     else if (ov.type==='mind'){ { const a = R.floor>0 ? .6 : 1; drift = (B.sh>0 ? -.04 : B.sh<0 ? .04 : (R.floor===0 ? 1 : (Math.random()<.5?1:-1))*.03)*a; } vol = .008; ov.eyeT = 24; }   // 读心：每根开盘看你的仓位，往反方向走
-    else if (ov.type==='oracle'){ drift = ov.plan[k]; vol = .006;
-      if (k===ov.len-1){ B.bubble = t('fateLine'); B.bubbleT = 140; flashA = .35; flashC = '#d44dff'; shake = Math.max(shake,5); sfx('tell'); } }   // 算一卦：前 4 根照预言走，最后一根反着来
     else if (ov.type==='dip'){   // 过山车：基础一路下滑，弹射在 battleTick 里叠加
       drift = -.025; vol = .004; shake = Math.max(shake, 2);
     }
@@ -1405,8 +1420,8 @@ function newCandle(){
     if (ph.revert) drift += (B.phBase-o)/B.phBase*.3; B.mode = 'script';
   }
   B.kindNow = kind;
-  if (w && !['pie','flatspike','spin'].includes(B.mode)){ drift += (w.drift||0) + (w.rumorD||0); vol *= (w.volMul||1); }
-  if (!['pie','flatspike','spin'].includes(B.mode)) for (const m of B.msgs) drift += m.dir*.01;   // 小消息每根推 1%
+  if (w && !['pie','flatspike','spin','gap','rewind','volume'].includes(B.mode)){ drift += (w.drift||0) + (w.rumorD||0); vol *= (w.volMul||1); }
+  if (!['pie','flatspike','spin','gap','rewind','volume'].includes(B.mode)) for (const m of B.msgs) drift += m.dir*.01;   // 小消息每根推 1%
   drift += B.pendingDrift; B.pendingDrift = 0;
   drift += B.boomDrift; B.boomDrift = 0;                       // 共振：下一根 ±8%
   // 第一层没有做空：剧本段悄悄偏多（跌势缩 15%，每根 +0.2%），单根涨的概率约 +8%，不要明显到让玩家察觉
@@ -1414,7 +1429,8 @@ function newCandle(){
   if (B.collapse) drift *= 1.8;                                // 崩盘：方向性位移放大 1.8 倍（噪声不放大）
   if (has('stampede') && B.dnStreak>=3 && drift<0){ drift *= 1.5; pulse('stampede'); }   // 踩踏：连跌 3 根后，下一根跌幅 ×1.5
   B.vol = vol*d.volMul; B.target = o*(1 + drift + randn()*B.vol*.8);
-  if (B.mode==='pie') B.target = o*(1+drift);
+  if (B.mode==='pie' || B.mode==='rewind') B.target = o*(1+drift);
+  if (B.mode==='volume' && B.ov && B.ov.t===B.ov.bigK) B.target = o*(1+drift);   // 天量的大 K 线幅度要准
   if (B.mode==='fake'){ if (!B.fcur){ B.fp = o; } const fo=B.fp; B.fcur={o:fo,h:fo,l:fo,c:fo,v:0}; B.ftarget = fo*(1 - B.ov.d*.9 + randn()*.004); }
   // 回声：暴击平仓后的下一根，扎一根 5% 的针
   if (B.echoDir){
@@ -1476,15 +1492,10 @@ function newCandle(){
   if (B.step%5===3 && !B.windup && !B.ov && !B.collapse && B.bubbleT<=0){ B.bubble = pick(lines(d).idle); B.bubbleT = 150; }
   if (R.tutorial && C.hints[B.step]){ B.hint = C.hints[B.step]; B.hintT = 260; }
 }
-// 算一卦：从当前这根的开盘价起，按预言推出还没走的几根（最后一根照原方向——骗你的）
-function oracleGhosts(){
-  if (!B.ov || B.ov.type!=='oracle' || B.over) return [];
-  const ov = B.ov, out = []; let p = B.cur.o*(1+ov.ghost[ov.t]);
-  for (let j=ov.t+1; j<ov.len; j++){ const o = p, c = p*(1+ov.ghost[j]); out.push({o,c}); p = c; }
-  return out;
-}
 function startOv(type){
   const ov = {type, t:0, len:BOSS_SKILLS[type].len};
+  // 第一层没有做空：庄家只用诱多套路，每个招都留一个做多能赚的方向
+  const up0 = R.floor===0;
   if (type==='dip'){   // 过山车：一路往下滑，中途随机瞬间弹射；弹射前约 0.4 秒轨道闪黄 + 咔哒。第二阶段弹射更多、提示更短、还有假咔哒
     const p2 = !!B.phase2; ov.len = p2 ? 6 : 5; ov.i0 = B.bars.length; ov.p2 = p2; ov.off = 0; ov.spikes = [];
     const bars = []; for (let i=1; i<ov.len; i++) bars.push(i);
@@ -1496,14 +1507,40 @@ function startOv(type){
   if (type==='rope'){   // 晾衣绳洗盘：绳间来回弹 n 根 → 一根绳断、假突破 → 反方向真拉
     ov.n = R1(2,3); ov.len = ov.n + 3; ov.i0 = B.bars.length; ov.p2 = !!B.phase2;
     const o = B.price; ov.top = o*1.03; ov.bot = o*.97; ov.s0 = Math.random()<.5?1:-1; ov.fake = Math.random()<.5?1:-1; }
-  // 第一层没有做空：庄家只用诱多套路，每个招都留一个做多能赚的方向
-  const up0 = R.floor===0;
-  if (type==='flatspike') ov.dir = (has('bearfaith') || up0) ? -1 : (B.sh!==0 && Math.random()<.7 ? -Math.sign(B.sh) : (Math.random()<.5?1:-1));
+  if (type==='gap'){   // 跳空缺口：第一根正常，结束时休市 1 秒；第二根跳空开盘，随后两根回补
+    ov.i0 = B.bars.length;
+    ov.dir = up0 ? -1 : (Math.random()<.5?1:-1);
+    ov.gapAmt = ov.dir * (up0 ? .08 : .10);
+    ov.fill = up0 ? [.02,.02] : [-ov.gapAmt/2, -ov.gapAmt/2];   // 第一层回补一半；第二层回补全部
+    ov.gapI = 0;
+  }
+  if (type==='rewind'){   // 倒带：记下最近 N 根已完成 K 线的涨跌幅，之后倒序取反走回去
+    const N = up0 ? 3 : 4; ov.len = N; ov.i0 = B.bars.length; ov.n = N;
+    const rec = B.bars.slice(-N).map(b => b.c/b.o - 1);
+    let seq = rec.slice().reverse().map(x => -x);
+    if (up0 && rec.reduce((a,x)=>a+x,0) >= 0) seq = [.03,.03,.03];   // 第一层：最近不是跌的就固定往上，保证做多能赚
+    ov.orig = []; for (let i=Math.max(0, ov.i0-N); i<ov.i0; i++) ov.orig.push(i);
+    ov.seq = seq.map(x => {
+      if (Math.abs(x) < .01) x = (x<0 ? -1 : x>0 ? 1 : (up0 ? 1 : (Math.random()<.5?1:-1)))*.015;   // 太小的按 1.5% 同号处理
+      return clamp(x, -.08, .08);
+    });
+  }
+  if (type==='volume'){   // 天量：底部量柱一根比一根高；第一层第 4 根 +8%，第二层随机一根 ±12%
+    ov.i0 = B.bars.length;
+    ov.dir = up0 ? 1 : (Math.random()<.5?1:-1);
+    ov.amp = up0 ? .08 : .12;
+    ov.bigK = up0 ? 3 : R1(1,3);
+    ov.len = ov.bigK + 1;
+    B.volSpike = { i0:ov.i0, bigK:ov.bigK, bigI:ov.i0+ov.bigK, len:ov.len, endI:ov.i0+ov.len+3, dir:ov.dir };
+  }
+  if (type==='flatspike') ov.dir = (has('bearfaith') || up0) ? -1 : (B.sh>0 ? -1 : B.sh<0 ? 1 : (Math.random()<.5?1:-1));
+  if (type==='pie'){
+    if (up0) ov.plan = [.05,.06,.06,-.16];   // 画大饼：三根合计约 +18%，第四根砸 16%
+    else { const n = R1(2,4); ov.plan = []; for (let i=0;i<n;i++) ov.plan.push(.04+Math.random()*.01); ov.plan.push(-(.18+Math.random()*.02)); ov.len = n+1; }   // 第二层：饼画一半就砸
+  }
+  if (type==='spin' && !up0){ ov.dir = Math.random()<.5?1:-1; ov.len = 3; }   // 第二层：连甩两根、收盘同向
   if (type==='fake') ov.d = (up0 ? 1 : (Math.random()<.5?1:-1))*.02;
   if (type==='saw') ov.dir = up0 ? 1 : (Math.random()<.5?1:-1);
-  if (type==='oracle'){ const dd = Math.random()<.5?1:-1; ov.dir = dd;
-    ov.plan = [0,1,2,3].map(()=>dd*(.02+Math.random()*.015)).concat([-dd*.06]);      // 真实走势
-    ov.ghost = ov.plan.slice(0,4).concat([dd*.03]); }                              // 画面上的预言：最后一根也照原方向画（骗你）
   if (type==='beat') ov.dir = up0 ? 1 : (Math.random()<.5?1:-1);
   if (type==='mirror') ov.d = (up0 ? 1 : (Math.random()<.5?1:-1))*.025;   // 报表做反：价格照常有个方向，只是画面倒过来
   B.ov = ov; B.bubble = C.bskill[type].shout; B.bubbleT = 140; sfx('tell');
@@ -1554,7 +1591,10 @@ function battleTick(){
   const N = B.ticks; B.tick++; const r = Math.max(1, N - B.tick + 1); const prevP = B.price; let p = B.price; const tv = B.vol/Math.sqrt(N)*1.15;
   const ov = B.ov;
   if (ov && ov.type==='dip' && ov.off) p = p / (1 + ov.off);
-  if (ov && ov.type==='spin'){ p = B.cur.o*(1 + ((B.tick%2)?1:-1)*(.05+Math.random()*.045)); if (r===1) p = B.target; }
+  if (ov && ov.type==='spin'){
+    if (R.floor===0 || ov.t < 2){ const amp = R.floor>0 ? 1.4 : 1; p = B.cur.o*(1 + ((B.tick%2)?1:-1)*(.05+Math.random()*.045)*amp); if (r===1) p = B.target; }
+    else p += (B.target-p)/r;   // 第二层第三根收手，让两根同向的收盘定住
+  }
   else if (ov && ov.type==='flatspike' && ov.t===ov.len-1){
     if (B.tick < N-1) p = B.cur.o*(1+randn()*.001);
     else if (B.tick===N-1){ p = B.cur.o*(1+ov.dir*.15); B.target = p; shake=10; sfx('harvest'); flashA=.3; flashC=ov.dir>0?UP:DN;
@@ -1562,7 +1602,7 @@ function battleTick(){
     else p = B.target;
   } else {
     p += (B.target-p)/r + (r>1 ? randn()*tv*p*Math.sqrt((r-1)/r) : 0);
-    if (r>1 && Math.random()<.1 && B.mode!=='flatspike') p *= 1 + randn()*tv*2.6;
+    if (r>1 && Math.random()<.1 && !['flatspike','gap','rewind','volume'].includes(B.mode)) p *= 1 + randn()*tv*2.6;
   }
   if (ov && ov.type==='dip'){
     const sp = ov.spikes.find(x => x.bar === ov.t), tk = B.tick; let off = 0;
@@ -1578,6 +1618,7 @@ function battleTick(){
   c.v += (Math.abs(p/prevP-1)*30 + .08) * (B.mode==='flatspike'?.2:1);
   if (ov && (ov.type==='fake' || ov.type==='pie') && B.fcur){ B.fp += (B.ftarget-B.fp)/r + (r>1? randn()*tv*.5*B.fp*Math.sqrt((r-1)/r):0); const fc=B.fcur; fc.c=B.fp; fc.h=Math.max(fc.h,B.fp); fc.l=Math.min(fc.l,B.fp); fc.v += .02; }
   if (B.tick%2===0) sfx('tick');
+  if (ov && ov.type==='rewind' && B.tick%4===0){ noise(.025,.07); tone(160+Math.random()*120,.04,'sawtooth',.02,-40); }   // 倒带嘶嘶声
   if (curseType()==='stopout') checkStopout();
   // 分身：浮盈 ≥3% 提前平
   if (B.clones.length){ for (const cl of B.clones.slice()){ const r2 = (B.price-cl.entry)/cl.entry*cl.dir; if (r2 >= .03) closeClone(cl, B.price); } }
@@ -1622,6 +1663,12 @@ function endCandle(){
   B.chainN = 0;
   if (B.step%2===0){ B.chat = pick(C.posts[B.kindNow]||C.posts.flat); B.chatBy = pick(C.posters); }
   if (B.step>=B.len){ if (B.killed || !stepOT()){ if (!B.over) endBattle(B.killed); return; } }
+  // 跳空缺口：第一根走完 → 休市 1 秒，下一根开盘跳空（放在 spawnNews 之后，保证新闻跳空不覆盖这一招）
+  if (B.ov && B.ov.type==='gap' && B.ov.t===1){
+    const ov = B.ov; ov.p0 = B.price; ov.gapI = B.bars.length;
+    B.gapNext = ov.gapAmt; B.halt = Math.max(B.halt, 1);
+    tone(200, .3, 'square', .05, -120); noise(.2, .05);
+  }
   newCandle();
 }
 function spawnNews(){
@@ -2121,8 +2168,6 @@ const BattleScene = { frame(f, dt){
   // 缩放：最早的方式——线性，看整屏所有可见的 K 线（Kurt 定：不做自适应聚焦、不让 K 线冲出屏幕）
   const rv = vis;
   let hi = Math.max(...rv.map(b=>b.h)), lo = Math.min(...rv.map(b=>b.l));
-  const ghosts = oracleGhosts();   // 算一卦的预言 K 线也算进缩放，不然会被裁出画面
-  for (const g of ghosts){ hi = Math.max(hi, g.o, g.c); lo = Math.min(lo, g.o, g.c); }
   const mg = (hi-lo)*.12 + hi*.004;
   B.vhi = hi+mg > B.vhi ? hi+mg : lerp(B.vhi, hi+mg, .08*f); B.vlo = lo-mg < B.vlo ? lo-mg : lerp(B.vlo, lo-mg, .08*f);
   const volTop = CY1-34, chH = volTop-CY0-10;
@@ -2157,6 +2202,40 @@ const BattleScene = { frame(f, dt){
     ctx.fillStyle = col;
     if (Yr(b.h) < CY0-2){ ctx.fillRect(x+1, CY0-2, 1, 1); ctx.fillRect(x, CY0-1, 3, 1); }
     if (Yr(b.l) > volTop+6){ ctx.fillRect(x, volTop+5, 3, 1); ctx.fillRect(x+1, volTop+6, 1, 1); } });
+  // 天量：底部一排量柱，招开始后一根比一根高，颜色跟大 K 线方向一致；招前后几根是矮灰柱
+  if (B.volSpike && !B.over){
+    const vs = B.volSpike, baseY = CY1-2;
+    for (let i=Math.max(start, vs.i0-3); i<all.length && i<=vs.endI; i++){
+      const x = X(i), rel = i - vs.i0, inRun = rel>=0 && rel<vs.len;
+      let h = 3, col = '#566c86', hot = false;
+      if (inRun){
+        h = 3 + Math.round(19*(rel+1)/vs.len); col = vs.dir>0?UP:DN;
+        if (i===vs.bigI){ h = 22; hot = Math.floor(B.t/4)%2===0; if (hot) col = '#f4f4f4'; }
+      }
+      ctx.globalAlpha = inRun ? 1 : .55;
+      ctx.fillStyle = col; ctx.fillRect(x, baseY-h, SW-1, h);
+      ctx.globalAlpha = 1;
+      if (hot){ ctx.fillStyle = GOLD; ctx.fillRect(x, baseY-23, SW-1, 2); }
+    }
+    // 第一层：大 K 线前倒数 3、2、1
+    if (R.floor===0 && B.ov && B.ov.type==='volume' && B.ov.t < B.ov.bigK){
+      T(String(B.ov.bigK - B.ov.t), X(all.length-1)+2, CY1-40, GOLD, 'center', 13, null);
+    }
+  }
+  // 跳空缺口：在缺口位置画虚线框 + "缺口"
+  if (B.ov && B.ov.type==='gap' && B.ov.gapI>0 && B.ov.gapI-1>=start){
+    const gi = B.ov.gapI, b0 = B.bars[gi-1], b1 = B.bars[gi] || B.cur;
+    if (b0 && b1){
+      const p0 = b0.c, p1 = b1.o, x0 = X(gi-1)-1, x1 = X(gi)+SW, y0 = Math.min(Y(p0),Y(p1))-3, y1 = Math.max(Y(p0),Y(p1))+3;
+      ctx.save(); ctx.strokeStyle = GOLD; ctx.lineWidth = 1; ctx.setLineDash([2,2]); ctx.strokeRect(x0+.5, y0+.5, x1-x0, y1-y0); ctx.restore();
+      T(t('gapTag'), clamp(x1+3, CX0+2, CX1+28), clamp((y0+y1)/2-5, CY0+2, volTop-12), GOLD, 'left', 10, null);
+    }
+  }
+  // 倒带：被倒放的那几根原 K 线上方画一个小 ◀
+  if (B.ov && B.ov.type==='rewind' && B.ov.orig){
+    for (const i of B.ov.orig){ if (i<start) continue; const b = all[i]; if (!b) continue;
+      T('◀', X(i)+2, clamp(Y(b.h)-13, CY0+1, volTop-10), '#73eff7', 'center', 10, null); }
+  }
   // 大 K 线标涨跌幅：单根 ≥5% 就在影线外写上 +32%。
   // 画大饼的 K 线不标：画面上是假层，标 +28% 会骗人；揭晓后这些柱子又超出缩放范围，标出来也只会在边上叠成一团。
   vis.forEach((b,j)=>{ if (b.pie) return; const ch = b.c/b.o-1; if (Math.abs(ch) < .05) return;
@@ -2168,20 +2247,6 @@ const BattleScene = { frame(f, dt){
     else if (m.side==='S'){ ctx.fillStyle='#73eff7'; ctx.fillRect(x,y-4,1,1); ctx.fillRect(x-1,y-5,3,1); ctx.fillRect(x-2,y-6,5,1); }
     else { ctx.fillStyle='#f4f4f4'; ctx.fillRect(x-2,y-2,1,1); ctx.fillRect(x+2,y-2,1,1); ctx.fillRect(x-1,y-1,3,3); ctx.fillRect(x-2,y+2,1,1); ctx.fillRect(x+2,y+2,1,1); } }
   if (B.sh!==0){ const yy=Y(B.entry), cc = B.posCrit?GOLD:'#ef7d57'; ctx.fillStyle=cc; for (let x=CX0;x<CX1;x+=6) ctx.fillRect(x,yy,3,1); if (B.posCrit) T(t('critPos')+' ×2', CX0+2, yy-13, GOLD); }
-  // 算一卦：当前 K 线右边画半透明的预言 K 线（每走过一根就少一根；最后一根照原方向画——那是骗你的）
-  if (B.ov && B.ov.type==='oracle' && !B.over){
-    const ci = all.length-1, n = ghosts.length;
-    if (n>0){
-      const room = CX1+28 - (X(ci)+SW), step = Math.max(4, Math.min(SW+3, Math.floor(room/n)));
-      ghosts.forEach((g,m)=>{ const x = X(ci)+(m+1)*step, yt = Math.min(Y(g.o),Y(g.c)), yb = Math.max(Y(g.o),Y(g.c));
-        const gc = (g.c>=g.o)!==mirror ? UP : DN;
-        ctx.globalAlpha = .55 + .2*Math.sin(B.t*.15+m); ctx.fillStyle = gc;
-        for (let yy=yt; yy<=yb; yy+=2){ ctx.fillRect(x, yy, 1, 1); ctx.fillRect(x+step-2, yy, 1, 1); }
-        for (let xx=x; xx<x+step-1; xx+=2){ ctx.fillRect(xx, yt, 1, 1); ctx.fillRect(xx, yb, 1, 1); }
-        ctx.globalAlpha = .18; ctx.fillRect(x, yt, step-1, Math.max(1,yb-yt)); ctx.globalAlpha = 1; });
-      T('?', X(ci)+n*step+step, Math.min(...ghosts.map(g=>Y(Math.max(g.o,g.c))))-12, '#d44dff');
-    }
-  }
   // 分身：主角仓位旁边的小号半透明标记
   B.clones.forEach((cl,i)=>{ const yy = clamp(Y(cl.entry), CY0+3, volTop-3), xx = CX1-6-i*7;
     ctx.globalAlpha=.55; ctx.fillStyle = cl.dir>0?UP:DN;
@@ -2194,6 +2259,16 @@ const BattleScene = { frame(f, dt){
       T(lab.txt.slice(0,1), x-3, CY0+4, lab.col); T(lg.truth?'✓':'✗', x-3, CY0+18, lg.truth?'#a7f070':DANGER); }
   }
   ctx.restore();
+  // 跳空缺口：休市 1 秒，图上盖深色 + 大字
+  if (B.ov && B.ov.type==='gap' && B.halt>0 && !B.over){
+    ctx.fillStyle='rgba(8,10,18,.86)'; ctx.fillRect(CX0-4, CY0-4, CX1-CX0+38, CY1-CY0+8);
+    bigText(t('closed'), CX0+122, CY0+76, 4, Math.floor(B.t/8)%2 ? GOLD : '#f4f4f4');
+    T(t('gapTag')+' …', CX0+122, CY0+120, '#94b0c2', 'center', 10);
+  }
+  // 倒带：左上角闪烁的 ◀◀ REW（扫描线在整屏最后画）
+  if (B.ov && B.ov.type==='rewind' && !B.over && Math.floor(B.t/10)%2){
+    box(CX0+2, CY0+2, 64, 16, '#1a1c2c', '#73eff7'); T(t('rewTag'), CX0+6, CY0+5, '#73eff7');
+  }
   // 出场时 K 线图中间偏下的小字提示
   if (B.intro && B.intro.t >= B.intro.T0) T(t('skipHint'), CX0+122, CY1-58, '#566c86', 'center', 10);
   // 庄家的画笔（出场动画时先不画；战败抖动的 36 帧里还握着笔）
@@ -2362,7 +2437,7 @@ const BattleScene = { frame(f, dt){
   if (B.otBanner>0 && !B.over){ B.otBanner -= f; const ls = wrap(t('otBanner'), 220); box(CX0+6, CY0+70, 232, ls.length*16+44, '#1a1c2c', DANGER);
     bigText(t('otTag')+'!', CX0+122, CY0+76, 2, DANGER); ls.forEach((l,k)=>T(l, CX0+122, CY0+106+k*16, '#f4f4f4', 'center')); }
   if (B.collapseT>0){ const ls = wrap(t('collapse'), 220); box(CX0+6, CY0+70, 232, ls.length*16+12, '#1a1c2c', GOLD); ls.forEach((l,k)=>T(l, CX0+122, CY0+76+k*16, GOLD, 'center')); }
-  if (B.halt>0 && !(B.phaseT>0)){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
+  if (B.halt>0 && !(B.phaseT>0) && !(B.ov && B.ov.type==='gap')){ box(CX0+40, CY0+80, 164, 30, '#1a1c2c', GOLD); T(t('halt')+' '+B.halt.toFixed(1), CX0+122, CY0+88, GOLD, 'center'); }
   if (B.hintT>0 && B.hint && !B.intro && !B.over){ const ls = wrap(B.hint, 226); box(CX0+4, CY1-62, 236, ls.length*15+12, '#257179', '#a7f070'); ls.forEach((l,k)=>T(l, CX0+122, CY1-56+k*15, '#f4f4f4', 'center')); }
 
   // ===== 叶子（K 线图左上角正上方）+ 庄家意图（右上角正上方）=====
@@ -2519,6 +2594,15 @@ const BattleScene = { frame(f, dt){
     if (btn(84, py+128, 120, 24, t('cont'), {col:'#b13e53', key:'enter'})) afterBattle();
   }
   if (B.defeat && B.defeat.t < 0) bigText(t('busted'), W/2 + Math.round(Math.sin(B.t*1.3)*2), 176, 4, GOLD);
+  // 倒带：整屏录像带扫描线抖动 + 轻微色偏
+  if (B.ov && B.ov.type==='rewind' && !B.over){
+    ctx.fillStyle='rgba(115,239,247,.045)'; ctx.fillRect(0,0,W,H);
+    for (let i=0;i<6;i++){
+      const y = Math.floor((B.t*2.1 + i*H/6) % H), off = Math.round(Math.sin(B.t*.27+i*1.9)*4);
+      ctx.fillStyle = i%2 ? 'rgba(212,77,255,.10)' : 'rgba(244,244,244,.12)';
+      ctx.fillRect(off, y, W, i%2?2:1);
+    }
+  }
   if (B.intro && B.intro.t < B.intro.T0) drawPV(B.intro, f);
 }};
 
