@@ -466,7 +466,7 @@ const CARD_COEF = {normal:.5, legend:1}, ROOT_COEF = .6;
 //  文案：中文
 // =====================================================================
 const ZH = {
- ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.7 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
+ ui:{ waffle:'嗯……改主意了~', vague:'要变盘', title:'韭菜与画笔', sub:'一棵韭菜的反收割之旅', ver:'内测 v6.8 · 前两层', start:'开始冒险', sndOn:'声音：开', sndOff:'声音：关', help:'玩法', lang:'English',
   upRed:'颜色：红涨', upGreen:'颜色：绿涨', gotit:'知道了', skip:'跳过', skipHint:'点击跳过', money:'叶子', line:'收割线', lineS:'线', canShort:'可做空', tapNode:'点亮起的格子前进',
   nBattle:'遭遇小庄', nEvent:'奇遇', nShop:'黄牛小铺', nRest:'打工', gBattle:'战', gEvent:'?', gShop:'商', gRest:'工', cont:'继续', leave:'离开', sold:'已售',
   shopkeeper:'黄牛老周', shopHi:'好东西，只卖有缘的韭菜。', shopSay:['识货！','这个好，我自己都舍不得用。','欢迎下次再来送……再来买。'], shopFoot:'花掉的叶子就不能拿去交易了。',
@@ -597,7 +597,7 @@ const ZH = {
 //  Copy: English
 // =====================================================================
 const EN = {
- ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.7 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
+ ui:{ waffle:'Hmm… changed my mind~', vague:'Big move', title:'FLEECED', sub:'A lamb vs. the market makers', ver:'Beta v6.8 · Floors 1-2', start:'Start', sndOn:'Sound: On', sndOff:'Sound: Off', help:'How to play', lang:'中文',
   upRed:'Up: Red', upGreen:'Up: Green', gotit:'Got it', skip:'Skip', skipHint:'Tap to skip', money:'Wool', line:'Shear line', lineS:'line', canShort:'Short ✓', tapNode:'Tap a glowing tile',
   nBattle:'Fight', nEvent:'Event', nShop:'Shop', nRest:'Work', gBattle:'!', gEvent:'?', gShop:'$', gRest:'W', cont:'Continue', leave:'Leave', sold:'Sold',
   shopkeeper:'Scalper Sam', shopHi:'Quality goods. Only for special sheep.', shopSay:['Good eye!','Great pick. I\'d keep it myself.','Come back and donate — I mean, shop — again.'], shopFoot:'Wool you spend can\'t be traded.',
@@ -1502,7 +1502,7 @@ function startOv(type){
     const nReal = p2 ? 4 : R1(3,4), nFake = p2 ? R1(1,2) : 0;
     bars.sort(()=>Math.random()-.5);
     const pickBars = bars.slice(0, Math.min(bars.length, nReal + nFake));
-    pickBars.forEach((b, j) => ov.spikes.push({bar:b, s:R1(4,7), fake: j >= nReal, cue: p2 ? 2 : 3, peak: p2 ? .06 : .05}));
+    pickBars.forEach((b, j) => ov.spikes.push({bar:b, s: p2 ? R1(3,5) : R1(4,5), fake: j >= nReal, cue: p2 ? 3 : 4, hold: p2 ? 2 : 3, peak: p2 ? .09 : .08}));   // 2026-11-26 放宽：提示 4 tick、顶部停 3 tick（二阶段 3 / 2），弹 8%（9%）
   }
   if (type==='rope'){   // 晾衣绳洗盘：绳间来回弹 n 根 → 一根绳断、假突破 → 反方向真拉
     ov.n = R1(2,3); ov.len = ov.n + 3; ov.i0 = B.bars.length; ov.p2 = !!B.phase2;
@@ -1608,7 +1608,7 @@ function battleTick(){
     const sp = ov.spikes.find(x => x.bar === ov.t), tk = B.tick; let off = 0;
     if (sp){
       if (tk === sp.s - sp.cue){ ov.cueT = 14; tone(1300, .03, 'square', .05); tone(900, .03, 'square', .05, 0, .07); }   // 咔哒
-      if (!sp.fake){ const d = tk - sp.s; off = d===0 ? sp.peak*.4 : d===1 ? sp.peak : d===2 ? sp.peak*.55 : 0;
+      if (!sp.fake){ const d = tk - sp.s; off = d===0 ? sp.peak*.5 : (d>=1 && d<=sp.hold) ? sp.peak : d===sp.hold+1 ? sp.peak*.5 : 0;
         if (d===1){ ov.launch = 22; tone(240, .25, 'square', .05, 700); if (!ov.said){ ov.said = 1; B.bubble = t('dipGrandpa'); B.bubbleT = 150; } if (B.sh>0) ov.caught = 26; } }
       else if (tk === sp.s){ B.target *= .98; shake = Math.max(shake, 5); tone(300, .3, 'sawtooth', .05, -200); }   // 假咔哒：不弹，反而多砸一截
     }
